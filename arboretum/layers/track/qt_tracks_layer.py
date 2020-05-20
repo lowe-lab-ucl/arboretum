@@ -74,6 +74,8 @@ class QtTracksControls(QtLayerControls):
         self.grid_layout.setColumnStretch(1, 1)
         self.grid_layout.setSpacing(4)
 
+        
+
 
     def _on_edge_width_change(self, event=None):
         """Receive layer model edge line width change event and update slider.
