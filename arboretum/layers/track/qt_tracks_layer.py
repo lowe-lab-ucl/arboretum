@@ -14,7 +14,7 @@ from qtpy.QtWidgets import (
 import numpy as np
 
 
-MAX_TAIL_LENGTH = 500
+MAX_TAIL_LENGTH = 1500
 MAX_TAIL_WIDTH = 40
 
 class QtTracksControls(QtLayerControls):
@@ -45,7 +45,7 @@ class QtTracksControls(QtLayerControls):
         self.color_by_combobox.insertItem(0, 'track ID')
         self.color_by_combobox.insertItem(1, 'root ID')
         self.color_by_combobox.insertItem(2, 'parent ID')
-        self.color_by_combobox.insertItem(3, 'generation')
+        self.color_by_combobox.insertItem(3, 'state')
 
         # slider for track tail length
         self.tail_length_slider = QSlider(Qt.Horizontal)
@@ -71,6 +71,7 @@ class QtTracksControls(QtLayerControls):
         self.tail_length_slider.valueChanged.connect(self.change_tail_length)
         self.tail_checkbox.stateChanged.connect(self.change_display_tail)
         self.id_checkbox.stateChanged.connect(self.change_display_id)
+        self.color_by_combobox.currentIndexChanged.connect(self.change_color_by)
 
         # grid_layout created in QtLayerControls
         # addWidget(widget, row, column, [row_span, column_span])
@@ -151,3 +152,6 @@ class QtTracksControls(QtLayerControls):
 
     def change_display_id(self, state):
         self.layer.display_id = self.id_checkbox.isChecked()
+
+    def change_color_by(self, value):
+        self.layer.color_by = value

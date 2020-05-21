@@ -1,7 +1,7 @@
 import btrack
 
 
-def _build_tree_graph(root_node, COLOR_CYCLE, color_by=None, ):
+def _build_tree_graph(root_node, COLOR_CYCLE, color_by=None):
     """ built the graph of the tree """
 
     #put the start vertex into the queue, and the marked list
@@ -23,7 +23,7 @@ def _build_tree_graph(root_node, COLOR_CYCLE, color_by=None, ):
         # draw the root of the tree
         edges.append(([y,y],
                       [node.start,node.end],
-                      COLOR_CYCLE[color_by(node)]*255))
+                      COLOR_CYCLE(color_by(node))*255))
         markers.append((y, node.start,'k.'))
 
         # mark if this is an apoptotic tree
