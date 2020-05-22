@@ -56,24 +56,24 @@ def build_plugin(viewer, manager):
     # register the custom layers with this napari instance
     _register_tracks_layer()
 
-    # build the plugin
-    arbor = Arboretum(manager.trees)
-    arbor.update(clear=False)
-    arbor.plot_cell_count()
+    # # build the plugin
+    # arbor = Arboretum(manager.trees)
+    # arbor.update(clear=False)
+    # arbor.plot_cell_count()
 
     # add the arboretum tracks layer
     track_layer = Tracks(name='Tracks', manager=manager)
     viewer.add_layer(track_layer)
 
-    # add the widget
-    viewer.window.add_dock_widget(arbor.widget,
-                                  name='arboretum',
-                                  area='right')
-                                  
-    def update_slider(event):
-        # only trigger if update comes from first axis (optional)
-        if event.axis == 0:
-            idx = viewer.dims.indices[0]
-            arbor.update_frame_indicator(idx)
+    # # add the widget
+    # viewer.window.add_dock_widget(arbor.widget,
+    #                               name='arboretum',
+    #                               area='right')
 
-    viewer.dims.events.axis.connect(update_slider)
+    # def update_slider(event):
+    #     # only trigger if update comes from first axis (optional)
+    #     if event.axis == 0:
+    #         idx = viewer.dims.indices[0]
+    #         arbor.update_frame_indicator(idx)
+    #
+    # viewer.dims.events.axis.connect(update_slider)

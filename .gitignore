@@ -1,6 +1,6 @@
 __pycache__
 .ipynb_checkpoints
 octopuslite.py
-arboretum/layers/track/track.py
 arboretum/layers/track/vispy_tracks_layer.py
+arboretum/layers/track/_*
 arboretum/turbo.py
