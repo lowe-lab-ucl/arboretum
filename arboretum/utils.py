@@ -10,13 +10,13 @@
 # Created:  01/05/2020
 #-------------------------------------------------------------------------------
 
+import btrack
 import multiprocessing
 
 import numpy as np
-
 from scipy.ndimage import measurements
 
-import btrack
+
 
 class _Stack:
     """ _Stack
@@ -42,6 +42,8 @@ class _Stack:
         self._idx += 1
         return self._stack[current,...], current
 
+
+
 def _localize_process(data) -> np.ndarray:
     # image: np.ndarray, frame: int) -> np.ndarray:
     """ worker process for localizing and labelling objects
@@ -63,6 +65,8 @@ def _localize_process(data) -> np.ndarray:
     localizations[:,-1] = labels-1 #-1 because we use a label of zero for states
 
     return localizations
+
+
 
 def localize(stack_as_array: np.ndarray,
              num_workers: int = 8):
@@ -88,9 +92,9 @@ def localize(stack_as_array: np.ndarray,
 
 
 
-
 def _track_process():
     pass
+
 
 
 def track(localizations: np.ndarray,
@@ -142,6 +146,7 @@ def load_hdf(filename: str,
         seg = h.segmentation
 
     return seg, tracks
+
 
 
 def export_hdf(filename: str,

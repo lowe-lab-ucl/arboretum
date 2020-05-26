@@ -44,16 +44,17 @@ def _register_tracks_layer():
 
 
 
-def build_manager(tracks):
-    """ build the track manager """
-    return TrackManager(tracks)
 
 
 
-def build_plugin(viewer, manager):
+
+def build_plugin(viewer, tracks):
 
     # register the custom layers with this napari instance
     _register_tracks_layer()
+
+    # build a track manager
+    manager = TrackManager(tracks)
 
     # add the arboretum tracks layer
     track_layer = Tracks(name='Tracks', manager=manager)
@@ -62,22 +63,42 @@ def build_plugin(viewer, manager):
 
 
 
-# def build_plugin_v2(viewer):
-#
-#     from .plugin import Arboretum
-#
-#     # register the custom layers with this napari instance
-#     _register_tracks_layer()
-#
-#     # build the plugin
-#     arbor = Arboretum(viewer)
+def build_plugin_v2(viewer):
+
+    from .plugin import Arboretum
+
+    # register the custom layers with this napari instance
+    _register_tracks_layer()
+
+    # build the plugin
+    arbor = Arboretum()
+
+    # add the widget to Napari
+    viewer.window.add_dock_widget(arbor,
+                                  name='arboretum',
+                                  area='right')
 
 
+    # callbacks to add layers
+    def add_segmentation_layer():
+        """ add a segmentation layer """
+        if arbor.segmentation is not None:
+            seg_layer = viewer.add_labels(arbor.segmentation, name='Segmentation')
+            seg_layer.editable = False
 
-    # def update_slider(event):
-    #     # only trigger if update comes from first axis (optional)
-    #     if event.axis == 0:
-    #         idx = viewer.dims.indices[0]
-    #         arbor.update_frame_indicator(idx)
-    #
-    # viewer.dims.events.axis.connect(update_slider)
+    def add_localizations_layer():
+        """ add a localizations layer """
+        if arbor.localizations is not None:
+            pts_layer = viewer.add_points(arbor.localizations[:,:3], name='Localizations')
+
+    def add_track_layer():
+        """ add a track layer """
+        if arbor.tracks is not None:
+            for i, track_set in enumerate(arbor.tracks):
+                _trk_layer = Tracks(manager=TrackManager(track_set), name=f'Tracks {i}')
+                track_layer = viewer.add_layer(_trk_layer)
+
+
+    # if we loaded some data add both the segmentation and tracks layer
+    arbor.load_button.clicked.connect(add_segmentation_layer)
+    arbor.load_button.clicked.connect(add_track_layer)
