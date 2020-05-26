@@ -13,8 +13,8 @@ class Tracks(Layer):
 
     Notes:
         - Does not currently accept 'data', but builds the data from a track
-          manager instance. For integration into napari, should have any track
-          manager built from the array of data?
+          manager instance. For integration into napari, should we build  the
+          track manager from the array of data?
 
     """
     # The max number of points that will ever be used to render the thumbnail
@@ -146,6 +146,7 @@ class Tracks(Layer):
     def data(self, data: np.ndarray):
         self._data = data
 
+
     @property
     def edge_color(self) -> np.ndarray:
         """(1 x 4) np.ndarray: Array of RGBA edge colors (applied to all vectors)"""
@@ -193,6 +194,5 @@ class Tracks(Layer):
     @color_by.setter
     def color_by(self, color_by: int):
         self.manager.color_by = color_by
-        print(color_by)
         self.events.color_by()
         self.refresh()

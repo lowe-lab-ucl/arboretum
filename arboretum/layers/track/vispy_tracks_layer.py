@@ -1,4 +1,4 @@
-from vispy.scene.visuals import Mesh
+from vispy.scene.visuals import Markers
 from vispy.scene.visuals import Line
 from vispy.scene.visuals import Text
 from vispy.scene.visuals import Compound
@@ -17,7 +17,7 @@ class VispyTracksLayer(VispyBaseLayer):
     """
     def __init__(self, layer):
         # node = Line()
-        node = Compound([Line(), Text(method='gpu')])
+        node = Compound([Line(), Markers(), Text(method='gpu')])
         super().__init__(layer, node)
 
         self.layer.events.edge_width.connect(self._on_data_change)
@@ -29,11 +29,12 @@ class VispyTracksLayer(VispyBaseLayer):
         self.layer.dims.events.ndisplay.connect(self._on_dimensions_change)
 
         # build and attach the shader to the track
-        self.shader = TrackShader(current_frame=0,
+        self.shader = TrackShader(current_time=0,
                                   tail_length=self.layer.tail_length,
-                                  time=self.layer.manager._data[:,0])
+                                  vertex_time_vector=self.layer.manager._data[:,0])
 
         node._subvisuals[0].attach(self.shader)
+        # node._subvisuals[1].attach(self.shader)
 
         # now set the data for the track lines
         self._positions = self.layer.data
@@ -41,9 +42,15 @@ class VispyTracksLayer(VispyBaseLayer):
                                           color=self.layer.manager.track_colors,
                                           connect=self.layer.manager.track_connex)
 
+        # # add markers for each time point
+        # self.node._subvisuals[1].set_data(pos=self._positions,
+        #                                   size=4,
+        #                                   edge_color=((0.,0.,0.,0.)),
+        #                                   face_color=self.layer.manager.track_colors,
+        #                                   scaling=False)
 
-        self.node._subvisuals[1].color = 'white'
-        self.node._subvisuals[1].font_size = 8
+        self.node._subvisuals[2].color = 'white'
+        self.node._subvisuals[2].font_size = 8
 
         self._reset_base()
         self._on_data_change()
@@ -55,15 +62,15 @@ class VispyTracksLayer(VispyBaseLayer):
 
         """
         # update the shader
-        self.shader.current_frame = self.layer.current_frame
+        self.shader.current_time = self.layer.current_frame
         self.shader.tail_length = self.layer.tail_length
         self.node._subvisuals[0].set_data(width=self.layer.edge_width)
 
         # update the track IDs
-        self.node._subvisuals[1].visible = self.layer.display_id
-        if self.node._subvisuals[1].visible:
-            self.node._subvisuals[1].text = self.layer.manager.object_IDs(self.layer.current_frame)
-            self.node._subvisuals[1].pos = self.layer.manager.object_pos(self.layer.current_frame)
+        self.node._subvisuals[2].visible = self.layer.display_id
+        if self.node._subvisuals[2].visible:
+            self.node._subvisuals[2].text = self.layer.manager.object_IDs(self.layer.current_frame)
+            self.node._subvisuals[2].pos = self.layer.manager.object_pos(self.layer.current_frame)
 
         self.node.update()
         # Call to update order of translation values with new dims:
@@ -79,6 +86,7 @@ class VispyTracksLayer(VispyBaseLayer):
     def _on_color_by(self, event=None):
         """ change the coloring only """
         self.node._subvisuals[0].set_data(color=self.layer.manager.track_colors)
+        # self.node._subvisuals[1].set_data(face_color=self.layer.manager.track_colors)
         self.node.update()
         # Call to update order of translation values with new dims:
         self._on_scale_change()
