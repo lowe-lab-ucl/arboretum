@@ -18,7 +18,6 @@ import heapq
 import numpy as np
 
 import napari
-import btrack
 
 from .plugin import Arboretum
 
@@ -56,15 +55,15 @@ def build_plugin(viewer, manager):
     # register the custom layers with this napari instance
     _register_tracks_layer()
 
-    # # build the plugin
-    # arbor = Arboretum(manager.trees)
-    # arbor.update(clear=False)
-    # arbor.plot_cell_count()
-
     # add the arboretum tracks layer
     track_layer = Tracks(name='Tracks', manager=manager)
     viewer.add_layer(track_layer)
 
+    # # build the plugin
+    # arbor = Arboretum(manager, track_layer)
+    # arbor.update(clear=False)
+    # arbor.plot_cell_count()
+    #
     # # add the widget
     # viewer.window.add_dock_widget(arbor.widget,
     #                               name='arboretum',

@@ -13,5 +13,13 @@ Features:
 [![LineageTree](./examples/napari.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
 *Automated cell tracking and lineage tree reconstruction*.
 
-
 **See [bTrack](https://github.com/quantumjot/BayesianTracker) page for more information about the cell tracking**
+
+
+---
+
+TODO:
++ [ ] pip installer
++ [ ] GUI for bTrack localization and tracking directly from Napari
++ [ ] 3D track visualization (2D+t -> 3D, and 3D+t)
++ [ ] Mouse interaction with tracks

@@ -31,7 +31,7 @@ class VispyTracksLayer(VispyBaseLayer):
         # build and attach the shader to the track
         self.shader = TrackShader(current_time=0,
                                   tail_length=self.layer.tail_length,
-                                  vertex_time_vector=self.layer.manager._data[:,0])
+                                  vertex_time=self.layer.manager._data[:,0])
 
         node._subvisuals[0].attach(self.shader)
         # node._subvisuals[1].attach(self.shader)
