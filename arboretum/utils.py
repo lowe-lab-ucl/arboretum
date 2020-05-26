@@ -129,3 +129,23 @@ def track(localizations: np.ndarray,
         tracks = tracker.tracks
 
     return tracks
+
+
+
+def load_hdf(filename: str,
+             filter_by: str = 'area>=50',
+             load_segmentation: bool = True):
+
+    """ load data from an HDF file """
+    with btrack.dataio.HDF5FileHandler(filename) as h:
+        h._f_expr = filter_by
+        tracks = h.tracks
+        seg = h.segmentation
+
+    return seg, tracks
+
+
+def export_hdf(filename: str,
+               tracker: btrack.BayesianTracker):
+    """ export the tracking data to an hdf file """
+    pass

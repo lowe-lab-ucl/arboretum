@@ -19,7 +19,7 @@ import numpy as np
 
 import napari
 
-from .plugin import Arboretum
+
 
 from .layers.track.track import Tracks
 from .layers.track._track_utils import TrackManager
@@ -59,15 +59,20 @@ def build_plugin(viewer, manager):
     track_layer = Tracks(name='Tracks', manager=manager)
     viewer.add_layer(track_layer)
 
-    # # build the plugin
-    # arbor = Arboretum(manager, track_layer)
-    # arbor.update(clear=False)
-    # arbor.plot_cell_count()
-    #
-    # # add the widget
-    # viewer.window.add_dock_widget(arbor.widget,
-    #                               name='arboretum',
-    #                               area='right')
+
+
+
+# def build_plugin_v2(viewer):
+#
+#     from .plugin import Arboretum
+#
+#     # register the custom layers with this napari instance
+#     _register_tracks_layer()
+#
+#     # build the plugin
+#     arbor = Arboretum(viewer)
+
+
 
     # def update_slider(event):
     #     # only trigger if update comes from first axis (optional)
