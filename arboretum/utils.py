@@ -40,7 +40,6 @@ class _Stack:
             raise StopIteration
         current = self._idx
         self._idx += 1
-        if self._idx % 10 == 0: print(self._idx)
         return self._stack[current,...], current
 
 def _localize_process(data) -> np.ndarray:
@@ -61,7 +60,7 @@ def _localize_process(data) -> np.ndarray:
     localizations = np.zeros((centroids.shape[0], 5), dtype=np.float32)
     localizations[:,0] = frame # time
     localizations[:,1:centroids.shape[1]+1] = centroids
-    localizations[:,-1] = labels
+    localizations[:,-1] = labels-1 #-1 because we use a label of zero for states
 
     return localizations
 
@@ -111,7 +110,7 @@ def track(localizations: np.ndarray,
     # convert the localizations into btrack objects
     from btrack.dataio import  _PyTrackObjectFactory
     factory = _PyTrackObjectFactory()
-    objects = [factory.get(localizations[i,:4], label=localizations[i,-1]) for i in idx]
+    objects = [factory.get(localizations[i,:4], label=int(localizations[i,-1])) for i in idx]
 
     # initialise a tracker session using a context manager
     with btrack.BayesianTracker() as tracker:
@@ -148,4 +147,8 @@ def load_hdf(filename: str,
 def export_hdf(filename: str,
                tracker: btrack.BayesianTracker):
     """ export the tracking data to an hdf file """
+    pass
+
+
+if __name__ == '__main__':
     pass

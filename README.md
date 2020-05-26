@@ -35,30 +35,31 @@ TODO:
 import napari
 import arboretum
 
+from arboretum.utils import localize, track
+
 from skimage import io
 
 # load your segmentation mask
 segmentation = io.imread('segmentation.tif')
 
 # use btrack to localize and track these
-localizations = arboretum.utils.localize(segmentation)
+localizations = localize(segmentation)
 
 # now track them (see btrack package for config files)
-tracks = arboretum.utils.track(localizations,
-                               config_filename='cell_config.json')
+tracks = track(localizations, config_filename='cell_config.json')
 
 # now visualize all of this using napari
-manager = arboretum.build_manager(tracks[0])
+manager = arboretum.build_manager(tracks)
 
 with napari.gui_qt():
     viewer = napari.Viewer()
 
     # visuzlize the segmentation
-    seg_layer = viewer.add_labels(seg, name='Segmentation')
+    seg_layer = viewer.add_labels(segmentation, name='Segmentation')
     seg_layer.editable = False
 
     # OPTIONAL: you can visualize the localizations using a points layer
-    pts_layer = view.add_points(localizations[:,:3], name='Localizations')
+    pts_layer = viewer.add_points(localizations[:,:3], name='Localizations')
 
     arboretum.build_plugin(viewer, manager)
 
