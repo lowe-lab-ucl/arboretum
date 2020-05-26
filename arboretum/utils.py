@@ -14,8 +14,7 @@ import multiprocessing
 
 import numpy as np
 
-from scipy.ndimage.measurements import label
-from scipy.ndimage.measurements import center_of_mass
+from scipy.ndimage import measurements
 
 import btrack
 
@@ -41,28 +40,44 @@ class _Stack:
             raise StopIteration
         current = self._idx
         self._idx += 1
-        return stack_as_array[current,...]
+        if self._idx % 10 == 0: print(self._idx)
+        return self._stack[current,...], current
 
-def _localize_process(image):
-    """ worker process for localizing object """
-    labeled, _ = label(image)
-    centroids = center_of_mass(image, labeled)
-    return centroids
+def _localize_process(data) -> np.ndarray:
+    # image: np.ndarray, frame: int) -> np.ndarray:
+    """ worker process for localizing and labelling objects
 
-def localize(stack_as_array,
-             num_workers=8):
+    Returns:
+        combined data in form of nx5 array (t, x, y, z, label) adding a
+        z-dimension of uniform zero, if one doesn't exist.
+    """
+    image, frame = data
+    labeled, n = measurements.label(image.astype(np.bool))
+    idx = list(range(1, n+1))
+    centroids = np.array(measurements.center_of_mass(image, labels=labeled, index=idx))
+    labels = np.array(measurements.maximum(image, labels=labeled, index=idx))
+
+
+    localizations = np.zeros((centroids.shape[0], 5), dtype=np.float32)
+    localizations[:,0] = frame # time
+    localizations[:,1:centroids.shape[1]+1] = centroids
+    localizations[:,-1] = labels
+
+    return localizations
+
+def localize(stack_as_array: np.ndarray,
+             num_workers: int = 8):
     """ localize
 
-    get the centroids of all objects given a segmentaion mask from Napari
+    get the centroids of all objects given a segmentaion mask from Napari.
+
+    Should work with volumetric data, and infers the object class label from
+    the segmentation label.
 
     Parameters:
         stack_as_array: a numpy array of the stack, typically the data from
             a napari 'labels' layer
         num_workers: number of processes to distribute the job accross
-
-    TODO:
-        - have this work with a three dimensional volume
-        - use the segmentation to add labels to objects for the tracker
     """
 
     stack = _Stack(stack_as_array)
@@ -70,13 +85,19 @@ def localize(stack_as_array,
     with multiprocessing.Pool(num_workers) as pool:
         localizations = pool.map(_localize_process, stack)
 
-    return [(i,)+localizations[i]+(0,) for i in range(len(localizations))]
+    return np.concatenate(localizations, axis=0)
 
 
-def track(localizations,
-          config_filename,
-          volume=((0,1200),(0,1600),(-1e5,1e5)),
-          optimize=True):
+
+
+def _track_process():
+    pass
+
+
+def track(localizations: np.ndarray,
+          config_filename: str,
+          volume: tuple = ((0,1200),(0,1600),(-1e5,1e5)),
+          optimize: bool = True):
 
     """ track
 
@@ -84,10 +105,13 @@ def track(localizations,
 
     """
 
+    n_localizations = localizations.shape[0]
+    idx = range(n_localizations)
+
     # convert the localizations into btrack objects
-    from btrack.dataio import ObjectFactory
-    ObjectFactory.reset() # belt and braces, reset ID counter to zero
-    objects = [ObjectFactory.get(o) for o in localizations]
+    from btrack.dataio import  _PyTrackObjectFactory
+    factory = _PyTrackObjectFactory()
+    objects = [factory.get(localizations[i,:4], label=localizations[i,-1]) for i in idx]
 
     # initialise a tracker session using a context manager
     with btrack.BayesianTracker() as tracker:
