@@ -3,3 +3,8 @@ __pycache__
 octopuslite.py
 arboretum/turbo.py
 arboretum/tree_viewer.py
+dist
+arboretum.egg-info
+*.spec
+install.sh
+*.ipynb

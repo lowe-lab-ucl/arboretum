@@ -102,3 +102,13 @@ def build_plugin_v2(viewer):
     # if we loaded some data add both the segmentation and tracks layer
     arbor.load_button.clicked.connect(add_segmentation_layer)
     arbor.load_button.clicked.connect(add_track_layer)
+
+
+
+
+
+def run():
+    """ run an instance of napari with the plugin """
+    with napari.gui_qt():
+        viewer = napari.Viewer()
+        build_plugin_v2(viewer)
