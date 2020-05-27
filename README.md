@@ -28,9 +28,21 @@ TODO:
 
 ---
 
+### Installation
+
+```sh
+$ git clone https://github.com/quantumjot/arboretum.git
+$ cd arboretum
+$ pip install -e .
+```
+
+
 ### Example usage
 
-**NOTE**: We're building the GUI, but if you're keen to try out the visualizations:
+
+**NOTE**: We're building the GUI, but if you're keen to try out the tracking and visualizations:
+
+#### Localization, Tracking and Visualization
 
 ```python
 import napari
@@ -71,5 +83,13 @@ with napari.gui_qt():
     pts_layer = viewer.add_points(localizations[:,:3], name='Localizations')
 
     arboretum.build_plugin(viewer, tracks)
+```
 
+
+#### Launching the GUI
+```python
+import arboretum
+
+# launch the viewer with plugin  
+arboretum.run()
 ```
