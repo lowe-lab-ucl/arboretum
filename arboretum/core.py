@@ -66,6 +66,7 @@ def build_plugin(viewer, tracks):
 def build_plugin_v2(viewer):
 
     from .plugin import Arboretum
+    from . import utils
 
     # register the custom layers with this napari instance
     _register_tracks_layer()
@@ -89,7 +90,9 @@ def build_plugin_v2(viewer):
     def add_localizations_layer():
         """ add a localizations layer """
         if arbor.localizations is not None:
-            pts_layer = viewer.add_points(arbor.localizations[:,:3], name='Localizations')
+            pts_layer = viewer.add_points(arbor.localizations[:,:3],
+                                          name='Localizations',
+                                          face_color='b')
 
     def add_track_layer():
         """ add a track layer """
@@ -98,10 +101,27 @@ def build_plugin_v2(viewer):
                 _trk_layer = Tracks(manager=TrackManager(track_set), name=f'Tracks {i}')
                 track_layer = viewer.add_layer(_trk_layer)
 
+    def _localize():
+        """ localize objects using the currently selected layer """
+        arbor.segmentation = viewer.layers[viewer.active_layer]
+        arbor.localizations = utils.localize(arbor.segmentation)
+
+    def _track():
+        """ track objects """
+        cfg = '/home/quantumjot/Dropbox/Code/py3/BayesianTracker/models/cell_config.json'
+        arbor.tracks = [utils.track(arbor.localizations, cfg)]
 
     # if we loaded some data add both the segmentation and tracks layer
     arbor.load_button.clicked.connect(add_segmentation_layer)
     arbor.load_button.clicked.connect(add_track_layer)
+
+    # do some localization using the currently selected segmentation
+    arbor.localize_button.clicked.connect(_localize)
+    arbor.localize_button.clicked.connect(add_localizations_layer)
+
+    # do some tracking using the currently selected localizations
+    arbor.track_button.clicked.connect(_track)
+    arbor.track_button.clicked.connect(add_track_layer)
 
 
 

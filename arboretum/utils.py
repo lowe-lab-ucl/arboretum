@@ -10,6 +10,8 @@
 # Created:  01/05/2020
 #-------------------------------------------------------------------------------
 
+import os
+
 import btrack
 import multiprocessing
 
@@ -85,9 +87,10 @@ def localize(stack_as_array: np.ndarray,
 
     stack = _Stack(stack_as_array)
 
+    print('localizing')
     with multiprocessing.Pool(num_workers) as pool:
         localizations = pool.map(_localize_process, stack)
-
+    print('concat')
     return np.concatenate(localizations, axis=0)
 
 
@@ -146,6 +149,13 @@ def load_hdf(filename: str,
         seg = h.segmentation
 
     return seg, tracks
+
+
+def load_json(filename: str):
+    """ load json data """
+    filepath, _ = os.path.split(filename)
+    tracks = btrack.dataio.import_all_tracks_JSON(filepath)
+    return tracks
 
 
 

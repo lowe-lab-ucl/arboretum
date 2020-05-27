@@ -98,16 +98,24 @@ class Arboretum(QWidget):
 
 
     def load_data(self):
+        """ load data in hdf or json format from btrack """
         filename = QFileDialog.getOpenFileName(self,
                                                'Open tracking data',
                                                DEFAULT_PATH,
-                                               'Tracking files (*.hdf5)')
-
+                                               'Tracking files (*.hdf5 *.json)')
+        # only load file if we actually chose one
         if filename[0]:
-            seg, tracks = utils.load_hdf(filename[0])
+            # get the extension
+            _, ext = os.path.splitext(filename[0])
 
-            self.segmentation = seg
-            self._tracks = tracks
+            if ext in ('.hdf5',):
+                seg, tracks = utils.load_hdf(filename[0])
+                self.segmentation = seg
+                self._tracks = tracks
+            elif ext in ('.json',):
+                tracks = utils.load_json(filename[0])
+                self._tracks = [tracks]
+
 
     def export_data(self):
         pass
@@ -129,6 +137,14 @@ class Arboretum(QWidget):
     def tracks(self) -> np.ndarray:
         return self._tracks
 
+    @tracks.setter
+    def tracks(self, tracks):
+        self._tracks = tracks
+
     @property
     def localizations(self) -> np.ndarray:
         return self._localizations
+
+    @localizations.setter
+    def localizations(self, localizations: np.ndarray):
+        self._localizations = localizations
