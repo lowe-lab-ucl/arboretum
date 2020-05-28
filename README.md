@@ -37,6 +37,18 @@ $ pip install -e .
 ```
 
 
+### Testing the installation
+
+Following installation, you can test the `Track` layer, as well as the *btrack*
+package by running a built-in test. The test downloads some example data and a
+tracker configuration file, tracks the objects and then renders the tracks with 
+*Napari*:
+
+```sh
+$ cd tests
+$ python test.py
+```
+
 ### Example usage
 
 
