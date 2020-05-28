@@ -20,6 +20,30 @@ from scipy.ndimage import measurements
 
 
 
+def _get_btrack_cfg(filename=None):
+    """ get a config from a local file or request one over the web """
+
+    if filename is not None:
+        return btrack.utils.load_config(filename)
+
+    REPO = 'https://raw.githubusercontent.com/quantumjot/BayesianTracker/master'
+
+    import json
+    import urllib.request
+
+    f = urllib.request.urlopen(f'{REPO}/models/cell_config.json')
+    cfg = json.load(f)
+
+    # build the config
+    cfg = cfg["TrackerConfig"]
+    config = {"MotionModel": btrack.utils.read_motion_model(cfg),
+              "ObjectModel": btrack.utils.read_object_model(cfg),
+              "HypothesisModel": btrack.optimise.hypothesis.read_hypothesis_model(cfg)}
+
+    return config
+
+
+
 class _Stack:
     """ _Stack
 
@@ -70,6 +94,11 @@ def _localize_process(data) -> np.ndarray:
 
 
 
+# def _color_process(data) -> np.ndarray:
+#     """ worker process for coloring arrays by state """
+
+
+
 def localize(stack_as_array: np.ndarray,
              num_workers: int = 8):
     """ localize
@@ -101,7 +130,7 @@ def _track_process():
 
 
 def track(localizations: np.ndarray,
-          config_filename: str,
+          config: dict,
           volume: tuple = ((0,1200),(0,1600),(-1e5,1e5)),
           optimize: bool = True):
 
@@ -123,7 +152,7 @@ def track(localizations: np.ndarray,
     with btrack.BayesianTracker() as tracker:
 
         # configure the tracker using a config file, append objects and set vol
-        tracker.configure_from_file(config_filename)
+        tracker.configure(config)
         tracker.append(objects)
         tracker.volume = volume
 
@@ -138,15 +167,29 @@ def track(localizations: np.ndarray,
 
 
 
+def color_segmentation_by_state(h, color_segmentation=False):
+    # TODO(arl): implement this!
+    # if not color_segmentation:
+    return h.segmentation
+
+
+
+
+
 def load_hdf(filename: str,
              filter_by: str = 'area>=50',
-             load_segmentation: bool = True):
+             load_segmentation: bool = True,
+             color_segmentation_by_state: bool = True):
 
     """ load data from an HDF file """
     with btrack.dataio.HDF5FileHandler(filename) as h:
         h._f_expr = filter_by
         tracks = h.tracks
-        seg = h.segmentation
+
+        if load_segmentation:
+            seg = _color_segmentation_by_state(h, color_segmentation_by_state)
+        else:
+            seg = None
 
     return seg, tracks
 

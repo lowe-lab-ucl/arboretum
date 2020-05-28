@@ -18,8 +18,9 @@ import heapq
 import numpy as np
 
 import napari
+from napari.qt.threading import thread_worker
 
-
+from typing import Union
 
 from .layers.track.track import Tracks
 from .layers.track._track_utils import TrackManager
@@ -63,7 +64,15 @@ def build_plugin(viewer, tracks):
 
 
 
-def build_plugin_v2(viewer):
+def build_plugin_v2(viewer,
+                    segmentation: Union[None, np.ndarray] = None):
+    """ build the plugin
+
+    Arguments:
+        viewer: an instance of the napari viewer
+        segmentation: optional segmentation to be loaded as as a `labels` layer
+
+    """
 
     from .plugin import Arboretum
     from . import utils
@@ -79,13 +88,12 @@ def build_plugin_v2(viewer):
                                   name='arboretum',
                                   area='right')
 
-
     # callbacks to add layers
-    def add_segmentation_layer():
+    def add_segmentation_layer(editable:bool = False):
         """ add a segmentation layer """
         if arbor.segmentation is not None:
             seg_layer = viewer.add_labels(arbor.segmentation, name='Segmentation')
-            seg_layer.editable = False
+            seg_layer.editable = editable
 
     def add_localizations_layer():
         """ add a localizations layer """
@@ -93,7 +101,6 @@ def build_plugin_v2(viewer):
             pts_layer = viewer.add_points(arbor.localizations[:,:3],
                                           name='Localizations',
                                           face_color='b')
-
     def add_track_layer():
         """ add a track layer """
         if arbor.tracks is not None:
@@ -101,34 +108,43 @@ def build_plugin_v2(viewer):
                 _trk_layer = Tracks(manager=TrackManager(track_set), name=f'Tracks {i}')
                 track_layer = viewer.add_layer(_trk_layer)
 
+    @thread_worker
     def _localize():
         """ localize objects using the currently selected layer """
         arbor.segmentation = viewer.layers[viewer.active_layer]
         arbor.localizations = utils.localize(arbor.segmentation)
 
+    @thread_worker
     def _track():
         """ track objects """
-        cfg = '/home/quantumjot/Dropbox/Code/py3/BayesianTracker/models/cell_config.json'
-        arbor.tracks = [utils.track(arbor.localizations, cfg)]
+        arbor.tracks = [utils.track(arbor.localizations, arbor.btrack_cfg)]
 
     # if we loaded some data add both the segmentation and tracks layer
     arbor.load_button.clicked.connect(add_segmentation_layer)
     arbor.load_button.clicked.connect(add_track_layer)
 
     # do some localization using the currently selected segmentation
-    arbor.localize_button.clicked.connect(_localize)
-    arbor.localize_button.clicked.connect(add_localizations_layer)
+    localize_worker = _localize()
+    localize_worker.returned.connect(add_localizations_layer)
+    arbor.localize_button.clicked.connect(lambda: localize_worker.start())
+
 
     # do some tracking using the currently selected localizations
-    arbor.track_button.clicked.connect(_track)
-    arbor.track_button.clicked.connect(add_track_layer)
+    track_worker = _track()
+    track_worker.returned.connect(add_track_layer)
+    arbor.track_button.clicked.connect(lambda: track_worker.start())
+
+    # if we're passing a segmentation, add it as a labels layer
+    if segmentation is not None:
+        arbor.segmentation = segmentation
+        add_segmentation_layer(editable=True)
 
 
 
 
 
-def run():
+def run(**kwargs):
     """ run an instance of napari with the plugin """
     with napari.gui_qt():
         viewer = napari.Viewer()
-        build_plugin_v2(viewer)
+        build_plugin_v2(viewer, **kwargs)

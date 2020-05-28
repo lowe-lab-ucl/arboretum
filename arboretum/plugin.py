@@ -59,6 +59,8 @@ DEFAULT_PATH = '/media/quantumjot/DataIII/Data/Giulia/GV0800/Pos12/Pos12_aligned
 
 
 
+
+
 class Arboretum(QWidget):
 
     """ Arboretum
@@ -95,6 +97,7 @@ class Arboretum(QWidget):
         self._segmentation = None
         self._localizations = None
         self._tracks = None
+        self._btrack_cfg = None
 
 
     def load_data(self):
@@ -148,3 +151,14 @@ class Arboretum(QWidget):
     @localizations.setter
     def localizations(self, localizations: np.ndarray):
         self._localizations = localizations
+
+
+    @property
+    def btrack_cfg(self) -> dict:
+        if self._btrack_cfg is None:
+            self.btrack_cfg = utils._get_btrack_cfg()
+        return self._btrack_cfg
+
+    @btrack_cfg.setter
+    def btrack_cfg(self, cfg: dict):
+        self._btrack_cfg = cfg
