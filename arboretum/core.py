@@ -108,47 +108,71 @@ def build_plugin_v2(viewer,
                 _trk_layer = Tracks(manager=TrackManager(track_set), name=f'Tracks {i}')
                 track_layer = viewer.add_layer(_trk_layer)
 
-    @thread_worker
-    def _import():
-        """ import data """
-        # get the extension
-        _, ext = os.path.splitext(arbor.filename)
 
-        if ext in ('.hdf5',):
-            seg, tracks = utils.load_hdf(arbor.filename)
-            arbor.segmentation = seg
-            arbor.tracks = tracks
-        elif ext in ('.json',):
-            tracks = utils.load_json(arbor.filename)
-            arbor.tracks = [tracks]
+    def import_objects():
+        """ wrapper to load objects/tracks """
 
-    @thread_worker
-    def _localize():
-        """ localize objects using the currently selected layer """
-        arbor.segmentation = viewer.layers[viewer.active_layer]
-        arbor.localizations = utils.localize(arbor.segmentation)
+        @thread_worker
+        def _import():
+            """ import data """
+            # get the extension
+            _, ext = os.path.splitext(arbor.filename)
 
-    @thread_worker
-    def _track():
-        """ track objects """
-        arbor.tracks = [utils.track(arbor.localizations, arbor.btrack_cfg)]
+            if ext in ('.hdf5',):
+                seg, tracks = utils.load_hdf(arbor.filename)
+                arbor.segmentation = seg
+                arbor.tracks = tracks
+            elif ext in ('.json',):
+                tracks = utils.load_json(arbor.filename)
+                arbor.tracks = [tracks]
+
+        worker = _import()
+        worker.returned.connect(add_segmentation_layer)
+        worker.returned.connect(add_track_layer)
+
+
+
+    def localize_objects():
+        """ wrapper to localizer objects """
+
+        @thread_worker
+        def _localize():
+            """ localize objects using the currently selected layer """
+            arbor.segmentation = viewer.layers[viewer.active_layer]
+            arbor.localizations = utils.localize(arbor.segmentation)
+
+        worker = _localize()
+        worker.returned.connect(add_localizations_layer)
+        worker.start()
+
+
+
+    def track_objects():
+        """ wrapper to launch a tracking thread """
+
+        @thread_worker
+        def _track():
+            """ track objects """
+            if arbor.localizations is not None:
+                tracks = [utils.track(arbor.localizations, arbor.btrack_cfg)]
+                arbor.tracks = tracks
+
+        worker = _track()
+        worker.returned.connect(add_track_layer)
+        worker.start()
+
+
+
+
 
     # if we loaded some data add both the segmentation and tracks layer
-    import_worker = _import()
-    import_worker.returned.connect(add_segmentation_layer)
-    import_worker.returned.connect(add_track_layer)
-    arbor.load_button.clicked.connect(lambda: import_worker.start())
+    arbor.load_button.clicked.connect(import_objects)
 
     # do some localization using the currently selected segmentation
-    localize_worker = _localize()
-    localize_worker.returned.connect(add_localizations_layer)
-    arbor.localize_button.clicked.connect(lambda: localize_worker.start())
-
+    arbor.localize_button.clicked.connect(localize_objects)
 
     # do some tracking using the currently selected localizations
-    track_worker = _track()
-    track_worker.returned.connect(add_track_layer)
-    arbor.track_button.clicked.connect(lambda: track_worker.start())
+    arbor.track_button.clicked.connect(track_objects)
 
     # if we're passing a segmentation, add it as a labels layer
     if segmentation is not None:
