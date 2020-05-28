@@ -99,6 +99,9 @@ class Arboretum(QWidget):
         self._tracks = None
         self._btrack_cfg = None
 
+        # TODO(arl): this is the working filename for the dataset
+        self.filename = None
+
 
     def load_data(self):
         """ load data in hdf or json format from btrack """
@@ -108,16 +111,7 @@ class Arboretum(QWidget):
                                                'Tracking files (*.hdf5 *.json)')
         # only load file if we actually chose one
         if filename[0]:
-            # get the extension
-            _, ext = os.path.splitext(filename[0])
-
-            if ext in ('.hdf5',):
-                seg, tracks = utils.load_hdf(filename[0])
-                self.segmentation = seg
-                self._tracks = tracks
-            elif ext in ('.json',):
-                tracks = utils.load_json(filename[0])
-                self._tracks = [tracks]
+            self.filename = filename[0]
 
 
     def export_data(self):

@@ -167,7 +167,7 @@ def track(localizations: np.ndarray,
 
 
 
-def color_segmentation_by_state(h, color_segmentation=False):
+def _color_segmentation_by_state(h, color_segmentation=False):
     # TODO(arl): implement this!
     # if not color_segmentation:
     return h.segmentation
@@ -179,7 +179,7 @@ def color_segmentation_by_state(h, color_segmentation=False):
 def load_hdf(filename: str,
              filter_by: str = 'area>=50',
              load_segmentation: bool = True,
-             color_segmentation_by_state: bool = True):
+             color_segmentation: bool = True):
 
     """ load data from an HDF file """
     with btrack.dataio.HDF5FileHandler(filename) as h:
@@ -187,7 +187,7 @@ def load_hdf(filename: str,
         tracks = h.tracks
 
         if load_segmentation:
-            seg = _color_segmentation_by_state(h, color_segmentation_by_state)
+            seg = _color_segmentation_by_state(h, color_segmentation)
         else:
             seg = None
 

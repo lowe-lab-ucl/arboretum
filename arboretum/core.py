@@ -109,6 +109,20 @@ def build_plugin_v2(viewer,
                 track_layer = viewer.add_layer(_trk_layer)
 
     @thread_worker
+    def _import():
+        """ import data """
+        # get the extension
+        _, ext = os.path.splitext(arbor.filename)
+
+        if ext in ('.hdf5',):
+            seg, tracks = utils.load_hdf(arbor.filename)
+            arbor.segmentation = seg
+            arbor.tracks = tracks
+        elif ext in ('.json',):
+            tracks = utils.load_json(arbor.filename)
+            arbor.tracks = [tracks]
+
+    @thread_worker
     def _localize():
         """ localize objects using the currently selected layer """
         arbor.segmentation = viewer.layers[viewer.active_layer]
@@ -120,8 +134,10 @@ def build_plugin_v2(viewer,
         arbor.tracks = [utils.track(arbor.localizations, arbor.btrack_cfg)]
 
     # if we loaded some data add both the segmentation and tracks layer
-    arbor.load_button.clicked.connect(add_segmentation_layer)
-    arbor.load_button.clicked.connect(add_track_layer)
+    import_worker = _import()
+    import_worker.returned.connect(add_segmentation_layer)
+    import_worker.returned.connect(add_track_layer)
+    arbor.load_button.clicked.connect(lambda: import_worker.start())
 
     # do some localization using the currently selected segmentation
     localize_worker = _localize()
