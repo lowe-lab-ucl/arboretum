@@ -41,7 +41,7 @@ $ pip install -e .
 
 Following installation, you can test the `Track` layer, as well as the *btrack*
 package by running a built-in test. The test downloads some example data and a
-tracker configuration file, tracks the objects and then renders the tracks with 
+tracker configuration file, tracks the objects and then renders the tracks with
 *Napari*:
 
 ```sh
@@ -51,57 +51,23 @@ $ python test.py
 
 ### Example usage
 
-
-**NOTE**: We're building the GUI, but if you're keen to try out the tracking and visualizations:
-
-#### Localization, Tracking and Visualization
+**NOTE** You need to provide your own segmentation. There are lots of exciting
+methods for this, depending on your data. Assuming you have a tif stack with
+your segmentation, you can launch the tracking and visualization plugin like
+this:
 
 ```python
-import napari
 import arboretum
-
-from arboretum.utils import localize, track
 
 from skimage import io
-
-# load your segmentation mask
-segmentation = io.imread('segmentation.tif')
-
-# set the volume for the tracker, this represents the limits of the observation
-# volume. if working in 2D the limits in Z are very large - objects cannot
-# enter or leave from above or below the plane. if using 3D data, adjust
-# accordingly
-tracking_volume = ((0, segmentation.shape[1]),    # xmin, xmax
-                   (0, segmentation.shape[2]),    # ymin, ymax
-                   (-1e5, 1e5))                   # zmin, zmax
-
-# localize the objects and assign labels
-localizations = localize(segmentation)
-
-# now track them (see btrack package for config files)
-tracks = track(localizations,
-               config_filename='cell_config.json',
-               volume=tracking_volume)
-
-# now visualize all of this using napari
-with napari.gui_qt():
-    viewer = napari.Viewer()
-
-    # visualize the segmentation
-    seg_layer = viewer.add_labels(segmentation, name='Segmentation')
-    seg_layer.editable = False
-
-    # OPTIONAL: you can visualize the localizations using a points layer
-    pts_layer = viewer.add_points(localizations[:,:3], name='Localizations')
-
-    arboretum.build_plugin(viewer, tracks)
-```
-
-
-#### Launching the GUI
-```python
-import arboretum
+seg = io.imread('path/to/your/segmentation.tif') # should be 8-bit
 
 # launch the viewer with plugin  
-arboretum.run()
+arboretum.run(segmentation=seg)
 ```
+
+At the moment there are 4 (four!) buttons:
++ Load (load HDF or JSON files created by btrack)
++ Localize (find objects using the segmentation layer)
++ Track (track the localized objects)
++ Save (save the data - not currently operational)
