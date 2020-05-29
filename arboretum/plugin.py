@@ -130,6 +130,9 @@ class Arboretum(QWidget):
             # assume this is a napari layer
             self._segmentation = segmentation.data
 
+        # TODO(arl): check that we deal with multidimensional data correctly
+        assert(self._segmentation.ndim<5)
+
     @property
     def tracks(self) -> np.ndarray:
         return self._tracks
@@ -156,3 +159,19 @@ class Arboretum(QWidget):
     @btrack_cfg.setter
     def btrack_cfg(self, cfg: dict):
         self._btrack_cfg = cfg
+
+    @property
+    def volume(self):
+        """ get the volume to use for tracking """
+        if self.segmentation is None:
+            return ((0,1200), (0,1600), (-1e5,1e5))
+        else:
+            volume = []
+            # assumes time is the first dimension
+            for dim in self.segmentation.shape[1:]:
+                volume.append((0, dim))
+
+            if len(volume) == 2:
+                volume.append((-1e5, 1e5))
+
+            return tuple(volume)

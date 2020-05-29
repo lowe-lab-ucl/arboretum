@@ -150,12 +150,16 @@ def build_plugin_v2(viewer,
     def track_objects():
         """ wrapper to launch a tracking thread """
 
+        #TODO(arl): infer the tracking volume from the image data
+
         @thread_worker
         def _track():
             """ track objects """
             if arbor.localizations is not None:
-                tracks = [utils.track(arbor.localizations, arbor.btrack_cfg)]
-                arbor.tracks = tracks
+                tracks = utils.track(arbor.localizations,
+                                     arbor.btrack_cfg,
+                                     volume=arbor.volume)
+                arbor.tracks = [tracks]
 
         worker = _track()
         worker.returned.connect(add_track_layer)
