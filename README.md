@@ -73,3 +73,17 @@ At the moment there are 4 (four!) buttons:
 + Localize (find objects using the segmentation layer)
 + Track (track the localized objects)
 + Save (save the data - not currently operational)
+
+### State labelling
+
+You can improve the quality of the tracking by providing cell 'states' along
+with the segmentation. The plugin uses the following labels for the segmentation:
+
+1. Unlabelled/Interphase
+2. Pro(meta)phase
+3. Metaphase/Pre-mitosis
+4. Anaphase/Post-mitosis
+5. Dead/Apoptosis
+
+Change the labels on the segmentation using the labels tool, or provide a
+pre-labelled segmentation.
