@@ -62,9 +62,9 @@ class QtTracksControls(QtLayerControls):
         self.edge_width_slider.setSingleStep(1)
 
         # checkboxes for display
+        self.id_checkbox = QCheckBox()
         self.tail_checkbox = QCheckBox()
         self.tail_checkbox.setChecked(True)
-        self.id_checkbox = QCheckBox()
 
 
         self.edge_width_slider.valueChanged.connect(self.change_width)
@@ -81,7 +81,7 @@ class QtTracksControls(QtLayerControls):
         self.grid_layout.addWidget(self.blendComboBox, 1, 1)
         self.grid_layout.addWidget(QLabel('opacity:'), 2, 0)
         self.grid_layout.addWidget(self.opacitySlider, 2, 1)
-        self.grid_layout.addWidget(QLabel('edge width:'), 3, 0)
+        self.grid_layout.addWidget(QLabel('tail width:'), 3, 0)
         self.grid_layout.addWidget(self.edge_width_slider, 3, 1)
         self.grid_layout.addWidget(QLabel('tail length:'), 4, 0)
         self.grid_layout.addWidget(self.tail_length_slider, 4, 1)

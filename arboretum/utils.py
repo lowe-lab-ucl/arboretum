@@ -21,24 +21,35 @@ from scipy.ndimage import measurements
 
 
 def _get_btrack_cfg(filename=None):
-    """ get a config from a local file or request one over the web """
+    """ get a config from a local file or request one over the web
+
+    NOTES:
+        - appends the filename of the config for display in the gui. not used
+        per se by the tracker.
+
+    """
 
     if filename is not None:
-        return btrack.utils.load_config(filename)
+        config = btrack.utils.load_config(filename)
+        config['Filename'] = filename
+        return config
 
     REPO = 'https://raw.githubusercontent.com/quantumjot/BayesianTracker/master'
+
+    config_url = f'{REPO}/models/cell_config.json'
 
     import json
     import urllib.request
 
-    f = urllib.request.urlopen(f'{REPO}/models/cell_config.json')
+    f = urllib.request.urlopen(config_url)
     cfg = json.load(f)
 
     # build the config
-    cfg = cfg["TrackerConfig"]
-    config = {"MotionModel": btrack.utils.read_motion_model(cfg),
-              "ObjectModel": btrack.utils.read_object_model(cfg),
-              "HypothesisModel": btrack.optimise.hypothesis.read_hypothesis_model(cfg)}
+    cfg = cfg['TrackerConfig']
+    config = {'MotionModel': btrack.utils.read_motion_model(cfg),
+              'ObjectModel': btrack.utils.read_object_model(cfg),
+              'HypothesisModel': btrack.optimise.hypothesis.read_hypothesis_model(cfg),
+              'Filename': config_url}
 
     return config
 
@@ -115,11 +126,8 @@ def localize(stack_as_array: np.ndarray,
     """
 
     stack = _Stack(stack_as_array)
-
-    print('localizing')
     with multiprocessing.Pool(num_workers) as pool:
         localizations = pool.map(_localize_process, stack)
-    print('concat')
     return np.concatenate(localizations, axis=0)
 
 

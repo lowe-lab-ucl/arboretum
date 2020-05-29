@@ -135,7 +135,15 @@ class Tracks(Layer):
         pass
 
     def _view_data(self):
-        self.data = self.manager.data[:, self.dims.displayed]
+        data = self.manager.data[:, self.dims.displayed]
+
+        # if len(self.dims.displayed) == 3:
+        #     print(data.shape)
+        #     data = np.concatenate([data, data[:, 0:1]], axis=-1)
+        #     print(data.shape)
+
+        self.data = data
+
 
     @property
     def data(self) -> np.ndarray:

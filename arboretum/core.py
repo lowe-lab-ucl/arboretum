@@ -88,6 +88,9 @@ def build_plugin_v2(viewer,
                                   name='arboretum',
                                   area='right')
 
+    # name a new layer using the source layer
+    new_layer_name = lambda s: f'{s} [{arbor.active_layer}]'
+
     # callbacks to add layers
     def add_segmentation_layer(editable:bool = False):
         """ add a segmentation layer """
@@ -99,25 +102,24 @@ def build_plugin_v2(viewer,
         """ add a localizations layer """
         if arbor.localizations is not None:
             pts_layer = viewer.add_points(arbor.localizations[:,:3],
-                                          name='Localizations',
+                                          name=new_layer_name('Localizations'),
                                           face_color='b')
     def add_track_layer():
         """ add a track layer """
         if arbor.tracks is not None:
             for i, track_set in enumerate(arbor.tracks):
-                _trk_layer = Tracks(manager=TrackManager(track_set), name=f'Tracks {i}')
+                _trk_layer = Tracks(manager=TrackManager(track_set),
+                                    name=new_layer_name(f'Tracks {i}'))
                 track_layer = viewer.add_layer(_trk_layer)
-
 
     def import_objects():
         """ wrapper to load objects/tracks """
 
         @thread_worker
         def _import():
-            """ import data """
-            # get the extension
+            """ import track data """
+            # get the extension, and pick the correct file loader
             _, ext = os.path.splitext(arbor.filename)
-
             if ext in ('.hdf5',):
                 seg, tracks = utils.load_hdf(arbor.filename)
                 arbor.segmentation = seg
@@ -129,6 +131,7 @@ def build_plugin_v2(viewer,
         worker = _import()
         worker.returned.connect(add_segmentation_layer)
         worker.returned.connect(add_track_layer)
+        worker.start()
 
 
 
@@ -138,6 +141,7 @@ def build_plugin_v2(viewer,
         @thread_worker
         def _localize():
             """ localize objects using the currently selected layer """
+            arbor.active_layer = viewer.active_layer
             arbor.segmentation = viewer.layers[viewer.active_layer]
             arbor.localizations = utils.localize(arbor.segmentation)
 
@@ -149,8 +153,6 @@ def build_plugin_v2(viewer,
 
     def track_objects():
         """ wrapper to launch a tracking thread """
-
-        #TODO(arl): infer the tracking volume from the image data
 
         @thread_worker
         def _track():

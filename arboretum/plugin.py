@@ -47,6 +47,7 @@ import matplotlib.pyplot as plt
 
 from typing import Union
 from napari.layers import Labels
+from napari._qt.qt_range_slider import QHRangeSlider
 
 
 cmap = plt.cm.get_cmap('prism')
@@ -57,7 +58,20 @@ DEFAULT_PATH = '/media/quantumjot/DataIII/Data/Giulia/GV0800/Pos12/Pos12_aligned
 
 
 
-
+"""
+initial_values : 2-tuple, optional
+        Initial min & max values of the slider, defaults to (0.2, 0.8)
+    data_range : 2-tuple, optional
+        Min and max of the slider range, defaults to (0, 1)
+    step_size : float, optional
+        Single step size for the slider, defaults to 1
+    collapsible : bool
+        Whether the slider is collapsible, defaults to True.
+    collapsed : bool
+        Whether the slider begins collapsed, defaults to False.
+    parent : qtpy.QtWidgets.QWidget
+        Parent widget.
+        """
 
 
 
@@ -81,14 +95,27 @@ class Arboretum(QWidget):
         self.track_button = QPushButton('Track', self)
         self.save_button = QPushButton('Save', self)
 
+        # sliders
+        self.track_filter_slider = QHRangeSlider(initial_values=(1,3000),
+                                                data_range=(1,3000),
+                                                step_size=1,
+                                                parent=self)
+
+        # dynamic labels
+        self.config_filename_label = QLabel('')
+
         # TODO(arl): add back the tree visualization
 
         layout.addWidget(self.load_button, 0, 0)
         layout.addWidget(self.localize_button, 0, 1)
         layout.addWidget(self.track_button, 0, 2)
         layout.addWidget(self.save_button, 0, 3)
-
+        layout.addWidget(QLabel('Configuration file:'), 1, 0, 1, 2)
+        layout.addWidget(self.config_filename_label, 1, 2, 1, 2)
+        layout.addWidget(QLabel('Track length filter:'), 2, 0, 1, 2)
+        layout.addWidget(self.track_filter_slider, 2, 2, 1, 2)
         layout.setAlignment(QtCore.Qt.AlignTop)
+        layout.setSpacing(4)
         self.setLayout(layout)
 
         self.load_button.clicked.connect(self.load_data)
@@ -98,6 +125,7 @@ class Arboretum(QWidget):
         self._localizations = None
         self._tracks = None
         self._btrack_cfg = None
+        self._active_layer = None
 
         # TODO(arl): this is the working filename for the dataset
         self.filename = None
@@ -112,6 +140,7 @@ class Arboretum(QWidget):
         # only load file if we actually chose one
         if filename[0]:
             self.filename = filename[0]
+            print(self.filename)
 
 
     def export_data(self):
@@ -160,6 +189,9 @@ class Arboretum(QWidget):
     def btrack_cfg(self, cfg: dict):
         self._btrack_cfg = cfg
 
+        truncate_fn = lambda f: f'...{f[-20:]}'
+        self.config_filename_label.setText(truncate_fn(cfg['Filename']))
+
     @property
     def volume(self):
         """ get the volume to use for tracking """
@@ -175,3 +207,12 @@ class Arboretum(QWidget):
                 volume.append((-1e5, 1e5))
 
             return tuple(volume)
+
+
+    @property
+    def active_layer(self) -> str:
+        return self._active_layer
+
+    @active_layer.setter
+    def active_layer(self, layer_name: str):
+        self._active_layer = layer_name
