@@ -89,7 +89,7 @@ def build_plugin_v2(viewer,
                                   area='right')
 
     # name a new layer using the source layer
-    new_layer_name = lambda s: f'{s} [{arbor.active_layer}]'
+    new_layer_name = lambda s: f'{s} {arbor.active_layer}'
 
     # callbacks to add layers
     def add_segmentation_layer(editable:bool = False):
@@ -112,6 +112,11 @@ def build_plugin_v2(viewer,
                                     name=new_layer_name(f'Tracks {i}'))
                 track_layer = viewer.add_layer(_trk_layer)
 
+    def add_segmentation_and_track_layers():
+        """ TODO(arl): oof """
+        add_segmentation_layer()
+        add_track_layer()
+
     def import_objects():
         """ wrapper to load objects/tracks """
 
@@ -129,8 +134,8 @@ def build_plugin_v2(viewer,
                 arbor.tracks = [tracks]
 
         worker = _import()
-        worker.returned.connect(add_segmentation_layer)
-        worker.returned.connect(add_track_layer)
+        # worker.returned.connect(add_segmentation_layer)
+        worker.returned.connect(add_segmentation_and_track_layers)
         worker.start()
 
 

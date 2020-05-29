@@ -211,6 +211,7 @@ class Arboretum(QWidget):
 
     @property
     def active_layer(self) -> str:
+        if self._active_layer is None: return ''
         return self._active_layer
 
     @active_layer.setter

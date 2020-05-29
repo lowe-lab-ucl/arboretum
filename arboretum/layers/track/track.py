@@ -44,9 +44,9 @@ class Tracks(Layer):
     ):
 
         if data is None:
-            data = np.empty((0, 2))
+            data = np.empty((0, 3))
         else:
-            data = np.atleast_2d(data)
+            data = np.atleast_3d(data)
         ndim = data.shape[1]
 
         super().__init__(
