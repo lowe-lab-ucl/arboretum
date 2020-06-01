@@ -148,7 +148,9 @@ def build_plugin_v2(viewer,
             """ localize objects using the currently selected layer """
             arbor.active_layer = viewer.active_layer
             arbor.segmentation = viewer.layers[viewer.active_layer]
+            arbor.status_label.setText('Localizing...')
             arbor.localizations = utils.localize(arbor.segmentation)
+            arbor.status_label.setText('')
 
         worker = _localize()
         worker.returned.connect(add_localizations_layer)
@@ -163,10 +165,12 @@ def build_plugin_v2(viewer,
         def _track():
             """ track objects """
             if arbor.localizations is not None:
+                arbor.status_label.setText('Tracking...')
                 tracks = utils.track(arbor.localizations,
                                      arbor.btrack_cfg,
                                      volume=arbor.volume)
                 arbor.tracks = [tracks]
+                arbor.status_label.setText('')
 
         worker = _track()
         worker.returned.connect(add_track_layer)
