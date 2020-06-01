@@ -90,10 +90,11 @@ class Arboretum(QWidget):
         layout = QGridLayout()
 
         # add some buttons
-        self.load_button = QPushButton('Load', self)
+        self.load_button = QPushButton('Load...', self)
+        self.config_button = QPushButton('Config...', self)
         self.localize_button = QPushButton('Localize', self)
         self.track_button = QPushButton('Track', self)
-        self.save_button = QPushButton('Save', self)
+        # self.save_button = QPushButton('Save', self)
 
         # sliders
         self.track_filter_slider = QHRangeSlider(initial_values=(1,3000),
@@ -108,9 +109,9 @@ class Arboretum(QWidget):
         # TODO(arl): add back the tree visualization
 
         layout.addWidget(self.load_button, 0, 0)
-        layout.addWidget(self.localize_button, 0, 1)
-        layout.addWidget(self.track_button, 0, 2)
-        layout.addWidget(self.save_button, 0, 3)
+        layout.addWidget(self.config_button, 0, 1)
+        layout.addWidget(self.localize_button, 0, 2)
+        layout.addWidget(self.track_button, 0, 3)
         layout.addWidget(QLabel('Configuration file:'), 1, 0, 1, 2)
         layout.addWidget(self.config_filename_label, 1, 2, 1, 2)
         layout.addWidget(QLabel('Track length filter:'), 2, 0, 1, 2)
@@ -122,7 +123,8 @@ class Arboretum(QWidget):
         self.setLayout(layout)
 
         self.load_button.clicked.connect(self.load_data)
-        self.save_button.clicked.connect(self.export_data)
+        # self.save_button.clicked.connect(self.export_data)
+        self.config_button.clicked.connect(self.load_config)
 
         self._segmentation = None
         self._localizations = None
@@ -143,7 +145,18 @@ class Arboretum(QWidget):
         # only load file if we actually chose one
         if filename[0]:
             self.filename = filename[0]
-            print(self.filename)
+
+
+
+    def load_config(self):
+        """ load a btrack configuration file """
+        filename = QFileDialog.getOpenFileName(self,
+                                               'Open tracking config',
+                                               DEFAULT_PATH,
+                                               'Tracking files (*.json)')
+        # only load file if we actually chose one
+        if filename[0]:
+            self.btrack_cfg = utils._get_btrack_cfg(filename=filename[0])
 
 
     def export_data(self):
@@ -184,22 +197,12 @@ class Arboretum(QWidget):
 
     @property
     def btrack_cfg(self) -> dict:
-        if self._btrack_cfg is None:
-            try:
-                self.btrack_cfg = utils._get_btrack_cfg()
-            except:
-                filename = QFileDialog.getOpenFileName(self,
-                                                       'Open tracker config',
-                                                       DEFAULT_PATH,
-                                                       'Config files (*.json)')
-                if filename[0]:
-                    self.btrack_cfg = utils._get_btrack_cfg(filename[0])
         return self._btrack_cfg
 
     @btrack_cfg.setter
     def btrack_cfg(self, cfg: dict):
+        print(cfg, type(cfg))
         self._btrack_cfg = cfg
-
         truncate_fn = lambda f: f'...{f[-20:]}'
         self.config_filename_label.setText(truncate_fn(cfg['Filename']))
 
