@@ -66,7 +66,7 @@ class _Stack:
 
         # basic assertions on the data
         assert(isinstance(data, np.ndarray))
-        assert(data.dtype == np.uint8)
+        # assert(data.dtype == np.uint8)
 
         self._stack = data
         self._idx = 0
@@ -123,11 +123,16 @@ def localize(stack_as_array: np.ndarray,
         stack_as_array: a numpy array of the stack, typically the data from
             a napari 'labels' layer
         num_workers: number of processes to distribute the job accross
+
+    Notes:
+        - multiprocessing is not a good options for use with the GUI. Change to
+        a generator
     """
 
     stack = _Stack(stack_as_array)
-    with multiprocessing.Pool(num_workers) as pool:
-        localizations = pool.map(_localize_process, stack)
+    # with multiprocessing.Pool(num_workers) as pool:
+    #     localizations = pool.map(_localize_process, stack)
+    localizations=[_localize_process(s) for s in stack]
     return np.concatenate(localizations, axis=0)
 
 
@@ -192,7 +197,11 @@ def load_hdf(filename: str,
     """ load data from an HDF file """
     with btrack.dataio.HDF5FileHandler(filename) as h:
         h._f_expr = filter_by
-        tracks = h.tracks
+
+        if 'tracks' in h._hdf:
+            tracks = h.tracks
+        else:
+            tracks = []
 
         if load_segmentation:
             seg = _color_segmentation_by_state(h, color_segmentation)

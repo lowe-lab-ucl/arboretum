@@ -103,6 +103,7 @@ class Arboretum(QWidget):
 
         # dynamic labels
         self.config_filename_label = QLabel('')
+        self.status_label = QLabel('')
 
         # TODO(arl): add back the tree visualization
 
@@ -114,6 +115,7 @@ class Arboretum(QWidget):
         layout.addWidget(self.config_filename_label, 1, 2, 1, 2)
         layout.addWidget(QLabel('Track length filter:'), 2, 0, 1, 2)
         layout.addWidget(self.track_filter_slider, 2, 2, 1, 2)
+        layout.addWidget(self.status_label, 7, 0,)
         layout.setAlignment(QtCore.Qt.AlignTop)
         layout.setSpacing(4)
         self.setLayout(layout)
