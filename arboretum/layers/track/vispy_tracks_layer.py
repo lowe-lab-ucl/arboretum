@@ -33,18 +33,23 @@ class VispyTracksLayer(VispyBaseLayer):
         # if the dimensions change, we need to update the data
         self.layer.dims.events.ndisplay.connect(self._on_dimensions_change)
 
+        # get the data
+        self._positions = self.layer._view_data()
+
         # build and attach the shader to the track
         self.shader = TrackShader(current_time=0,
                                   tail_length=self.layer.tail_length,
-                                  vertex_time=self.layer.manager._data[:,0])
+                                  vertex_time=self.layer.vertex_times)
 
         node._subvisuals[0].attach(self.shader)
 
         # now set the data for the track lines
-        self._positions = self.layer.data
+
+
+
         self.node._subvisuals[0].set_data(pos=self._positions,
-                                          color=self.layer.manager.track_colors,
-                                          connect=self.layer.manager.track_connex)
+                                          color=self.layer.vertex_colors,
+                                          connect=self.layer.vertex_connex)
 
         self.node._subvisuals[1].color = 'white'
         self.node._subvisuals[1].font_size = 8
@@ -97,8 +102,7 @@ class VispyTracksLayer(VispyBaseLayer):
 
     def _on_color_by(self, event=None):
         """ change the coloring only """
-        self.node._subvisuals[0].set_data(color=self.layer.manager.track_colors)
-        # self.node._subvisuals[1].set_data(face_color=self.layer.manager.track_colors)
+        self.node._subvisuals[0].set_data(color=self.layer.vertex_colors)
         self.node.update()
         # Call to update order of translation values with new dims:
         self._on_scale_change()

@@ -131,6 +131,10 @@ class TrackManager:
         return self._data[:,(0,2,1)] # only return xy data atm
 
     @property
+    def data_experimental(self):
+        return [np.stack([t.t, t.y, t.x], axis=-1) for t in self.tracks]
+
+    @property
     def nodes(self):
         """ make the nodes of the trees """
         lbepr = np.zeros((len(self.tracks), 5), dtype=np.int)

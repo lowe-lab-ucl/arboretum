@@ -5,20 +5,28 @@ from typing import Union, Dict, Tuple, List
 
 import numpy as np
 
+from scipy.spatial import cKDTree
+
 class Tracks(Layer):
     """ Tracks
 
     A napari-style Tracks layer for overlaying trajectories on image data.
 
     data is of the format:
-        t,x,y,(z)
+        t,x,y,(z),....,n
 
-    nodes is of the format:
-        l,b,e,p,(r)
+    metadata is a list of metadata associated with tracks. this can include
+    information about branching in trees, states and so on:
+
+        [{'id':0, 'b':0, 'e':100', 'p':[0], 'r': 0, 'states':[]}, ...]
+
+    importantly, p (parent) is a list of track IDs that are parents of the
+    track, this can be one (the track has one parent, and the parent has >=1
+    child) or more than one (the track has multiple parents, but only one child)
 
     Data format:
         data: a list of np.ndarrays
-        nodes: a list of nodes, organized as an LBEP table
+        metadata: associated track metadata and adjacency graph
 
     Notes:
         - Does not currently accept 'data', but builds the data from a track
@@ -35,11 +43,8 @@ class Tracks(Layer):
         data=None,
         *,
         properties=None,
-        size=10,
         edge_width=2,
         tail_length=30,
-        edge_color=np.array((1.,1.,1.)),
-        edge_colormap='viridis',
         color_by=0,
         n_dimensional=True,
         name=None,
@@ -53,11 +58,11 @@ class Tracks(Layer):
         nodes=None,
     ):
 
+        # if not provided with any data, set up an empty layer in 2D+t
         if data is None:
-            data = np.empty((0, 3))
-        else:
-            data = np.atleast_3d(data)
-        ndim = data.shape[1]
+            data = [np.empty((0, 3))]
+
+        ndim = self._check_track_dimensionality(data)
 
         super().__init__(
             data,
@@ -82,35 +87,40 @@ class Tracks(Layer):
             color_by=Event,
         )
 
+        # use a kdtree to help with fast lookup of the nearest track
+        self._kdtree = None
+
         # track manager
         self.manager = manager
 
-        self.current_frame = 0
-        self.colormap = edge_colormap
+        # NOTE(arl): _tracks and _connex store raw data for vispy
+        self._tracks = None
+        self._connex = None
+        self.data = data
+
+        if manager is not None:
+            self.data = manager.data_experimental
+
+
         self.edge_width = edge_width
         self.tail_length = tail_length
         self.display_id = False
         self.color_by = 0
 
+
+
         self._update_dims()
 
-        # set data for the current view/dims
-        self._view_data()
-
-        self.dims.events.axis.connect(self._update_displayed)
-
-    def _update_displayed(self, event):
-        """ update the display frame """
-        if event.axis == 0:
-            self.current_frame = self.dims.indices[0]
 
     def _get_extent(self) -> List[Tuple[int, int, int]]:
         """Determine ranges for slicing given by (min, max, step)."""
-        return self.manager.extent
+        print('called')
+        minmax = lambda x: (int(np.min(x)), int(np.max(x)), 1)
+        return [minmax(self._tracks[:,i]) for i in range(self.ndim)]
 
     def _get_ndim(self) -> int:
         """Determine number of dimensions of the layer."""
-        return self.manager.ndim
+        return self._tracks.shape[1]
 
     def _get_state(self):
         """Get dictionary of layer state.
@@ -138,31 +148,51 @@ class Tracks(Layer):
         return
 
     def _get_value(self):
-        return
+        """ use a kd-tree to lookup the ID of the nearest tree """
+        if self._kdtree is None:
+            return
+
+        coords = np.array([self.coordinates[c] for c in (0, 2, 1)])
+        d, idx = self._kdtree.query(coords, k=10)
+        pruned = [i for i in idx if self._tracks[i,0]==coords[0]]
+        if pruned:
+            return self.manager._meta[pruned[0], 0] # return the track ID
+
 
     def _update_thumbnail(self):
         """Update thumbnail with current points and colors."""
         pass
 
     def _view_data(self):
-        data = self.manager.data[:, self.dims.displayed]
-        self.data = data
+        """ return a view of the data """
+        return self._tracks[:, self.dims.displayed]
 
 
     @property
-    def data(self) -> np.ndarray:
-        """(N, D) array: coordinates for N points in D dimensions."""
+    def current_frame(self):
+        return self.dims.indices[0]
+
+
+    @property
+    def data(self) -> list:
+        """list of (N, D) arrays: coordinates for N points in D dimensions."""
         return self._data
 
     @data.setter
-    def data(self, data: np.ndarray):
+    def data(self, data: list):
         self._data = data
 
+        # build the connex for the data
+        cnx = lambda d: [True]*(d.shape[0]-1) + [False]
 
-    @property
-    def edge_color(self) -> np.ndarray:
-        """(1 x 4) np.ndarray: Array of RGBA edge colors (applied to all vectors)"""
-        return self._edge_color
+        # build the track data for vispy
+        self._tracks = np.concatenate(self.data, axis=0)
+        self._connex = np.concatenate([cnx(d) for d in data], axis=0)
+
+        # build a tree of the track data to allow fast lookup of nearest track
+        self._kdtree = cKDTree(self._tracks)
+
+
 
     @property
     def edge_width(self) -> Union[int, float]:
@@ -208,3 +238,26 @@ class Tracks(Layer):
         self.manager.color_by = color_by
         self.events.color_by()
         self.refresh()
+
+
+    def _check_track_dimensionality(self, data: list):
+        """ check the dimensionality of the data
+
+        TODO(arl): we could allow a mix of 2D/3D etc...
+        """
+        assert(all([isinstance(d, np.ndarray) for d in data]))
+        assert(all([d.shape[1] == data[0].shape[1] for d in data]))
+        return data[0].shape[1]
+
+    @property
+    def vertex_connex(self) -> np.ndarray:
+        # return self.manager.track_connex
+        return self._connex
+
+    @property
+    def vertex_colors(self) -> np.ndarray:
+        return self.manager.track_colors
+
+    @property
+    def vertex_times(self) -> np.ndarray:
+        return self._tracks[:,0]

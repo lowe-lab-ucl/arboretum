@@ -79,7 +79,6 @@ def _localize_process(data) -> np.ndarray:
     centroids = np.array(measurements.center_of_mass(image, labels=labeled, index=idx))
     labels = np.array(measurements.maximum(image, labels=labeled, index=idx))
 
-
     localizations = np.zeros((centroids.shape[0], 5), dtype=np.float32)
     localizations[:,0] = frame # time
     localizations[:,1:centroids.shape[1]+1] = centroids
@@ -116,13 +115,16 @@ def localize(stack_as_array: np.ndarray,
     stack = _Stack(stack_as_array)
     # with multiprocessing.Pool(num_workers) as pool:
     #     localizations = pool.map(_localize_process, stack)
+
     localizations=[_localize_process(s) for s in stack]
     return np.concatenate(localizations, axis=0)
 
+    # for s in stack:
+    #     yield _localize_process(s)
 
 
-def _track_process():
-    pass
+
+
 
 
 

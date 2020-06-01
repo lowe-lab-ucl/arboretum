@@ -57,8 +57,13 @@ def build_plugin(viewer, tracks):
     # build a track manager
     manager = TrackManager(tracks)
 
+    # data = None
+    data = manager.data_experimental
+
     # add the arboretum tracks layer
-    track_layer = Tracks(name='Tracks', manager=manager)
+    track_layer = Tracks(name='Tracks',
+                         data=data,
+                         manager=manager)
     viewer.add_layer(track_layer)
 
 
@@ -111,6 +116,7 @@ def build_plugin_v2(viewer,
                 _trk_layer = Tracks(manager=TrackManager(track_set),
                                     name=new_layer_name(f'Tracks {i}'))
                 track_layer = viewer.add_layer(_trk_layer)
+
 
     def add_segmentation_and_track_layers():
         """ TODO(arl): oof """
