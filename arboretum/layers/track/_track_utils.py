@@ -130,6 +130,16 @@ class TrackManager:
         """ return t,x,y,(z) data to the layer """
         return self._data[:,(0,2,1)] # only return xy data atm
 
+    @property
+    def nodes(self):
+        """ make the nodes of the trees """
+        lbepr = np.zeros((len(self.tracks), 5), dtype=np.int)
+        for i, trk in enumerate(self.tracks):
+            lbepr[i,:] = [trk.ID, trk.t[0], trk.t[-1], trk.parent, trk.root]
+        return lbepr
+
+
+
     def tracks_in_frame(self, idx):
         """ return the tracks in a certain frame """
         return self._frame_map[idx]

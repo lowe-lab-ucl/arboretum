@@ -54,7 +54,7 @@ cmap = plt.cm.get_cmap('prism')
 COLOR_CYCLE = lambda x: np.array(cmap(np.mod(x, 32) * 8))
 
 
-DEFAULT_PATH = '/media/quantumjot/DataIII/Data/Giulia/GV0800/Pos12/Pos12_aligned/HDF'
+DEFAULT_PATH = os.getcwd()
 
 
 
@@ -185,7 +185,15 @@ class Arboretum(QWidget):
     @property
     def btrack_cfg(self) -> dict:
         if self._btrack_cfg is None:
-            self.btrack_cfg = utils._get_btrack_cfg()
+            try:
+                self.btrack_cfg = utils._get_btrack_cfg()
+            except:
+                filename = QFileDialog.getOpenFileName(self,
+                                                       'Open tracker config',
+                                                       DEFAULT_PATH,
+                                                       'Config files (*.json)')
+                if filename[0]:
+                    self.btrack_cfg = utils._get_btrack_cfg(filename[0])
         return self._btrack_cfg
 
     @btrack_cfg.setter

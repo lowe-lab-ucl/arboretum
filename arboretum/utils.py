@@ -34,24 +34,26 @@ def _get_btrack_cfg(filename=None):
         config['Filename'] = filename
         return config
 
-    REPO = 'https://raw.githubusercontent.com/quantumjot/BayesianTracker/master'
+    raise Exception
 
-    config_url = f'{REPO}/models/cell_config.json'
-
-    import json
-    import urllib.request
-
-    f = urllib.request.urlopen(config_url)
-    cfg = json.load(f)
-
-    # build the config
-    cfg = cfg['TrackerConfig']
-    config = {'MotionModel': btrack.utils.read_motion_model(cfg),
-              'ObjectModel': btrack.utils.read_object_model(cfg),
-              'HypothesisModel': btrack.optimise.hypothesis.read_hypothesis_model(cfg),
-              'Filename': config_url}
-
-    return config
+    # REPO = 'https://raw.githubusercontent.com/quantumjot/BayesianTracker/master'
+    #
+    # config_url = f'{REPO}/models/cell_config.json'
+    #
+    # import json
+    # import urllib.request
+    #
+    # f = urllib.request.urlopen(config_url)
+    # cfg = json.load(f)
+    #
+    # # build the config
+    # cfg = cfg['TrackerConfig']
+    # config = {'MotionModel': btrack.utils.read_motion_model(cfg),
+    #           'ObjectModel': btrack.utils.read_object_model(cfg),
+    #           'HypothesisModel': btrack.optimise.hypothesis.read_hypothesis_model(cfg),
+    #           'Filename': config_url}
+    #
+    # return config
 
 
 

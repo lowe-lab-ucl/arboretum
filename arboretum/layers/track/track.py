@@ -10,6 +10,15 @@ class Tracks(Layer):
 
     A napari-style Tracks layer for overlaying trajectories on image data.
 
+    data is of the format:
+        t,x,y,(z)
+
+    nodes is of the format:
+        l,b,e,p,(r)
+
+    Data format:
+        data: a list of np.ndarrays
+        nodes: a list of nodes, organized as an LBEP table
 
     Notes:
         - Does not currently accept 'data', but builds the data from a track
@@ -40,7 +49,8 @@ class Tracks(Layer):
         opacity=1,
         blending='translucent',
         visible=True,
-        manager=None
+        manager=None,
+        nodes=None,
     ):
 
         if data is None:
@@ -136,12 +146,6 @@ class Tracks(Layer):
 
     def _view_data(self):
         data = self.manager.data[:, self.dims.displayed]
-
-        # if len(self.dims.displayed) == 3:
-        #     print(data.shape)
-        #     data = np.concatenate([data, data[:, 0:1]], axis=-1)
-        #     print(data.shape)
-
         self.data = data
 
 
