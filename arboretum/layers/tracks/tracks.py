@@ -149,11 +149,18 @@ class Tracks(Layer):
         if self._kdtree is None:
             return
 
-        coords = np.array([self.coordinates[c] for c in (0, 2, 1)])
+        # need to swap x,y for this to work
+        coords = np.array(self.coordinates)
+        coords[2], coords[1] = coords[1], coords[2]
+
         d, idx = self._kdtree.query(coords, k=10)
         pruned = [i for i in idx if self._points[i,0]==coords[0]]
         if pruned and self._points_id is not None:
             return self._points_id[pruned[0]] # return the track ID
+
+
+
+
 
 
     def _update_thumbnail(self):
