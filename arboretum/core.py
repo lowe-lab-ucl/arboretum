@@ -22,8 +22,9 @@ from napari.qt.threading import thread_worker
 
 from typing import Union
 
+from .manager import TrackManager
 from .layers.tracks import Tracks
-from .layers.tracks._track_utils import TrackManager
+
 
 
 def _register_tracks_layer():
@@ -57,13 +58,10 @@ def build_plugin(viewer, tracks):
     # build a track manager
     manager = TrackManager(tracks)
 
-    # data = None
-    data = manager.data_experimental
-
     # add the arboretum tracks layer
     track_layer = Tracks(name='Tracks',
-                         data=data,
-                         manager=manager)
+                         data=manager.data,
+                         properties=manager.properties)
     viewer.add_layer(track_layer)
 
 
@@ -113,7 +111,12 @@ def build_plugin_v2(viewer,
         """ add a track layer """
         if arbor.tracks is not None:
             for i, track_set in enumerate(arbor.tracks):
-                _trk_layer = Tracks(manager=TrackManager(track_set),
+
+                # build a track manager
+                manager = TrackManager(track_set)
+
+                _trk_layer = Tracks(data=manager.data,
+                                    properties=manager.properties,
                                     name=new_layer_name(f'Tracks {i}'))
                 track_layer = viewer.add_layer(_trk_layer)
 

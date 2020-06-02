@@ -44,9 +44,6 @@ class VispyTracksLayer(VispyBaseLayer):
         node._subvisuals[0].attach(self.shader)
 
         # now set the data for the track lines
-
-
-
         self.node._subvisuals[0].set_data(pos=self._positions,
                                           color=self.layer.vertex_colors,
                                           connect=self.layer.vertex_connex)
@@ -56,6 +53,7 @@ class VispyTracksLayer(VispyBaseLayer):
 
         self._reset_base()
         self._on_data_change()
+
 
     def _on_data_change(self, event=None):
         """ update the display
@@ -70,9 +68,11 @@ class VispyTracksLayer(VispyBaseLayer):
 
         # update the track IDs
         self.node._subvisuals[1].visible = self.layer.display_id
+
         if self.node._subvisuals[1].visible:
-            self.node._subvisuals[1].text = self.layer.manager.object_IDs(self.layer.current_frame)
-            self.node._subvisuals[1].pos = self.layer.manager.object_pos(self.layer.current_frame)
+            text, pos = zip(*self.layer.track_labels)
+            self.node._subvisuals[1].text = text
+            self.node._subvisuals[1].pos = pos
 
         self.node.update()
         # Call to update order of translation values with new dims:

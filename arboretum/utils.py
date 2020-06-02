@@ -113,9 +113,6 @@ def localize(stack_as_array: np.ndarray,
     """
 
     stack = _Stack(stack_as_array)
-    # with multiprocessing.Pool(num_workers) as pool:
-    #     localizations = pool.map(_localize_process, stack)
-
     localizations=[_localize_process(s) for s in stack]
     return np.concatenate(localizations, axis=0)
 

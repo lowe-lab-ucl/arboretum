@@ -41,7 +41,6 @@ import btrack
 from . import utils
 from .tree import _build_tree_graph
 from .layers.tracks import Tracks
-from .layers.tracks._track_utils import TrackManager
 
 import matplotlib.pyplot as plt
 

@@ -1,4 +1,5 @@
 from napari._qt.layers.qt_image_base_layer import QtLayerControls
+from napari._qt.layers.qt_image_base_layer import QtBaseImageControls
 
 from qtpy.QtCore import Qt, Slot
 from qtpy.QtWidgets import (
@@ -17,6 +18,8 @@ import numpy as np
 MAX_TAIL_LENGTH = 1500
 MAX_TAIL_WIDTH = 40
 
+
+# class QtTracksControls(QtBaseImageControls):
 class QtTracksControls(QtLayerControls):
     """Qt view and controls for the arboretum Tracks layer.
 
@@ -39,13 +42,13 @@ class QtTracksControls(QtLayerControls):
 
         self.layer.events.edge_width.connect(self._on_edge_width_change)
         self.layer.events.tail_length.connect(self._on_tail_length_change)
+        self.layer.events.properties.connect(self._on_properties_change)
 
-        # combo box for track coloring
+        # combo box for track coloring, we can get these from the properties
+        # keys
         self.color_by_combobox = QComboBox()
-        self.color_by_combobox.insertItem(0, 'track ID')
-        self.color_by_combobox.insertItem(1, 'root ID')
-        self.color_by_combobox.insertItem(2, 'parent ID')
-        self.color_by_combobox.insertItem(3, 'state')
+        self.colormap_combobox = QComboBox()
+        self.colormap_combobox.addItem('prism')
 
         # slider for track tail length
         self.tail_length_slider = QSlider(Qt.Horizontal)
@@ -71,30 +74,34 @@ class QtTracksControls(QtLayerControls):
         self.tail_length_slider.valueChanged.connect(self.change_tail_length)
         self.tail_checkbox.stateChanged.connect(self.change_display_tail)
         self.id_checkbox.stateChanged.connect(self.change_display_id)
-        self.color_by_combobox.currentIndexChanged.connect(self.change_color_by)
+        self.color_by_combobox.currentTextChanged.connect(self.change_color_by)
 
         # grid_layout created in QtLayerControls
         # addWidget(widget, row, column, [row_span, column_span])
+
         self.grid_layout.addWidget(QLabel('color by:'), 0, 0)
         self.grid_layout.addWidget(self.color_by_combobox, 0, 1)
-        self.grid_layout.addWidget(QLabel('blending:'), 1, 0)
-        self.grid_layout.addWidget(self.blendComboBox, 1, 1)
-        self.grid_layout.addWidget(QLabel('opacity:'), 2, 0)
-        self.grid_layout.addWidget(self.opacitySlider, 2, 1)
-        self.grid_layout.addWidget(QLabel('tail width:'), 3, 0)
-        self.grid_layout.addWidget(self.edge_width_slider, 3, 1)
-        self.grid_layout.addWidget(QLabel('tail length:'), 4, 0)
-        self.grid_layout.addWidget(self.tail_length_slider, 4, 1)
-        self.grid_layout.addWidget(QLabel('tail:'), 5, 0)
-        self.grid_layout.addWidget(self.tail_checkbox, 5, 1)
-        self.grid_layout.addWidget(QLabel('show ID:'), 6, 0)
-        self.grid_layout.addWidget(self.id_checkbox, 6, 1)
-        self.grid_layout.setRowStretch(7, 1)
+        self.grid_layout.addWidget(QLabel('colormap:'), 1, 0)
+        self.grid_layout.addWidget(self.colormap_combobox, 1, 1)
+        self.grid_layout.addWidget(QLabel('blending:'), 2, 0)
+        self.grid_layout.addWidget(self.blendComboBox, 2, 1)
+        self.grid_layout.addWidget(QLabel('opacity:'), 3, 0)
+        self.grid_layout.addWidget(self.opacitySlider, 3, 1)
+        self.grid_layout.addWidget(QLabel('tail width:'), 4, 0)
+        self.grid_layout.addWidget(self.edge_width_slider, 4, 1)
+        self.grid_layout.addWidget(QLabel('tail length:'), 5, 0)
+        self.grid_layout.addWidget(self.tail_length_slider, 5, 1)
+        self.grid_layout.addWidget(QLabel('tail:'), 6, 0)
+        self.grid_layout.addWidget(self.tail_checkbox, 6, 1)
+        self.grid_layout.addWidget(QLabel('show ID:'), 7, 0)
+        self.grid_layout.addWidget(self.id_checkbox, 7, 1)
+        self.grid_layout.setRowStretch(8, 1)
         self.grid_layout.setColumnStretch(1, 1)
         self.grid_layout.setSpacing(4)
 
         self._on_tail_length_change()
         self._on_edge_width_change()
+        self._on_properties_change()
 
 
 
@@ -155,3 +162,8 @@ class QtTracksControls(QtLayerControls):
 
     def change_color_by(self, value):
         self.layer.color_by = value
+
+
+    def _on_properties_change(self, event=None):
+        self.color_by_combobox.clear()
+        self.color_by_combobox.addItems(self.layer._property_keys)
