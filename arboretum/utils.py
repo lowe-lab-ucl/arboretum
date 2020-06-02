@@ -11,6 +11,7 @@
 #-------------------------------------------------------------------------------
 
 import os
+import re
 
 import btrack
 import multiprocessing
@@ -196,8 +197,16 @@ def load_hdf(filename: str,
 
 def load_json(filename: str):
     """ load json data """
-    filepath, _ = os.path.split(filename)
-    tracks = btrack.dataio.import_all_tracks_JSON(filepath)
+    filepath, fn = os.path.split(filename)
+
+    pattern = 'tracks_(\w+).json'
+    match = re.match(pattern, fn)
+    if match:
+        cell_type = match.group(1)
+    else:
+        cell_type = 'None'
+
+    tracks = btrack.dataio.import_all_tracks_JSON(filepath, cell_type=cell_type)
     return tracks
 
 

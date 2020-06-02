@@ -90,10 +90,10 @@ class Arboretum(QWidget):
 
         # add some buttons
         self.load_button = QPushButton('Load...', self)
-        self.config_button = QPushButton('Config...', self)
+        self.config_button = QPushButton('Configure...', self)
         self.localize_button = QPushButton('Localize', self)
         self.track_button = QPushButton('Track', self)
-        # self.save_button = QPushButton('Save', self)
+        self.save_button = QPushButton('Save...', self)
 
         # sliders
         self.track_filter_slider = QHRangeSlider(initial_values=(1,3000),
@@ -107,14 +107,18 @@ class Arboretum(QWidget):
 
         # TODO(arl): add back the tree visualization
 
-        layout.addWidget(self.load_button, 0, 0)
-        layout.addWidget(self.config_button, 0, 1)
-        layout.addWidget(self.localize_button, 0, 2)
-        layout.addWidget(self.track_button, 0, 3)
-        layout.addWidget(QLabel('Configuration file:'), 1, 0, 1, 2)
-        layout.addWidget(self.config_filename_label, 1, 2, 1, 2)
-        layout.addWidget(QLabel('Track length filter:'), 2, 0, 1, 2)
-        layout.addWidget(self.track_filter_slider, 2, 2, 1, 2)
+        layout.addWidget(self.load_button, 0, 0, 1, 2)
+        layout.addWidget(self.save_button, 0, 2, 1, 2)
+
+        layout.addWidget(self.config_button, 1, 0, 1, 2)
+        layout.addWidget(self.localize_button, 1, 2, 1, 1)
+        layout.addWidget(self.track_button, 1, 3, 1, 1)
+
+        layout.addWidget(QLabel('Configuration file:'), 2, 0, 1, 2)
+        layout.addWidget(self.config_filename_label, 2, 2, 1, 2)
+        layout.addWidget(QLabel('Track length filter:'), 3, 0, 1, 2)
+        layout.addWidget(self.track_filter_slider, 3, 2, 1, 2)
+
         layout.addWidget(QLabel('Status:'), 7, 0, 1, 2)
         layout.addWidget(self.status_label, 7, 1, 1, 2)
         layout.setAlignment(QtCore.Qt.AlignTop)
@@ -122,7 +126,7 @@ class Arboretum(QWidget):
         self.setLayout(layout)
 
         self.load_button.clicked.connect(self.load_data)
-        # self.save_button.clicked.connect(self.export_data)
+        self.save_button.clicked.connect(self.export_data)
         self.config_button.clicked.connect(self.load_config)
 
         self._segmentation = None
@@ -157,9 +161,20 @@ class Arboretum(QWidget):
         if filename[0]:
             self.btrack_cfg = utils._get_btrack_cfg(filename=filename[0])
 
-
     def export_data(self):
-        pass
+        """ export track data """
+        filename = QFileDialog.getSaveFileName(self,
+                                               'Export tracking data',
+                                               DEFAULT_PATH,
+                                               'Tracking files (*.json)')
+        # only load file if we actually chose one
+        if filename[0] and self.tracks is not None:
+            # for track_set in self.tracks:
+            export_dir, fn = os.path.split(filename[0])
+            btrack.dataio.export_all_tracks_JSON(export_dir,
+                                                 self.tracks[0],
+                                                 as_zip_archive=True)
+
 
 
     @property
