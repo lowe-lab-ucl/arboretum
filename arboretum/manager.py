@@ -57,4 +57,5 @@ class TrackManager:
         return [{'ID': t.ID,
                  'root': t.root,
                  'parent': t.parent,
-                 'states':t.state} for t in self.tracks]
+                 'states':t.state,
+                 'fate':t.fate.value} for t in self.tracks]
