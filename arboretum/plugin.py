@@ -40,8 +40,8 @@ import btrack
 
 from . import utils
 from .tree import _build_tree_graph
-from .layers.track.track import Tracks
-from .layers.track._track_utils import TrackManager
+from .layers.tracks import Tracks
+from .layers.tracks._track_utils import TrackManager
 
 import matplotlib.pyplot as plt
 

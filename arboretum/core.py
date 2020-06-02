@@ -22,8 +22,8 @@ from napari.qt.threading import thread_worker
 
 from typing import Union
 
-from .layers.track.track import Tracks
-from .layers.track._track_utils import TrackManager
+from .layers.tracks import Tracks
+from .layers.tracks._track_utils import TrackManager
 
 
 def _register_tracks_layer():
@@ -36,8 +36,8 @@ def _register_tracks_layer():
         This is HACKTASTIC!
 
     """
-    from .layers.track.vispy_tracks_layer import VispyTracksLayer
-    from .layers.track.qt_tracks_layer import QtTracksControls
+    from .layers.tracks.vispy_tracks_layer import VispyTracksLayer
+    from .layers.tracks.qt_tracks_layer import QtTracksControls
 
     # NOTE(arl): use this code to register a vispy function for the tracks layer
     napari._vispy.utils.layer_to_visual[Tracks] = VispyTracksLayer

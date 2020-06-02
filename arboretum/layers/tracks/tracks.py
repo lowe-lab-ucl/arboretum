@@ -55,7 +55,6 @@ class Tracks(Layer):
         blending='translucent',
         visible=True,
         manager=None,
-        nodes=None,
     ):
 
         # if not provided with any data, set up an empty layer in 2D+t
