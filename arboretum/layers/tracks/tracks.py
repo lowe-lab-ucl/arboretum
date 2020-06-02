@@ -318,7 +318,7 @@ class Tracks(Layer):
         # concatenate them, and use a colormap to color them
         vertex_properties = np.concatenate(vertex_properties, axis=0)
 
-        colormap = get_cmap('prism')
+        colormap = get_cmap('gist_rainbow')
         return colormap(np.mod(vertex_properties, 32)*8)
 
     @property
@@ -330,6 +330,8 @@ class Tracks(Layer):
         """ return track labels """
         # this is the slice into the time ordered points array
         lookup = self._points_lookup[self.current_frame]
+
+        # TODO(arl): this breaks when changing dimensions
         pos = self._points[lookup, self.dims.displayed]
         lbl = [f'ID:{i}' for i in self._points_id[lookup]]
         return zip(lbl, pos)

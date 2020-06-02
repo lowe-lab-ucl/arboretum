@@ -27,7 +27,8 @@ TODO:
 + [ ] Mouse interaction with tracks, click to select etc...
 + [x] Mouse cursor returns nearest track ID
 + [x] Store localizations in points layer, allowing interactive track editing
-+ [ ] Migrate to unified track data model
++ [x] Migrate to unified track data model
++ [x] Track coloring by track properties
 
 
 ---

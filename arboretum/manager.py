@@ -18,6 +18,21 @@ state_cmap = ListedColormap(STATE_COLORMAP)
 
 
 
+# def displacement(track):
+#     displacements = [0.]
+#
+#     for i in range(1,len(track)):
+#         d = np.sqrt((track.x[i]-track.x[i-1])**2 + (track.y[i]-track.y[i-1])**2)
+#         displacements.append(d)
+#
+#     hi = np.ptp(displacements)
+#     lo = np.min(displacements)
+#     norm_displacements = ((displacements - lo) / hi)
+#     return 31 * np.clip(norm_displacements, 0., 1.)
+
+
+
+
 class TrackManager:
     """ TrackManager
 
@@ -39,4 +54,7 @@ class TrackManager:
 
     @property
     def properties(self):
-        return [{'ID': t.ID, 'root': t.root, 'parent': t.parent, 'states':t.state} for t in self.tracks]
+        return [{'ID': t.ID,
+                 'root': t.root,
+                 'parent': t.parent,
+                 'states':t.state} for t in self.tracks]
