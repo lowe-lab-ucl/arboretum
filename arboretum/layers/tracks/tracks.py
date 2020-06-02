@@ -162,7 +162,15 @@ class Tracks(Layer):
 
     def _view_data(self):
         """ return a view of the data """
-        return self._tracks[:, self.dims.displayed]
+
+        data = self._tracks[:, self.dims.displayed]
+
+        if self._get_ndim() == 3:
+            if len(self.dims.displayed) == 2:
+                data = np.pad(data, ((0,0),(0,1)), 'constant')
+            else:
+                data = data[:,(1,2,0)]
+        return data
 
 
     @property

@@ -23,7 +23,7 @@ Features:
 TODO:
 + [ ] pip installer
 + [x] GUI for bTrack localization and tracking directly from Napari
-+ [ ] 3D track visualization (2D+t -> 3D, and 3D+t)
++ [x] 3D track visualization (2D+t -> 3D, and 3D+t)
 + [ ] Mouse interaction with tracks, click to select etc...
 + [x] Mouse cursor returns nearest track ID
 + [x] Store localizations in points layer, allowing interactive track editing

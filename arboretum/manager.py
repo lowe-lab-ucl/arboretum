@@ -31,6 +31,13 @@ state_cmap = ListedColormap(STATE_COLORMAP)
 #     return 31 * np.clip(norm_displacements, 0., 1.)
 
 
+def survivor(tracks, track):
+    """ eye of the tiger """
+    root = [t for t in tracks if t.ID == track.root]
+    if root:
+        return 16 if root[0].t[0] <= 30 else 0
+    return 0
+
 
 
 class TrackManager:
@@ -58,4 +65,5 @@ class TrackManager:
                  'root': t.root,
                  'parent': t.parent,
                  'states':t.state,
-                 'fate':t.fate.value} for t in self.tracks]
+                 'fate':t.fate.value,
+                 'survivor': survivor(self.tracks, t)} for t in self.tracks]

@@ -88,16 +88,13 @@ class VispyTracksLayer(VispyBaseLayer):
             (2d+t) tracks in 3D should be the complete trees
             (3d+t) tracks in 3D should be a projection of t, or the complete trees?
         """
-        print(self.layer.dims.displayed)
-        print(self.layer.dims.not_displayed)
-        # self.layer._view_data()
-        #
-        # self.node._subvisuals[0].set_data(pos=self.layer.data)
-        #
-        # self.node.update()
-        # # Call to update order of translation values with new dims:
-        # self._on_scale_change()
-        # self._on_translate_change()
+
+        pos = self.layer._view_data()
+        self.node._subvisuals[0].set_data(pos=pos)
+        self.node.update()
+        # Call to update order of translation values with new dims:
+        self._on_scale_change()
+        self._on_translate_change()
 
 
     def _on_color_by(self, event=None):

@@ -100,7 +100,7 @@ class TrackShader(Filter):
         # TODO(arl): deal with change of dimensions here, if there is no
         # 'current_frame'
         if isinstance(n, slice):
-            return
+            n = np.max(self._vertex_time)
 
         self.vshader['current_time'] = float(n)
 
