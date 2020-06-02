@@ -96,6 +96,12 @@ class TrackShader(Filter):
     @current_time.setter
     def current_time(self, n: Union[int, float]):
         self._current_time = n
+
+        # TODO(arl): deal with change of dimensions here, if there is no
+        # 'current_frame'
+        if isinstance(n, slice):
+            return
+
         self.vshader['current_time'] = float(n)
 
     @property
