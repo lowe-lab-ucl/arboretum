@@ -33,13 +33,23 @@ class TrackShader(Filter):
     is scaled according to the tail length. Points ahead of the current time
     are rendered with alpha set to zero.
 
-    Parameters:
-        current_time: the current time, which is typically the frame index,
-            although this can be an arbitrary float
-        tail_length: the upper limit on length of the 'tail'
-        vertex_time: a vector describing the time associated with each vertex
+    Can also apply a mask directly to the shader to slice data
 
-    TODO:
+    Parameters
+    ----------
+
+        current_time: int, float
+            the current time, which is typically the frame index, although this
+            can be an arbitrary float
+        tail_length: int, float
+            the upper limit on length of the 'tail'
+        vertex_time: 1D array, list
+            a vector describing the time associated with each vertex
+        vertex_mask: 1D array, list
+            a vector describing whether to mask each vertex
+
+    TODO
+    ----
         - the track is still displayed, albeit with fading, once the track has
          finished but is still within the 'tail_length' window. Should it
          disappear?
@@ -64,6 +74,14 @@ class TrackShader(Filter):
                 alpha = clamp(1.0-fade, 0.0, 1.0);
             }
 
+            // finally, if we're applying a mask (for e.g. slicing ND data),
+            // do it here. THIS WILL OVERIDE the time based vertex shading and
+            // set the vertex alpha to zero
+
+            if ($a_vertex_mask == 1) {
+                alpha = 0.;
+            }
+
             // set the vertex alpha according to the fade
             v_track_color.a = alpha;
         }
@@ -80,14 +98,16 @@ class TrackShader(Filter):
     def __init__(self,
                  current_time = 0,
                  tail_length = 30,
-                 vertex_time: Union[List, np.ndarray] = []):
+                 vertex_time: Union[List, np.ndarray] = [],
+                 vertex_mask: Union[List, np.ndarray] = []):
 
         super().__init__(vcode=self.VERT_SHADER, vpos=3,
                          fcode=self.FRAG_SHADER, fpos=9)
 
         self.current_time = current_time
         self.tail_length = tail_length
-        self._vertex_time = vertex_time.reshape(-1 ,1).astype(np.float32)
+        self.vertex_time = vertex_time
+        self.vertex_mask = vertex_mask
 
     @property
     def current_time(self) -> Union[int, float]:
@@ -115,4 +135,24 @@ class TrackShader(Filter):
 
     def _attach(self, visual):
         super(TrackShader, self)._attach(visual)
-        self.vshader['a_vertex_time'] = VertexBuffer(self._vertex_time)
+        self.vshader['a_vertex_time'] = VertexBuffer(self.vertex_time)
+        self.vshader['a_vertex_mask'] = VertexBuffer(self.vertex_mask)
+
+
+    @property
+    def vertex_time(self):
+        return self._vertex_time
+
+    @vertex_time.setter
+    def vertex_time(self, v_time):
+        self._vertex_time = np.array(v_time).reshape(-1 ,1).astype(np.float32)
+
+    @property
+    def vertex_mask(self):
+        return self._vertex_mask
+
+    @vertex_mask.setter
+    def vertex_mask(self, v_mask):
+        if not v_mask:
+            v_mask = np.zeros(self.vertex_time.shape, dtype=np.float32)
+        self._vertex_mask = v_mask

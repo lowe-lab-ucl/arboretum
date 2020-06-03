@@ -57,6 +57,7 @@ class Tracks(Layer):
         opacity=1,
         blending='translucent',
         visible=True,
+        colormaps=None
     ):
 
         # if not provided with any data, set up an empty layer in 2D+t
@@ -64,6 +65,8 @@ class Tracks(Layer):
             data = [np.empty((0, 3))]
 
         ndim = self._check_track_dimensionality(data)
+
+
 
         super().__init__(
             data,
@@ -82,12 +85,17 @@ class Tracks(Layer):
             edge_color=Event,
             tail_length=Event,
             display_id=Event,
+            display_tail=Event,
             current_edge_color=Event,
             current_properties=Event,
             n_dimensional=Event,
             color_by=Event,
             properties=Event,
         )
+
+        # store the currently displayed dims, we can use changes to this to
+        # refactor what is sent to vispy
+        self._current_dims_displayed = self.dims.displayed
 
         # use a kdtree to help with fast lookup of the nearest track
         self._kdtree = None
@@ -100,12 +108,16 @@ class Tracks(Layer):
         self._points_lookup = None
         self._ordered_points_idx = None
 
+        self._vertex_colors = None
+
         self.data = data
         self.properties = properties or []
+        self.colormaps = colormaps or {}
 
         self.edge_width = edge_width
         self.tail_length = tail_length
         self.display_id = False
+        self.display_tail = True
         self.color_by = 'ID' # default color by ID
 
         self._update_dims()
@@ -142,6 +154,13 @@ class Tracks(Layer):
 
     def _set_view_slice(self):
         """Sets the view given the indices to slice with."""
+
+        # check whether we want to slice the data
+        if self.dims.displayed != self._current_dims_displayed:
+            self._current_dims_displayed = self.dims.displayed
+
+            #TODO(arl): do some slicing here
+
         return
 
     def _get_value(self):
@@ -159,29 +178,27 @@ class Tracks(Layer):
             return self._points_id[pruned[0]] # return the track ID
 
 
-
-
-
-
     def _update_thumbnail(self):
         """Update thumbnail with current points and colors."""
         pass
 
+    @property
     def _view_data(self):
         """ return a view of the data """
 
         data = self._tracks[:, self.dims.displayed]
 
-        if self._get_ndim() == 3:
-            if len(self.dims.displayed) == 2:
-                data = np.pad(data, ((0,0),(0,1)), 'constant')
-            else:
-                data = data[:,(1,2,0)]
+        # if we're only displaying two dimensions, then pad the display dim
+        # with zeros
+        if self.dims.ndisplay == 2:
+            data = np.pad(data, ((0,0),(0,1)), 'constant')
+
         return data
 
 
     @property
     def current_frame(self):
+        # TODO(arl): get the correct index here
         return self.dims.indices[0]
 
 
@@ -294,6 +311,37 @@ class Tracks(Layer):
     @color_by.setter
     def color_by(self, color_by: str):
         self._color_by = color_by
+
+        # if we change the coloring, rebuild the vertex colors array
+        vertex_properties = []
+        for idx, track_property in enumerate(self.properties):
+            property = track_property[self.color_by]
+
+            if isinstance(property, (list, np.ndarray)):
+                p = property
+            elif isinstance(property, (int, float, np.generic)):
+                p = [property] * len(self.data[idx]) # make it the length of the track
+            else:
+                raise TypeError('Property {track_property} type not recognized')
+
+            vertex_properties.append(p)
+
+        # concatenate them, and use a colormap to color them
+        vertex_properties = np.concatenate(vertex_properties, axis=0)
+
+        # TODO(arl): remove matplotlib dependency?
+        if self.color_by in self.colormaps:
+            colormap = self.colormaps[self.color_by]
+        else:
+            # if we don't have a colormap, get one and scale the properties
+            colormap = get_cmap('gist_rainbow')
+            norm = lambda p: (p - np.min(p)) / np.max([1e-10, np.ptp(p)])
+            vertex_properties = norm(vertex_properties)
+
+        # actually set the vertex colors
+        self._vertex_colors = colormap(vertex_properties)
+
+        # fire the events and update the display
         self.events.color_by()
         self.refresh()
 
@@ -315,26 +363,9 @@ class Tracks(Layer):
     def vertex_colors(self) -> np.ndarray:
         """ return the vertex colors according to the currently selected
         property """
+        return self._vertex_colors
 
-        # TODO(arl): move some of this type checking to the properties setter
-        vertex_properties = []
-        for idx, track_property in enumerate(self.properties):
-            property = track_property[self.color_by]
 
-            if isinstance(property, (list, np.ndarray)):
-                p = property
-            elif isinstance(property, (int, float, np.generic)):
-                p = [property] * len(self.data[idx]) # make it the length of the track
-            else:
-                raise TypeError('Property {track_property} type not recognized')
-
-            vertex_properties.append(p)
-
-        # concatenate them, and use a colormap to color them
-        vertex_properties = np.concatenate(vertex_properties, axis=0)
-
-        colormap = get_cmap('gist_rainbow')
-        return colormap(np.mod(vertex_properties, 32)*8)
 
     @property
     def vertex_times(self) -> np.ndarray:

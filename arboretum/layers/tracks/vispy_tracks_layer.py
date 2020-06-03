@@ -28,26 +28,22 @@ class VispyTracksLayer(VispyBaseLayer):
         self.layer.events.edge_width.connect(self._on_data_change)
         self.layer.events.tail_length.connect(self._on_data_change)
         self.layer.events.display_id.connect(self._on_data_change)
-        self.layer.events.color_by.connect(self._on_color_by)
+        self.layer.events.display_tail.connect(self._on_data_change)
+        self.layer.events.color_by.connect(self._on_data_change)
 
-        # if the dimensions change, we need to update the data
-        self.layer.dims.events.ndisplay.connect(self._on_dimensions_change)
-
-        # get the data
-        self._positions = self.layer._view_data()
 
         # build and attach the shader to the track
-        self.shader = TrackShader(current_time=0,
+        self.shader = TrackShader(current_time=self.layer.current_frame,
                                   tail_length=self.layer.tail_length,
                                   vertex_time=self.layer.vertex_times)
-
         node._subvisuals[0].attach(self.shader)
 
-        # now set the data for the track lines
-        self.node._subvisuals[0].set_data(pos=self._positions,
-                                          color=self.layer.vertex_colors,
-                                          connect=self.layer.vertex_connex)
+        # # now set the data for the track lines
+        # self.node._subvisuals[0].set_data(pos=self.layer._view_data,
+        #                                   color=self.layer.vertex_colors,
+        #                                   connect=self.layer.vertex_connex)
 
+        # text label properties
         self.node._subvisuals[1].color = 'white'
         self.node._subvisuals[1].font_size = 8
 
@@ -61,14 +57,24 @@ class VispyTracksLayer(VispyBaseLayer):
         NOTE(arl): this gets called by the VispyBaseLayer
 
         """
+
+        # print(self.layer.dims.displayed)
+
         # update the shader
         self.shader.current_time = self.layer.current_frame
         self.shader.tail_length = self.layer.tail_length
-        self.node._subvisuals[0].set_data(width=self.layer.edge_width)
 
-        # update the track IDs
+        # set visibility of subvisuals
+        self.node._subvisuals[0].visible = self.layer.display_tail
         self.node._subvisuals[1].visible = self.layer.display_id
 
+        # change track line width
+        self.node._subvisuals[0].set_data(pos=self.layer._view_data,
+                                          width=self.layer.edge_width,
+                                          color=self.layer.vertex_colors,
+                                          connect=self.layer.vertex_connex)
+
+        # add text labels if we want
         if self.node._subvisuals[1].visible:
             text, pos = zip(*self.layer.track_labels)
             self.node._subvisuals[1].text = text
@@ -80,21 +86,20 @@ class VispyTracksLayer(VispyBaseLayer):
         self._on_translate_change()
 
 
-    def _on_dimensions_change(self, event=None):
-        """ if we change dimensions, change the display of the tracks.
-
-        Rationale:
-            (2d+t) tracks in 2D should be a projection of t
-            (2d+t) tracks in 3D should be the complete trees
-            (3d+t) tracks in 3D should be a projection of t, or the complete trees?
-        """
-
-        pos = self.layer._view_data()
-        self.node._subvisuals[0].set_data(pos=pos)
-        self.node.update()
-        # Call to update order of translation values with new dims:
-        self._on_scale_change()
-        self._on_translate_change()
+    # def _on_dimensions_change(self, event=None):
+    #     """ if we change dimensions, change the display of the tracks.
+    #
+    #     Rationale:
+    #         (2d+t) tracks in 2D should be a projection of t
+    #         (2d+t) tracks in 3D should be the complete trees
+    #         (3d+t) tracks in 3D should be a projection of t, or the complete trees?
+    #     """
+    #
+    #     self.node._subvisuals[0].set_data(pos=self.layer._view_data)
+    #     self.node.update()
+    #     # Call to update order of translation values with new dims:
+    #     self._on_scale_change()
+    #     self._on_translate_change()
 
 
     def _on_color_by(self, event=None):

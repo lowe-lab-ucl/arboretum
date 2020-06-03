@@ -19,7 +19,7 @@ import multiprocessing
 import numpy as np
 from scipy.ndimage import measurements
 
-
+# from skimage.segmentation import flood_fill
 
 def _get_btrack_cfg(filename=None):
     """ get a config from a local file or request one over the web
@@ -168,6 +168,26 @@ def _color_segmentation_by_state(h, color_segmentation=False):
     # TODO(arl): implement this!
     # if not color_segmentation:
     return h.segmentation
+
+    # objects = h.objects
+    # seg = h.segmentation
+    #
+    # seg_copy = (seg == 1).astype(np.uint8)
+    # for i, obj in enumerate(objects):
+    #
+    #     if (i > 10000): continue
+    #
+    #     if (i%1000) == 0: print(float(100*i) / len(objects))
+    #
+    #     xy = tuple([int(obj.x), int(obj.y)])
+    #     t = int(obj.t)
+    #     val = int(obj.label + 1)
+    #     if seg_copy[t, xy[0], xy[1]] > 0:
+    #         flood_fill(seg_copy[t,...], xy, val, in_place=True)
+    #
+    #
+    #
+    # return seg_copy
 
 
 

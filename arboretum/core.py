@@ -25,6 +25,8 @@ from typing import Union
 from .manager import TrackManager
 from .layers.tracks import Tracks
 
+from ._colormaps import colormaps
+
 
 
 def _register_tracks_layer():
@@ -61,7 +63,8 @@ def build_plugin(viewer, tracks):
     # add the arboretum tracks layer
     track_layer = Tracks(name='Tracks',
                          data=manager.data,
-                         properties=manager.properties)
+                         properties=manager.properties,
+                         colormaps=colormaps)
     viewer.add_layer(track_layer)
 
 
@@ -117,7 +120,8 @@ def build_plugin_v2(viewer,
 
                 _trk_layer = Tracks(data=manager.data,
                                     properties=manager.properties,
-                                    name=new_layer_name(f'Tracks {i}'))
+                                    name=new_layer_name(f'Tracks {i}'),
+                                    colormaps=colormaps)
                 track_layer = viewer.add_layer(_trk_layer)
 
 
