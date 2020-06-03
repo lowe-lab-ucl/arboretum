@@ -20,18 +20,31 @@ def survivor(tracks, track):
     return 0
 
 
+
+
+def planar(track):
+    return np.stack([track.t, track.y, track.x], axis=-1)
+
+def volumetric(track):
+    return np.stack([track.t, track.z, track.y, track.x], axis=-1)
+
+
 class TrackManager:
     """ TrackManager
 
     Deals with the track data and appropriate slicing for display
 
     """
-    def __init__(self, tracks, ndim=2):
-        self.tracks = tracks
-        self.ndim = 2
+    def __init__(self,
+                 tracks,
+                 transform=planar):
 
-        # build trees from the tracks
-        self._trees = btrack.utils.build_trees(tracks)
+
+        self.tracks = tracks
+        self.transform = transform
+
+        # # build trees from the tracks
+        # self._trees = btrack.utils.build_trees(tracks)
 
     @property
     def trees(self): return self._trees
@@ -39,7 +52,7 @@ class TrackManager:
     @property
     def data(self):
         """ should be ordered t, z, y, x for 3D """
-        return [np.stack([t.t, t.y, t.x], axis=-1) for t in self.tracks]
+        return [self.transform(t) for t in self.tracks]
 
     @property
     def properties(self):

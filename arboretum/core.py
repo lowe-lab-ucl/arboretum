@@ -58,7 +58,10 @@ def build_plugin(viewer, tracks):
     _register_tracks_layer()
 
     # build a track manager
-    manager = TrackManager(tracks)
+    if isinstance(tracks, TrackManager):
+        manager = tracks
+    else:
+        manager = TrackManager(tracks)
 
     # add the arboretum tracks layer
     track_layer = Tracks(name='Tracks',
