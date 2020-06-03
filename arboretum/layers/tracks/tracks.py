@@ -159,7 +159,7 @@ class Tracks(Layer):
         if self.dims.displayed != self._current_dims_displayed:
             self._current_dims_displayed = self.dims.displayed
 
-            #TODO(arl): do some slicing here
+            print(self.dims.displayed)
 
         return
 
