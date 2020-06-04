@@ -68,12 +68,15 @@ class QtTracksControls(QtLayerControls):
         self.id_checkbox = QCheckBox()
         self.tail_checkbox = QCheckBox()
         self.tail_checkbox.setChecked(True)
+        self.graph_checkbox = QCheckBox()
+        self.graph_checkbox.setChecked(True)
 
 
         self.edge_width_slider.valueChanged.connect(self.change_width)
         self.tail_length_slider.valueChanged.connect(self.change_tail_length)
         self.tail_checkbox.stateChanged.connect(self.change_display_tail)
         self.id_checkbox.stateChanged.connect(self.change_display_id)
+        self.graph_checkbox.stateChanged.connect(self.change_display_graph)
         self.color_by_combobox.currentTextChanged.connect(self.change_color_by)
 
         # grid_layout created in QtLayerControls
@@ -95,6 +98,8 @@ class QtTracksControls(QtLayerControls):
         self.grid_layout.addWidget(self.tail_checkbox, 6, 1)
         self.grid_layout.addWidget(QLabel('show ID:'), 7, 0)
         self.grid_layout.addWidget(self.id_checkbox, 7, 1)
+        self.grid_layout.addWidget(QLabel('graph:'), 8, 0)
+        self.grid_layout.addWidget(self.graph_checkbox, 8, 1)
         self.grid_layout.setRowStretch(8, 1)
         self.grid_layout.setColumnStretch(1, 1)
         self.grid_layout.setSpacing(4)
@@ -159,6 +164,9 @@ class QtTracksControls(QtLayerControls):
 
     def change_display_id(self, state):
         self.layer.display_id = self.id_checkbox.isChecked()
+
+    def change_display_graph(self, state):
+        self.layer.display_graph = self.graph_checkbox.isChecked()
 
     def change_color_by(self, value):
         self.layer.color_by = value

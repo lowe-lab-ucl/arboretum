@@ -86,6 +86,7 @@ class Tracks(Layer):
             tail_length=Event,
             display_id=Event,
             display_tail=Event,
+            display_graph=Event,
             current_edge_color=Event,
             current_properties=Event,
             n_dimensional=Event,
@@ -101,16 +102,21 @@ class Tracks(Layer):
         self._kdtree = None
 
         # NOTE(arl): _tracks and _connex store raw data for vispy
-        self._tracks = None
-        self._connex = None
         self._points = None
         self._points_id = None
         self._points_lookup = None
         self._ordered_points_idx = None
 
-        self._vertex_colors = None
+        self._track_vertices = None
+        self._track_connex = None
+        self._track_colors = None
 
-        self.data = data
+        self._graph = None
+        self._graph_vertices = None
+        self._graph_connex = None
+        self._graph_colors = None
+
+        self.data = data    # this is the track data
         self.properties = properties or []
         self.colormaps = colormaps or {}
 
@@ -118,6 +124,7 @@ class Tracks(Layer):
         self.tail_length = tail_length
         self.display_id = False
         self.display_tail = True
+        self.display_graph = True
         self.color_by = 'ID' # default color by ID
 
         self._update_dims()
@@ -126,11 +133,11 @@ class Tracks(Layer):
     def _get_extent(self) -> List[Tuple[int, int, int]]:
         """Determine ranges for slicing given by (min, max, step)."""
         minmax = lambda x: (int(np.min(x)), int(np.max(x)), 1)
-        return [minmax(self._tracks[:,i]) for i in range(self.ndim)]
+        return [minmax(self._track_vertices[:,i]) for i in range(self.ndim)]
 
     def _get_ndim(self) -> int:
         """Determine number of dimensions of the layer."""
-        return self._tracks.shape[1]
+        return self._track_vertices.shape[1]
 
     def _get_state(self):
         """Get dictionary of layer state.
@@ -185,8 +192,17 @@ class Tracks(Layer):
     @property
     def _view_data(self):
         """ return a view of the data """
+        return self._pad_display_data(self._track_vertices)
 
-        data = self._tracks[:, self.dims.displayed]
+    @property
+    def _view_graph(self):
+        """ return a view of the graph """
+        if not self._graph: return None
+        return self._pad_display_data(self._graph_vertices)
+
+    def _pad_display_data(self, vertices):
+        """ pad display data when moving between 2d and 3d """
+        data = vertices[:, self.dims.displayed]
 
         # if we're only displaying two dimensions, then pad the display dim
         # with zeros
@@ -216,12 +232,12 @@ class Tracks(Layer):
         cnx = lambda d: [True]*(d.shape[0]-1) + [False]
 
         # build the track data for vispy
-        self._tracks = np.concatenate(self.data, axis=0)
-        self._connex = np.concatenate([cnx(d) for d in data], axis=0)
+        self._track_vertices = np.concatenate(self.data, axis=0)
+        self._track_connex = np.concatenate([cnx(d) for d in data], axis=0)
 
         # build the indices for sorting points by time
-        self._ordered_points_idx = np.argsort(self._tracks[:,0])
-        self._points = self._tracks[self._ordered_points_idx]
+        self._ordered_points_idx = np.argsort(self._track_vertices[:,0])
+        self._points = self._track_vertices[self._ordered_points_idx]
 
         # build a tree of the track data to allow fast lookup of nearest track
         self._kdtree = cKDTree(self._points)
@@ -258,7 +274,7 @@ class Tracks(Layer):
             if 'ID' not in track:
                 track['ID'] = idx
 
-            points_id += [track['ID']] * len(self.data[idx]) # get the length of the track
+            points_id += [track['ID']] * len(self.data[idx]) # track length
 
         self._properties = properties
         self._points_id = np.array(points_id)[self._ordered_points_idx]
@@ -266,9 +282,73 @@ class Tracks(Layer):
         #TODO(arl): not all tracks are guaranteed to have the same keys
         self._property_keys = list(properties[0].keys())
 
+        # build the track graph
+        self._build_graph()
+
         # properties have been updated, we need to alert the gui
         self.events.properties()
 
+
+    def _build_graph(self):
+        """ build_graph
+
+        Build the track graph using track properties. The track graph should be:
+
+            [(track_idx, (parent_idx,...)),...]
+
+        """
+
+        # if we don't have any properties, then return gracefully
+        if not self.properties:
+            return
+
+        if not self._property_keys:
+            return
+
+        if 'parent' not in self._property_keys:
+            return
+
+        track_lookup = [track['ID'] for track in self.properties]
+        track_parents = [track['parent'] for track in self.properties]
+
+        # now remove any root nodes
+        branches = zip(track_lookup, track_parents)
+        self._graph = [b for b in branches if b[0] != b [1]]
+
+        # lookup the actual indices for the tracks
+        _get_id = lambda  x: track_lookup.index(x)
+        graph = [(_get_id(g[0]), _get_id(g[1])) for g in self._graph]
+
+        # we can use the graph to build the vertices and edges of the graph
+        vertices = []
+        connex = []
+
+        for link in graph:
+            node_idx, parent_idx = link
+
+            # we join from the first observation of the node, to the last
+            # observation of the parent
+
+            node = self.data[node_idx][0,...]
+            parent = self.data[parent_idx][-1,...]
+
+            verts = np.stack([node, parent], axis=0)
+            vertices.append(verts)
+
+            connex.append([True, False])
+
+        self._graph_vertices = np.concatenate(vertices, axis=0)
+        self._graph_connex = np.concatenate(connex, axis=0)
+
+        print(self._graph_vertices.shape)
+        print(self._graph_connex.shape)
+
+
+
+    @property
+    def graph(self) -> list:
+        """ return the graph """
+        return self._graph
 
     @property
     def edge_width(self) -> Union[int, float]:
@@ -305,6 +385,26 @@ class Tracks(Layer):
         self.refresh()
 
     @property
+    def display_tail(self) -> bool:
+        return self._display_tail
+
+    @display_tail.setter
+    def display_tail(self, value: bool):
+        self._display_tail = value
+        self.events.display_tail()
+        self.refresh()
+
+    @property
+    def display_graph(self) -> bool:
+        return self._display_graph
+
+    @display_graph.setter
+    def display_graph(self, value: bool):
+        self._display_graph = value
+        self.events.display_tail()
+        self.refresh()
+
+    @property
     def color_by(self) -> str:
         return self._color_by
 
@@ -320,7 +420,7 @@ class Tracks(Layer):
             if isinstance(property, (list, np.ndarray)):
                 p = property
             elif isinstance(property, (int, float, np.generic)):
-                p = [property] * len(self.data[idx]) # make it the length of the track
+                p = [property] * len(self.data[idx]) # length of the track
             else:
                 raise TypeError('Property {track_property} type not recognized')
 
@@ -339,7 +439,7 @@ class Tracks(Layer):
             vertex_properties = norm(vertex_properties)
 
         # actually set the vertex colors
-        self._vertex_colors = colormap(vertex_properties)
+        self._track_colors = colormap(vertex_properties)
 
         # fire the events and update the display
         self.events.color_by()
@@ -356,24 +456,36 @@ class Tracks(Layer):
         return data[0].shape[1]
 
     @property
-    def vertex_connex(self) -> np.ndarray:
-        return self._connex
+    def track_connex(self) -> np.ndarray:
+        """ vertex connections for drawing track lines """
+        return self._track_connex
 
     @property
-    def vertex_colors(self) -> np.ndarray:
+    def track_colors(self) -> np.ndarray:
         """ return the vertex colors according to the currently selected
         property """
-        return self._vertex_colors
-
+        return self._track_colors
 
 
     @property
-    def vertex_times(self) -> np.ndarray:
-        return self._tracks[:,0]
+    def graph_connex(self):
+        """ vertex connections for drawing the graph """
+        return self._graph_connex
+
+    @property
+    def track_times(self) -> np.ndarray:
+        """ time points associated with each track vertex """
+        return self._track_vertices[:,0]
+
+    @property
+    def graph_times(self) -> np.ndarray:
+        """ time points assocaite with each graph vertex """
+        if self._graph: return self._graph_vertices[:,0]
+        return None
 
     @property
     def track_labels(self):
-        """ return track labels """
+        """ return track labels at the current time """
         # this is the slice into the time ordered points array
         lookup = self._points_lookup[self.current_frame]
 
