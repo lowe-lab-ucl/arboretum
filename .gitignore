@@ -8,3 +8,5 @@ arboretum.egg-info
 *.spec
 install.sh
 *.ipynb
+*.h5
+*.hdf5

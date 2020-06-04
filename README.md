@@ -31,6 +31,7 @@ TODO:
 + [x] Track coloring by track properties
 + [x] Visualize track merging or branching using a 'graph'
 + [ ] Proper slicing when working in nd space
++ [ ] Overhaul Export/Import with HDF5
 
 
 ---
@@ -79,6 +80,11 @@ At the moment there are a few buttons:
 + Localize (find objects using the segmentation layer)
 + Track (track the localized objects)
 + Save (save the data - not currently operational)
+
+### Configuration files for the tracker
+
+An example config is available [here](https://github.com/quantumjot/arboretum/blob/master/tests/cell_config.json)
+
 
 ### State labelling
 
