@@ -166,6 +166,8 @@ class Tracks(Layer):
         if self.dims.displayed != self._current_dims_displayed:
             self._current_dims_displayed = self.dims.displayed
 
+            # TODO(arl): we can use the shader masking to slice the data
+
             print(self.dims.displayed)
 
         return
@@ -203,7 +205,6 @@ class Tracks(Layer):
     def _pad_display_data(self, vertices):
         """ pad display data when moving between 2d and 3d """
         data = vertices[:, self.dims.displayed]
-
         # if we're only displaying two dimensions, then pad the display dim
         # with zeros
         if self.dims.ndisplay == 2:
@@ -216,6 +217,7 @@ class Tracks(Layer):
     def current_frame(self):
         # TODO(arl): get the correct index here
         return self.dims.indices[0]
+
 
 
     @property
@@ -250,6 +252,8 @@ class Tracks(Layer):
             if f in frames:
                 idx = np.where(self._points[:,0] == f)[0]
                 self._points_lookup[f] = slice(min(idx), max(idx)+1, 1)
+
+
 
     @property
     def properties(self) -> list:
@@ -289,6 +293,7 @@ class Tracks(Layer):
         self.events.properties()
 
 
+
     def _build_graph(self):
         """ build_graph
 
@@ -302,9 +307,6 @@ class Tracks(Layer):
         if not self.properties:
             return
 
-        if not self._property_keys:
-            return
-
         if 'parent' not in self._property_keys:
             return
 
@@ -315,6 +317,9 @@ class Tracks(Layer):
         branches = zip(track_lookup, track_parents)
         self._graph = [b for b in branches if b[0] != b [1]]
 
+        # TODO(arl): parent can also be a list in the case of merging
+        # need to deal with that here
+
         # lookup the actual indices for the tracks
         _get_id = lambda  x: track_lookup.index(x)
         graph = [(_get_id(g[0]), _get_id(g[1])) for g in self._graph]
@@ -323,12 +328,9 @@ class Tracks(Layer):
         vertices = []
         connex = []
 
-        for link in graph:
-            node_idx, parent_idx = link
-
+        for node_idx, parent_idx in graph:
             # we join from the first observation of the node, to the last
             # observation of the parent
-
             node = self.data[node_idx][0,...]
             parent = self.data[parent_idx][-1,...]
 
@@ -340,15 +342,13 @@ class Tracks(Layer):
         self._graph_vertices = np.concatenate(vertices, axis=0)
         self._graph_connex = np.concatenate(connex, axis=0)
 
-        print(self._graph_vertices.shape)
-        print(self._graph_connex.shape)
-
-
-
     @property
     def graph(self) -> list:
         """ return the graph """
         return self._graph
+
+
+
 
     @property
     def edge_width(self) -> Union[int, float]:
