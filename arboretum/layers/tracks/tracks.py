@@ -324,6 +324,9 @@ class Tracks(Layer):
         _get_id = lambda  x: track_lookup.index(x)
         graph = [(_get_id(g[0]), _get_id(g[1])) for g in self._graph]
 
+        # if we have no graph, return
+        if not graph: return
+
         # we can use the graph to build the vertices and edges of the graph
         vertices = []
         connex = []
