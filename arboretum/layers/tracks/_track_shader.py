@@ -66,7 +66,11 @@ class TrackShader(Filter):
             if ($a_vertex_time > $current_time) {
                 // this is a hack to minimize the frag shader rendering ahead
                 // of the current time point due to interpolation
-                alpha = -100.0;
+                if ($a_vertex_time <= $current_time + 1){
+                    alpha = -100.;
+                } else {
+                    alpha = 0.;
+                }
             } else {
                 // fade the track into the temporal distance, scaled by the
                 // maximum tail length from the gui
