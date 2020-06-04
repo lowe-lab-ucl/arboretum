@@ -1,6 +1,8 @@
-import btrack
+
 
 import numpy as np
+
+from .lineage import generation
 
 
 def displacement(track):
@@ -22,11 +24,32 @@ def survivor(tracks, track):
 
 
 
+
+
+
 def planar(track):
     return np.stack([track.t, track.y, track.x], axis=-1)
 
 def volumetric(track):
     return np.stack([track.t, track.z, track.y, track.x], axis=-1)
+
+def mercator(track):
+    """ mercator projection """
+    R = 160.
+    S = 100.
+
+    x0 = np.array(track.x) - 600.
+    y0 = np.array(track.y) - 800.
+    t = np.array(track.t)
+
+    longitude = x0 / R
+    latitude = 2. * np.arctan(np.exp(y0/R)) - np.pi/2
+
+    x = S * np.cos(latitude) * np.cos(longitude)
+    y = S * np.cos(latitude) * np.sin(longitude)
+    z = S * np.sin(latitude)
+
+    return np.stack([t, x, y, z], axis=-1)
 
 
 class TrackManager:
@@ -43,8 +66,8 @@ class TrackManager:
         self.tracks = tracks
         self.transform = transform
 
-        # # build trees from the tracks
-        # self._trees = btrack.utils.build_trees(tracks)
+        # build trees from the tracks
+        # self._trees = build_trees(self.tracks)
 
     @property
     def trees(self): return self._trees
@@ -62,4 +85,5 @@ class TrackManager:
                  'time': t.t,
                  'states':t.state,
                  'fate':t.fate.value,
-                 'survivor': survivor(self.tracks, t)} for t in self.tracks]
+                 'survivor': survivor(self.tracks, t),
+                 'generation': generation(t)} for t in self.tracks]

@@ -1,24 +1,42 @@
 import btrack
+# from btrack.optimise.lineage import LineageTree
+#
+# def build_trees(tracks):
+#     _recover_children(tracks)
+#
+#     trees = LineageTree(tracks)
+#     trees.create()
+#
+#     return trees
 
+# def _recover_children(tracks):
+#     # # do a bit of tree processing, only needed for HDF import - needs to be
+#     # sorted out in a release version
+#     trees = {}
+#     for trk in tracks:
+#         if trk.root == 0:
+#             trk.root = trk.ID
+#
+#         if trk.parent not in trees:
+#             trees[trk.parent] = [trk.ID]
+#         else:
+#             trees[trk.parent].append(trk.ID)
+#
+#     for tree in trees:
+#         if tree > 0:
+#             trk = list(filter(lambda t: t.ID == tree, tracks))
+#             if trk:
+#                 trk[0].children = trees[tree]
+#
+#
+# def generation(tree_manager, track):
+#     """ get the generational depth of any track """
+#     for tree in tree_manager.linear_trees:
+#         node = [node for node in tree if node.track.ID == track.ID]
+#         if node:
+#             return node[0].depth
+#     return 0
 
-def _recover_children(tracks):
-    # # do a bit of tree processing, only needed for HDF import - needs to be
-    # sorted out in a release version
-    trees = {}
-    for trk in tracks:
-        if trk.root == 0:
-            trk.root = trk.ID
-
-        if trk.parent not in trees:
-            trees[trk.parent] = [trk.ID]
-        else:
-            trees[trk.parent].append(trk.ID)
-
-    for tree in trees:
-        if tree > 0:
-            trk = list(filter(lambda t: t.ID == tree, tracks))
-            if trk:
-                trk[0].children = trees[tree]
 
 
 def _build_tree_graph(root_node, COLOR_CYCLE, color_by=None):

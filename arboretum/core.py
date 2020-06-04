@@ -181,6 +181,7 @@ def build_plugin_v2(viewer,
         def _track():
             """ track objects """
             if arbor.localizations is not None:
+                optimize = arbor.optimize_checkbox.isChecked()
                 arbor.status_label.setText('Tracking...')
                 tracks = utils.track(arbor.localizations,
                                      arbor.btrack_cfg,

@@ -32,6 +32,7 @@ from qtpy.QtWidgets import (
     QFileDialog,
     QComboBox,
     QGridLayout,
+    QGroupBox,
 )
 
 from qtpy import QtCore
@@ -95,29 +96,40 @@ class Arboretum(QWidget):
         self.track_button = QPushButton('Track', self)
         self.save_button = QPushButton('Save...', self)
 
-        # sliders
-        self.track_filter_slider = QHRangeSlider(initial_values=(1,3000),
-                                                data_range=(1,3000),
-                                                step_size=1,
-                                                parent=self)
+        # checkboxes
+        self.optimize_checkbox = QCheckBox()
+        self.optimize_checkbox.setChecked(True)
+
+        # # sliders
+        # self.track_filter_slider = QHRangeSlider(initial_values=(1,3000),
+        #                                         data_range=(1,3000),
+        #                                         step_size=1,
+        #                                         parent=self)
 
         # dynamic labels
-        self.config_filename_label = QLabel('')
-        self.status_label = QLabel('')
+        self.config_filename_label = QLabel()
+        self.localizations_label = QLabel()
+        self.tracks_label = QLabel()
+        self.status_label = QLabel()
 
-        # TODO(arl): add back the tree visualization
+        layout.addWidget(self.load_button, 0, 0)
+        layout.addWidget(self.save_button, 0, 1)
 
-        layout.addWidget(self.load_button, 0, 0, 1, 2)
-        layout.addWidget(self.save_button, 0, 2, 1, 2)
 
-        layout.addWidget(self.config_button, 1, 0, 1, 2)
-        layout.addWidget(self.localize_button, 1, 2, 1, 1)
-        layout.addWidget(self.track_button, 1, 3, 1, 1)
-
-        layout.addWidget(QLabel('Configuration file:'), 2, 0, 1, 2)
-        layout.addWidget(self.config_filename_label, 2, 2, 1, 2)
-        layout.addWidget(QLabel('Track length filter:'), 3, 0, 1, 2)
-        layout.addWidget(self.track_filter_slider, 3, 2, 1, 2)
+        # tracking panel
+        tracking_panel = QGroupBox('Tracking')
+        tracking_layout = QGridLayout()
+        tracking_layout.addWidget(QLabel('Optimize:'), 0, 0)
+        tracking_layout.addWidget(self.optimize_checkbox, 0, 1)
+        tracking_layout.addWidget(self.config_button, 2, 0)
+        tracking_layout.addWidget(self.config_filename_label, 2, 1)
+        tracking_layout.addWidget(self.localize_button, 3, 0)
+        tracking_layout.addWidget(self.localizations_label, 3, 1)
+        tracking_layout.addWidget(self.track_button, 4, 0)
+        tracking_layout.addWidget(self.tracks_label, 4, 1)
+        tracking_layout.setColumnMinimumWidth(1, 150)
+        tracking_panel.setLayout(tracking_layout)
+        layout.addWidget(tracking_panel, 1, 0, 1, 2)
 
         layout.addWidget(QLabel('Status:'), 7, 0, 1, 2)
         layout.addWidget(self.status_label, 7, 1, 1, 2)
@@ -193,12 +205,16 @@ class Arboretum(QWidget):
         assert(self._segmentation.ndim<5)
 
     @property
-    def tracks(self) -> np.ndarray:
+    def tracks(self) -> list:
         return self._tracks
 
     @tracks.setter
     def tracks(self, tracks):
         self._tracks = tracks
+
+        n_tracks = sum([len(t) for t in tracks])
+        n_tracks_str = f'{n_tracks} tracks'
+        self.tracks_label.setText(n_tracks_str)
 
     @property
     def localizations(self) -> np.ndarray:
@@ -207,6 +223,9 @@ class Arboretum(QWidget):
     @localizations.setter
     def localizations(self, localizations: np.ndarray):
         self._localizations = localizations
+
+        n_localizations_str = f'{localizations.shape[0]} objects'
+        self.localizations_label.setText(n_localizations_str)
 
 
     @property
