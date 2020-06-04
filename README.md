@@ -29,6 +29,8 @@ TODO:
 + [x] Store localizations in points layer, allowing interactive track editing
 + [x] Migrate to unified track data model
 + [x] Track coloring by track properties
++ [x] Visualize track merging or branching using a 'graph'
++ [ ] Proper slicing when working in nd space
 
 
 ---
@@ -71,8 +73,9 @@ seg = io.imread('path/to/your/segmentation.tif') # should be 8-bit
 arboretum.run(segmentation=seg)
 ```
 
-At the moment there are 4 (four!) buttons:
+At the moment there are a few buttons:
 + Load (load HDF or JSON files created by btrack)
++ Configure (load a btrack configuration file)
 + Localize (find objects using the segmentation layer)
 + Track (track the localized objects)
 + Save (save the data - not currently operational)
