@@ -19,23 +19,11 @@ import multiprocessing
 import numpy as np
 from scipy.ndimage import measurements
 
+from .io import ArboretumHDFHandler, TrackerFrozenState
+
 # from skimage.segmentation import flood_fill
 
-def _get_btrack_cfg(filename=None):
-    """ get a config from a local file or request one over the web
 
-    NOTES:
-        - appends the filename of the config for display in the gui. not used
-        per se by the tracker.
-
-    """
-
-    if filename is not None:
-        config = btrack.utils.load_config(filename)
-        config['Filename'] = filename
-        return config
-
-    raise IOError
 
 
 
@@ -123,6 +111,21 @@ def localize(stack_as_array: np.ndarray,
 
 
 
+def _get_btrack_cfg(filename=None):
+    """ get a config from a local file or request one over the web
+
+    NOTES:
+        - appends the filename of the config for display in the gui. not used
+        per se by the tracker.
+
+    """
+
+    if filename is not None:
+        config = btrack.utils.load_config(filename)
+        config['Filename'] = filename
+        return config
+
+    raise IOError
 
 
 
@@ -160,7 +163,11 @@ def track(localizations: np.ndarray,
         # get the tracks as a python list
         tracks = tracker.tracks
 
-    return tracks
+        # dump all of the data into the frozen state
+        frozen_tracker = TrackerFrozenState()
+        frozen_tracker.set(tracker)
+
+    return frozen_tracker
 
 
 
@@ -168,26 +175,6 @@ def _color_segmentation_by_state(h, color_segmentation=False):
     # TODO(arl): implement this!
     # if not color_segmentation:
     return h.segmentation
-
-    # objects = h.objects
-    # seg = h.segmentation
-    #
-    # seg_copy = (seg == 1).astype(np.uint8)
-    # for i, obj in enumerate(objects):
-    #
-    #     if (i > 10000): continue
-    #
-    #     if (i%1000) == 0: print(float(100*i) / len(objects))
-    #
-    #     xy = tuple([int(obj.x), int(obj.y)])
-    #     t = int(obj.t)
-    #     val = int(obj.label + 1)
-    #     if seg_copy[t, xy[0], xy[1]] > 0:
-    #         flood_fill(seg_copy[t,...], xy, val, in_place=True)
-    #
-    #
-    #
-    # return seg_copy
 
 
 
@@ -199,7 +186,7 @@ def load_hdf(filename: str,
              color_segmentation: bool = True):
 
     """ load data from an HDF file """
-    with btrack.dataio.HDF5FileHandler(filename) as h:
+    with ArboretumHDFHandler(filename) as h:
         h._f_expr = filter_by
 
         if 'tracks' in h._hdf:
@@ -232,9 +219,17 @@ def load_json(filename: str):
 
 
 def export_hdf(filename: str,
-               tracker: btrack.BayesianTracker):
+               segmentation: np.ndarray = None,
+               tracker_state: TrackerFrozenState = None):
     """ export the tracking data to an hdf file """
-    pass
+
+    if os.path.exists(filename):
+        raise IOError(f'{filename} already exists!')
+
+    with ArboretumHDFHandler(filename, 'w') as h:
+        h.write_segmentation(segmentation)
+        h.write_objects(tracker_state, obj_type='obj_type_1')
+        h.write_tracks(tracker_state, obj_type='obj_type_1')
 
 
 if __name__ == '__main__':

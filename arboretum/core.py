@@ -140,17 +140,12 @@ def build_plugin_v2(viewer,
         def _import():
             """ import track data """
             # get the extension, and pick the correct file loader
-            _, ext = os.path.splitext(arbor.filename)
-            if ext in ('.hdf5',):
+            if arbor.filename is not None:
                 seg, tracks = utils.load_hdf(arbor.filename)
                 arbor.segmentation = seg
                 arbor.tracks = tracks
-            elif ext in ('.json',):
-                tracks = utils.load_json(arbor.filename)
-                arbor.tracks = [tracks]
 
         worker = _import()
-        # worker.returned.connect(add_segmentation_layer)
         worker.returned.connect(add_segmentation_and_track_layers)
         worker.start()
 
@@ -183,10 +178,11 @@ def build_plugin_v2(viewer,
             if arbor.localizations is not None:
                 optimize = arbor.optimize_checkbox.isChecked()
                 arbor.status_label.setText('Tracking...')
-                tracks = utils.track(arbor.localizations,
-                                     arbor.btrack_cfg,
-                                     volume=arbor.volume)
-                arbor.tracks = [tracks]
+                tracker_state = utils.track(arbor.localizations,
+                                            arbor.btrack_cfg,
+                                            optimize=optimize,
+                                            volume=arbor.volume)
+                arbor.tracker_state = tracker_state
                 arbor.status_label.setText('')
 
         worker = _track()

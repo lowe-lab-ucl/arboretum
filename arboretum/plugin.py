@@ -40,6 +40,7 @@ from qtpy import QtCore
 import btrack
 
 from . import utils
+from .io import TrackerFrozenState
 from .tree import _build_tree_graph
 from .layers.tracks import Tracks
 
@@ -58,20 +59,7 @@ DEFAULT_PATH = os.getcwd()
 
 
 
-"""
-initial_values : 2-tuple, optional
-        Initial min & max values of the slider, defaults to (0.2, 0.8)
-    data_range : 2-tuple, optional
-        Min and max of the slider range, defaults to (0, 1)
-    step_size : float, optional
-        Single step size for the slider, defaults to 1
-    collapsible : bool
-        Whether the slider is collapsible, defaults to True.
-    collapsed : bool
-        Whether the slider begins collapsed, defaults to False.
-    parent : qtpy.QtWidgets.QWidget
-        Parent widget.
-        """
+
 
 
 
@@ -99,6 +87,8 @@ class Arboretum(QWidget):
         # checkboxes
         self.optimize_checkbox = QCheckBox()
         self.optimize_checkbox.setChecked(True)
+        # self.use_states_checkbox = QCheckBox()
+        # self.use_states_checkbox.setChecked(True)
 
         # # sliders
         # self.track_filter_slider = QHRangeSlider(initial_values=(1,3000),
@@ -121,6 +111,8 @@ class Arboretum(QWidget):
         tracking_layout = QGridLayout()
         tracking_layout.addWidget(QLabel('Optimize:'), 0, 0)
         tracking_layout.addWidget(self.optimize_checkbox, 0, 1)
+        # tracking_layout.addWidget(QLabel('Use states:'), 1, 0)
+        # tracking_layout.addWidget(self.use_states_checkbox, 1, 1)
         tracking_layout.addWidget(self.config_button, 2, 0)
         tracking_layout.addWidget(self.config_filename_label, 2, 1)
         tracking_layout.addWidget(self.localize_button, 3, 0)
@@ -141,6 +133,9 @@ class Arboretum(QWidget):
         self.save_button.clicked.connect(self.export_data)
         self.config_button.clicked.connect(self.load_config)
 
+
+        self._tracker_state = None
+
         self._segmentation = None
         self._localizations = None
         self._tracks = None
@@ -151,12 +146,14 @@ class Arboretum(QWidget):
         self.filename = None
 
 
+
+
     def load_data(self):
         """ load data in hdf or json format from btrack """
         filename = QFileDialog.getOpenFileName(self,
                                                'Open tracking data',
                                                DEFAULT_PATH,
-                                               'Tracking files (*.hdf5 *.json)')
+                                               'Tracking files (*.hdf5 *.h5)')
         # only load file if we actually chose one
         if filename[0]:
             self.filename = filename[0]
@@ -178,16 +175,31 @@ class Arboretum(QWidget):
         filename = QFileDialog.getSaveFileName(self,
                                                'Export tracking data',
                                                DEFAULT_PATH,
-                                               'Tracking files (*.json)')
+                                               'Tracking files (*.h5)')
         # only load file if we actually chose one
-        if filename[0] and self.tracks is not None:
+        # if filename[0] and self.tracks is not None:
+        if filename[0]:
             # for track_set in self.tracks:
-            export_dir, fn = os.path.split(filename[0])
-            btrack.dataio.export_all_tracks_JSON(export_dir,
-                                                 self.tracks[0],
-                                                 as_zip_archive=True)
+            filename, _= os.path.splitext(filename[0])
+            filename = f'{filename}.h5'
+
+            utils.export_hdf(filename,
+                             self.segmentation,
+                             self.tracker_state)
+            # btrack.dataio.export_all_tracks_JSON(export_dir,
+            #                                      self.tracks[0],
+            #                                      as_zip_archive=True)
 
 
+
+    @property
+    def tracker_state(self) -> TrackerFrozenState:
+        return self._tracker_state
+
+    @tracker_state.setter
+    def tracker_state(self, state: TrackerFrozenState):
+        self._tracker_state = state
+        self.tracks = [state.tracks]
 
     @property
     def segmentation(self) -> np.ndarray:

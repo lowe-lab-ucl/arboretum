@@ -132,7 +132,7 @@ class Tracks(Layer):
 
     def _get_extent(self) -> List[Tuple[int, int, int]]:
         """Determine ranges for slicing given by (min, max, step)."""
-        minmax = lambda x: (int(np.min(x)), int(np.max(x)), 1)
+        minmax = lambda x: (int(np.min(x)), int(np.max(x))+1, 1)
         return [minmax(self._track_vertices[:,i]) for i in range(self.ndim)]
 
     def _get_ndim(self) -> int:
