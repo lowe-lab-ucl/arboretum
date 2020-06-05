@@ -68,7 +68,7 @@ def _localize_process(data) -> np.ndarray:
     centroids = np.array(measurements.center_of_mass(image, labels=labeled, index=idx))
     labels = np.array(measurements.maximum(image, labels=labeled, index=idx))
 
-    localizations = np.zeros((centroids.shape[0], 5), dtype=np.float32)
+    localizations = np.zeros((centroids.shape[0], 5), dtype=np.uint16)
     localizations[:,0] = frame # time
     localizations[:,1:centroids.shape[1]+1] = centroids
     localizations[:,-1] = labels-1 #-1 because we use a label of zero for states
@@ -198,6 +198,12 @@ def load_hdf(filename: str,
             seg = _color_segmentation_by_state(h, color_segmentation)
         else:
             seg = None
+
+        # correct files originating from earlier versions of the tracker
+        for trk_set in tracks:
+            for trk in trk_set:
+                if trk.is_root and trk.root == 0:
+                    trk.root = trk.ID
 
     return seg, tracks
 
