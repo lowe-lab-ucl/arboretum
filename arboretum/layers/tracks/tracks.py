@@ -321,8 +321,14 @@ class Tracks(Layer):
         # need to deal with that here
 
         # lookup the actual indices for the tracks
-        _get_id = lambda  x: track_lookup.index(x)
-        graph = [(_get_id(g[0]), _get_id(g[1])) for g in self._graph]
+        _get_id = lambda x: track_lookup.index(x)
+        graph = []
+        for g in self._graph:
+            try:
+                edge = (_get_id(g[0]), _get_id(g[1]))
+                graph.append(edge)
+            except IndexError:
+                continue
 
         # if we have no graph, return
         if not graph: return
