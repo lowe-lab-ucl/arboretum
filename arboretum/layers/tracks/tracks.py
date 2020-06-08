@@ -220,8 +220,10 @@ class Tracks(Layer):
 
 
     @property
-    def current_frame(self):
+    def current_time(self):
         # TODO(arl): get the correct index here
+        if isinstance(self.dims.indices[0], slice):
+            return int(np.max(self.track_times))
         return self.dims.indices[0]
 
 
@@ -503,8 +505,7 @@ class Tracks(Layer):
     def track_labels(self):
         """ return track labels at the current time """
         # this is the slice into the time ordered points array
-
-        lookup = self._points_lookup[self.current_frame]
+        lookup = self._points_lookup[self.current_time]
         # TODO(arl): this breaks when changing dimensions
         pos = self._pad_display_data(self._points[lookup,...])
         lbl = [f'ID:{i}' for i in self._points_id[lookup]]

@@ -36,11 +36,11 @@ class VispyTracksLayer(VispyBaseLayer):
         self.layer.events.color_by.connect(self._on_data_change)
 
         # build and attach the shader to the track
-        self.track_shader = TrackShader(current_time=self.layer.current_frame,
+        self.track_shader = TrackShader(current_time=self.layer.current_time,
                                         tail_length=self.layer.tail_length,
                                         vertex_time=self.layer.track_times)
 
-        self.graph_shader = TrackShader(current_time=self.layer.current_frame,
+        self.graph_shader = TrackShader(current_time=self.layer.current_time,
                                         tail_length=self.layer.tail_length,
                                         vertex_time=self.layer.graph_times)
 
@@ -65,9 +65,9 @@ class VispyTracksLayer(VispyBaseLayer):
         # print(self.layer.dims.displayed)
 
         # update the shader
-        self.track_shader.current_time = self.layer.current_frame
+        self.track_shader.current_time = self.layer.current_time
         self.track_shader.tail_length = self.layer.tail_length
-        self.graph_shader.current_time = self.layer.current_frame
+        self.graph_shader.current_time = self.layer.current_time
         self.graph_shader.tail_length = self.layer.tail_length
 
         # set visibility of subvisuals
