@@ -1,26 +1,30 @@
 # Arboretum
-:construction:  **WORK IN PROGRESS**  :construction:
 
-http://lowe.cs.ucl.ac.uk/cellx.html
+### Overview
 
-Dockable widget for [Napari](https://github.com/napari) for visualizing cell track data.
+A dockable widget for [Napari](https://github.com/napari) for tracking cells using [btrack](https://github.com/quantumjot/BayesianTracker).
 
 Features:
 + Custom `Track` layer for fast visualization of track data in napari
-+ Integration with bTrack to enable localization and cell tracking from napari
++ Integration with btrack to enable localization and cell tracking directly from napari
 + Lineage tree plot widget
 + Track count widget
 
-[![LineageTree](./examples/track_layer.jpeg)](http://lowe.cs.ucl.ac.uk/cellx.html)  
+[![LineageTree](./examples/napari.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
 *Automated cell tracking and lineage tree reconstruction*.
 
-**See [bTrack](https://github.com/quantumjot/BayesianTracker) page for more
- information about the cell tracking library.**
+---  
 
+ :construction:  **WORK IN PROGRESS**  :construction:
+
+ This is actively under development. There will be breaking changes on a daily basis until the first stable release. Use with caution!
+
+ Read more about the scientific project here:
+ http://lowe.cs.ucl.ac.uk/cellx.html
 
 ---
 
-TODO:
+#### TODO:
 + [ ] pip installer
 + [x] GUI for bTrack localization and tracking directly from Napari
 + [x] 3D track visualization (2D+t -> 3D, and 3D+t)
@@ -30,8 +34,10 @@ TODO:
 + [x] Migrate to unified track data model
 + [x] Track coloring by track properties
 + [x] Visualize track merging or branching using a 'graph'
++ [x] Color tracks by properties
 + [ ] Proper slicing when working in nd space
 + [ ] Overhaul Export/Import with HDF5
++ [ ] Tree plotting
 
 
 ---
@@ -47,10 +53,10 @@ $ pip install -e .
 
 ### Testing the installation
 
-Following installation, you can test the `Track` layer, as well as the *btrack*
+Following installation, you can test the `Track` layer, as well as the btrack
 package by running a built-in test. The test downloads some example data and a
 tracker configuration file, tracks the objects and then renders the tracks with
-*Napari*:
+napari:
 
 ```sh
 $ cd tests
@@ -75,27 +81,42 @@ arboretum.run(segmentation=seg)
 ```
 
 At the moment there are a few buttons:
-+ Load (load HDF or JSON files created by btrack)
++ Load (load HDF created by btrack)
 + Configure (load a btrack configuration file)
 + Localize (find objects using the segmentation layer)
 + Track (track the localized objects)
-+ Save (save the data - not currently operational)
++ Save (export as HDF)
 
 ### Configuration files for the tracker
 
 An example config is available [here](https://github.com/quantumjot/arboretum/blob/master/tests/cell_config.json)
 
 
+### Tracking methods and track optimization
+
+btrack supports three different methods:
+
++ `EXACT` - exact calculation of Bayesian belief matrix, but can be slow on large datasets
++ `APPROXIMATE` - approximate calculation, very fast, even with large datasets. This has an additional `radius` parameter, which sets the local spatial search radius (isotropic, pixels) of the algorithm.
++ `CUDA` (not currently operational) - GPU implementation of the EXACT method
+
+For most cell datasets (<1000 cells) we recommend `EXACT`. If you have larger
+datasets, we recommend `APPROXIMATE`.
+
+If the tracking does not complete, and is stuck on the optimization step, this
+means that your configuration is poorly suited to your data. Try turning off
+optimization, followed by modifying the parameters of the config file.
+
 ### State labelling
 
 You can improve the quality of the tracking by providing cell 'states' along
 with the segmentation. The plugin uses the following labels for the segmentation:
 
-1. Unlabelled/Interphase
+1. Interphase / Unlabelled
 2. Pro(meta)phase
-3. Metaphase/Pre-mitosis
-4. Anaphase/Post-mitosis
-5. Dead/Apoptosis
+3. Metaphase / Pre-division
+4. Anaphase / Post-division
+5. Apoptosis / Dead
 
 Change the labels on the segmentation using the labels tool, or provide a
 pre-labelled segmentation.
