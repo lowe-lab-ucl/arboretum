@@ -165,10 +165,7 @@ class Tracks(Layer):
         # check whether we want to slice the data
         if self.dims.displayed != self._current_dims_displayed:
             self._current_dims_displayed = self.dims.displayed
-
             # TODO(arl): we can use the shader masking to slice the data
-
-            print(self.dims.displayed)
 
         return
 
@@ -203,13 +200,22 @@ class Tracks(Layer):
         return self._pad_display_data(self._graph_vertices)
 
     def _pad_display_data(self, vertices):
-        """ pad display data when moving between 2d and 3d """
+        """ pad display data when moving between 2d and 3d
+
+
+        NOTES:
+            2d data is transposed yx
+            3d data is zyxt
+
+        """
         data = vertices[:, self.dims.displayed]
         # if we're only displaying two dimensions, then pad the display dim
         # with zeros
         if self.dims.ndisplay == 2:
             data = np.pad(data, ((0,0),(0,1)), 'constant')
-
+            data = data[:,(1,0,2)] # y, x, z
+        else:
+            data = data[:,(2,1,0)] # z, y, x
         return data
 
 
