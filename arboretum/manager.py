@@ -28,10 +28,10 @@ def survivor(tracks, track):
 
 
 def planar(track):
-    return np.stack([track.t, track.y, track.x], axis=-1)
+    return np.stack([track.t, track.x, track.y], axis=-1)
 
 def volumetric(track):
-    return np.stack([track.t, track.z, track.y, track.x], axis=-1)
+    return np.stack([track.t, track.x, track.y, track.z], axis=-1)
 
 def mercator(track):
     """ mercator projection """
@@ -83,7 +83,6 @@ class TrackManager:
                  'root': t.root,
                  'parent': t.parent,
                  'time': t.t,
-                 'states':t.state,
-                 'fate':t.fate.value,
-                 'survivor': survivor(self.tracks, t),
-                 'generation': generation(t)} for t in self.tracks]
+                 'states': t.state,
+                 'fate': t.fate.value,
+                 'survivor': survivor(self.tracks, t)} for t in self.tracks]
