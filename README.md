@@ -25,7 +25,7 @@ Features:
 ---
 
 #### TODO:
-+ [ ] pip installer
++ [x] pip installer
 + [x] GUI for bTrack localization and tracking directly from Napari
 + [x] 3D track visualization (2D+t -> 3D, and 3D+t)
 + [ ] Mouse interaction with tracks, click to select etc...
@@ -35,9 +35,12 @@ Features:
 + [x] Track coloring by track properties
 + [x] Visualize track merging or branching using a 'graph'
 + [x] Color tracks by properties
-+ [ ] Proper slicing when working in nd space
-+ [ ] Overhaul Export/Import with HDF5
++ [x] Proper slicing when working in nd space
++ [x] Overhaul Export/Import with HDF5
 + [ ] Tree plotting
++ [ ] PyPi package
++ [ ] Use integer labelled segmentation images as input
++ [ ] Remove redundant points/localizations storage of data
 
 
 ---
@@ -95,10 +98,9 @@ An example config is available [here](https://github.com/quantumjot/arboretum/bl
 ### Tracking methods and track optimization
 
 btrack supports three different methods:
-
-+ `EXACT` - exact calculation of Bayesian belief matrix, but can be slow on large datasets
-+ `APPROXIMATE` - approximate calculation, very fast, even with large datasets. This has an additional `radius` parameter, which sets the local spatial search radius (isotropic, pixels) of the algorithm.
-+ `CUDA` (not currently operational) - GPU implementation of the EXACT method
++ `EXACT` - (DEFAULT) exact calculation of Bayesian belief matrix, but can be slow on large datasets
++ `APPROXIMATE` - approximate calculation, faster, for use with large datasets. This has an additional `max_search_radius` parameter, which sets the local spatial search radius (isotropic, pixels) of the algorithm.
++ `CUDA` - GPU implementation of the EXACT method (*in progress*)
 
 For most cell datasets (<1000 cells) we recommend `EXACT`. If you have larger
 datasets, we recommend `APPROXIMATE`.
@@ -112,7 +114,7 @@ optimization, followed by modifying the parameters of the config file.
 You can improve the quality of the tracking by providing cell 'states' along
 with the segmentation. The plugin uses the following labels for the segmentation:
 
-1. Interphase / Unlabelled
+1. Interphase / Unlabelled (DEFAULT)
 2. Pro(meta)phase
 3. Metaphase / Pre-division
 4. Anaphase / Post-division

@@ -52,13 +52,17 @@ class ArboretumHDFHandler(btrack.dataio.HDF5FileHandler):
                 tracks      - (I x 1) [index into coords]
                 dummies     - similar to coords, but for dummy objects
                 map         - (K x 2) [start_index, end_index] -> tracks array
-                LBEPR       - (K x 5) [L, B, E, P, R]
+                LBEPR       - (K x 5) [L, B, E, P, R, G]
                 fates       - (K x n) [fate_from_tracker, ...future_expansion]
             ...
 
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+    @property
+    def segmentation(self):
+        return self._hdf['segmentation']['images'][:].astype(np.uint8)
 
     def write_segmentation(self,
                            segmentation: np.ndarray,

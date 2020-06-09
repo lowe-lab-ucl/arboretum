@@ -47,6 +47,7 @@ class ModuloColormap:
     def __call__(self, idx):
         return self.cmap(np.mod(idx, len(self)) / self.max_index)
 
+
 # state colors:
 # States.INTERPHASE = 0         -> grey
 # States.PROMETAPHASE = 1       -> blue
@@ -62,6 +63,7 @@ STATE_COLORMAP = np.array([[0.5, 0.5, 0.5, 1.0],
                            [1.0, 0.0, 0.0, 1.0],
                            [1.0, 0.65, 0.0, 1.0],
                            [1.0, 0.65, 0.0, 1.0]])
+
 
 # fate colors:
 # Fates.FALSE_POSITIVE = 0      ->

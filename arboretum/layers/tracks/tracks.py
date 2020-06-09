@@ -30,6 +30,12 @@ class Tracks(Layer):
               'root': 0,
               'states': [], ...}, ...]
 
+        colomaps : dict
+            dictionary list of colormap objects to use for track
+            properties:
+            
+            {'states': IndexedColormap}
+
     importantly, p (parent) is a list of track IDs that are parents of the
     track, this can be one (the track has one parent, and the parent has >=1
     child) in the case of splitting, or more than one (the track has multiple

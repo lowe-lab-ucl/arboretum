@@ -85,4 +85,5 @@ class TrackManager:
                  'time': t.t,
                  'states': t.state,
                  'fate': t.fate.value,
-                 'survivor': survivor(self.tracks, t)} for t in self.tracks]
+                 'survivor': survivor(self.tracks, t),
+                 'generation': t.generation} for t in self.tracks]

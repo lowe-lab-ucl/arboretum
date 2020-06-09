@@ -35,9 +35,10 @@ from qtpy.QtWidgets import (
     QGroupBox,
 )
 
-from qtpy import QtCore
+from qtpy.QtCore import Qt
 
 import btrack
+from btrack.constants import BayesianUpdates
 
 from . import utils
 from .io import TrackerFrozenState
@@ -77,6 +78,7 @@ class Arboretum(QWidget):
 
         layout = QGridLayout()
 
+
         # add some buttons
         self.load_button = QPushButton('Load...', self)
         self.config_button = QPushButton('Configure...', self)
@@ -84,54 +86,81 @@ class Arboretum(QWidget):
         self.track_button = QPushButton('Track', self)
         self.save_button = QPushButton('Save...', self)
 
+
         # checkboxes
         self.optimize_checkbox = QCheckBox()
         self.optimize_checkbox.setChecked(True)
         # self.use_states_checkbox = QCheckBox()
         # self.use_states_checkbox.setChecked(True)
 
+
+        # combo boxes
+        self.tracking_mode_combobox = QComboBox()
+        for mode in BayesianUpdates:
+            self.tracking_mode_combobox.addItem(mode.name.lower())
+        default_mode = BayesianUpdates.EXACT
+        self.tracking_mode_combobox.setCurrentIndex(default_mode.value)
+
+
         # # sliders
-        # self.track_filter_slider = QHRangeSlider(initial_values=(1,3000),
-        #                                         data_range=(1,3000),
-        #                                         step_size=1,
-        #                                         parent=self)
+        self.search_radius_slider = QSlider(Qt.Horizontal)
+        self.search_radius_slider.setFocusPolicy(Qt.NoFocus)
+        self.search_radius_slider.setMinimum(1)
+        self.search_radius_slider.setMaximum(300)
+        self.search_radius_slider.setSingleStep(1)
+        # self.search_radius_slider.setEnabled(False)
+
 
         # dynamic labels
         self.config_filename_label = QLabel()
         self.localizations_label = QLabel()
         self.tracks_label = QLabel()
         self.status_label = QLabel()
+        self.search_radius_label = QLabel()
+        self.search_radius_label.setAlignment(Qt.AlignRight)
 
+        # load/save buttons
         layout.addWidget(self.load_button, 0, 0)
         layout.addWidget(self.save_button, 0, 1)
 
-
         # tracking panel
-        tracking_panel = QGroupBox('Tracking')
+        tracking_panel = QGroupBox('tracking')
         tracking_layout = QGridLayout()
-        tracking_layout.addWidget(QLabel('Optimize:'), 0, 0)
-        tracking_layout.addWidget(self.optimize_checkbox, 0, 1)
-        # tracking_layout.addWidget(QLabel('Use states:'), 1, 0)
-        # tracking_layout.addWidget(self.use_states_checkbox, 1, 1)
-        tracking_layout.addWidget(self.config_button, 2, 0)
-        tracking_layout.addWidget(self.config_filename_label, 2, 1)
-        tracking_layout.addWidget(self.localize_button, 3, 0)
-        tracking_layout.addWidget(self.localizations_label, 3, 1)
-        tracking_layout.addWidget(self.track_button, 4, 0)
-        tracking_layout.addWidget(self.tracks_label, 4, 1)
+        tracking_layout.addWidget(QLabel('method: '), 0, 0)
+        tracking_layout.addWidget(self.tracking_mode_combobox, 0, 1)
+        # tracking_layout.addWidget(QLabel('radius: '), 1, 0)
+        tracking_layout.addWidget(self.search_radius_label, 1, 0)
+        tracking_layout.addWidget(self.search_radius_slider, 1, 1)
+        tracking_layout.addWidget(QLabel('optimize: '), 2, 0)
+        tracking_layout.addWidget(self.optimize_checkbox, 2, 1)
+        tracking_layout.addWidget(self.config_button, 3, 0)
+        tracking_layout.addWidget(self.config_filename_label, 3, 1)
+        tracking_layout.addWidget(self.localize_button, 4, 0)
+        tracking_layout.addWidget(self.localizations_label, 4, 1)
+        tracking_layout.addWidget(self.track_button, 5, 0)
+        tracking_layout.addWidget(self.tracks_label, 5, 1)
         tracking_layout.setColumnMinimumWidth(1, 150)
         tracking_panel.setLayout(tracking_layout)
         layout.addWidget(tracking_panel, 1, 0, 1, 2)
 
-        layout.addWidget(QLabel('Status:'), 7, 0, 1, 2)
-        layout.addWidget(self.status_label, 7, 1, 1, 2)
-        layout.setAlignment(QtCore.Qt.AlignTop)
+        # status panel
+        status_panel = QGroupBox('status')
+        status_layout = QHBoxLayout()
+        status_layout.addWidget(self.status_label)
+        status_panel.setLayout(status_layout)
+        layout.addWidget(status_panel, 7, 0, 1, 2)
+
+        # set the layout
+        layout.setAlignment(Qt.AlignTop)
         layout.setSpacing(4)
         self.setLayout(layout)
 
+        # callbacks
         self.load_button.clicked.connect(self.load_data)
         self.save_button.clicked.connect(self.export_data)
         self.config_button.clicked.connect(self.load_config)
+        self.tracking_mode_combobox.currentTextChanged.connect(self._on_mode_change)
+        self.search_radius_slider.valueChanged.connect(self._on_radius_change)
 
 
         self._tracker_state = None
@@ -144,6 +173,10 @@ class Arboretum(QWidget):
 
         # TODO(arl): this is the working filename for the dataset
         self.filename = None
+        self._search_radius = None
+
+        self._on_mode_change()
+        self.search_radius_slider.setValue(100)
 
 
 
@@ -159,7 +192,6 @@ class Arboretum(QWidget):
             self.filename = filename[0]
 
 
-
     def load_config(self):
         """ load a btrack configuration file """
         filename = QFileDialog.getOpenFileName(self,
@@ -170,25 +202,19 @@ class Arboretum(QWidget):
         if filename[0]:
             self.btrack_cfg = utils._get_btrack_cfg(filename=filename[0])
 
+
     def export_data(self):
         """ export track data """
         filename = QFileDialog.getSaveFileName(self,
                                                'Export tracking data',
                                                DEFAULT_PATH,
                                                'Tracking files (*.h5)')
-        # only load file if we actually chose one
-        # if filename[0] and self.tracks is not None:
+        # only export file if we actually chose one
         if filename[0]:
-            # for track_set in self.tracks:
             filename, _= os.path.splitext(filename[0])
-            filename = f'{filename}.h5'
-
-            utils.export_hdf(filename,
+            utils.export_hdf(f'{filename}.h5',
                              self.segmentation,
                              self.tracker_state)
-            # btrack.dataio.export_all_tracks_JSON(export_dir,
-            #                                      self.tracks[0],
-            #                                      as_zip_archive=True)
 
 
 
@@ -235,7 +261,6 @@ class Arboretum(QWidget):
     @localizations.setter
     def localizations(self, localizations: np.ndarray):
         self._localizations = localizations
-
         n_localizations_str = f'{localizations.shape[0]} objects'
         self.localizations_label.setText(n_localizations_str)
 
@@ -246,13 +271,12 @@ class Arboretum(QWidget):
 
     @btrack_cfg.setter
     def btrack_cfg(self, cfg: dict):
-        print(cfg, type(cfg))
         self._btrack_cfg = cfg
         truncate_fn = lambda f: f'...{f[-20:]}'
         self.config_filename_label.setText(truncate_fn(cfg['Filename']))
 
     @property
-    def volume(self):
+    def volume(self) -> tuple:
         """ get the volume to use for tracking """
         if self.segmentation is None:
             return ((0,1200), (0,1600), (-1e5,1e5))
@@ -276,3 +300,34 @@ class Arboretum(QWidget):
     @active_layer.setter
     def active_layer(self, layer_name: str):
         self._active_layer = layer_name
+
+    @property
+    def tracking_mode(self) -> BayesianUpdates:
+        return self._tracking_mode
+
+    @tracking_mode.setter
+    def tracking_mode(self, mode: BayesianUpdates):
+        self._tracking_mode = mode
+
+    @property
+    def optimize(self) -> bool:
+        return self.optimize_checkbox.isChecked()
+
+    @property
+    def search_radius(self) -> int:
+        if self.tracking_mode == BayesianUpdates.APPROXIMATE:
+            return self._search_radius
+        else:
+            return None
+
+    def _on_mode_change(self, event=None):
+        mode = self.tracking_mode_combobox.currentText().upper()
+        self.tracking_mode = BayesianUpdates[mode]
+        if self.tracking_mode == BayesianUpdates.APPROXIMATE:
+            self.search_radius_slider.setEnabled(True)
+        else:
+            self.search_radius_slider.setEnabled(False)
+
+    def _on_radius_change(self, value):
+        self.search_radius_label.setText(f'{value}')
+        self._search_radius = value

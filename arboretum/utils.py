@@ -21,7 +21,7 @@ from scipy.ndimage import measurements
 
 from .io import ArboretumHDFHandler, TrackerFrozenState
 
-# from skimage.segmentation import flood_fill
+from btrack.constants import BayesianUpdates
 
 
 
@@ -132,7 +132,9 @@ def _get_btrack_cfg(filename=None):
 def track(localizations: np.ndarray,
           config: dict,
           volume: tuple = ((0,1200),(0,1600),(-1e5,1e5)),
-          optimize: bool = True):
+          optimize: bool = True,
+          method: BayesianUpdates = BayesianUpdates.EXACT,
+          search_radius: int = None):
 
     """ track
 
@@ -154,14 +156,18 @@ def track(localizations: np.ndarray,
         # configure the tracker using a config file, append objects and set vol
         tracker.configure(config)
         tracker.append(objects)
+
         tracker.volume = volume
+        tracker.update_method = method
+
+        if search_radius is not None:
+            tracker.max_search_radius = search_radius
 
         # track them and (optionally) optimize
         tracker.track_interactive(step_size=100)
-        if optimize: tracker.optimize()
 
-        # get the tracks as a python list
-        tracks = tracker.tracks
+        if optimize:
+            tracker.optimize()
 
         # dump all of the data into the frozen state
         frozen_tracker = TrackerFrozenState()
@@ -189,6 +195,10 @@ def load_hdf(filename: str,
     with ArboretumHDFHandler(filename) as h:
         h._f_expr = filter_by
 
+        # get the objects and strip out the data
+        obj = h.objects
+        loc = np.stack([[o.t, o.x, o.y, o.z, o.label] for o in obj], axis=0)
+
         if 'tracks' in h._hdf:
             tracks = h.tracks
         else:
@@ -205,7 +215,7 @@ def load_hdf(filename: str,
                 if trk.is_root and trk.root == 0:
                     trk.root = trk.ID
 
-    return seg, tracks
+    return seg.astype(np.uint8), loc.astype(np.uint16), tracks
 
 
 def load_json(filename: str):

@@ -128,10 +128,10 @@ def build_plugin_v2(viewer,
                 track_layer = viewer.add_layer(_trk_layer)
 
 
-    def add_segmentation_and_track_layers():
+    def add_layers(*layers):
         """ TODO(arl): oof """
-        add_segmentation_layer()
-        add_track_layer()
+        for layer in layers:
+            layer()
 
     def import_objects():
         """ wrapper to load objects/tracks """
@@ -141,12 +141,18 @@ def build_plugin_v2(viewer,
             """ import track data """
             # get the extension, and pick the correct file loader
             if arbor.filename is not None:
-                seg, tracks = utils.load_hdf(arbor.filename)
+                seg, loc, tracks = utils.load_hdf(arbor.filename)
                 arbor.segmentation = seg
                 arbor.tracks = tracks
+                arbor.localizations = loc
+
+
+        new_layers = lambda: add_layers(add_segmentation_layer,
+                                        add_localizations_layer,
+                                        add_track_layer)
 
         worker = _import()
-        worker.returned.connect(add_segmentation_and_track_layers)
+        worker.returned.connect(new_layers)
         worker.start()
 
 
@@ -172,25 +178,31 @@ def build_plugin_v2(viewer,
     def track_objects():
         """ wrapper to launch a tracking thread """
 
+        config = arbor.btrack_cfg
+        method = arbor.tracking_mode
+        optimize = arbor.optimize
+        volume = arbor.volume
+        search_radius = arbor.search_radius
+
+        print(search_radius, method)
+
         @thread_worker
         def _track():
             """ track objects """
             if arbor.localizations is not None:
-                optimize = arbor.optimize_checkbox.isChecked()
                 arbor.status_label.setText('Tracking...')
                 tracker_state = utils.track(arbor.localizations,
-                                            arbor.btrack_cfg,
+                                            config,
+                                            method=method,
                                             optimize=optimize,
-                                            volume=arbor.volume)
+                                            volume=volume,
+                                            search_radius=search_radius)
                 arbor.tracker_state = tracker_state
                 arbor.status_label.setText('')
 
         worker = _track()
         worker.returned.connect(add_track_layer)
         worker.start()
-
-
-
 
 
     # if we loaded some data add both the segmentation and tracks layer
@@ -206,6 +218,9 @@ def build_plugin_v2(viewer,
     if segmentation is not None:
         arbor.segmentation = segmentation
         add_segmentation_layer(editable=True)
+
+    #
+    # track_layer.mouse_drag_callbacks.append(select_track)
 
 
 
