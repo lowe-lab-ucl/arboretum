@@ -344,7 +344,7 @@ class Tracks(Layer):
             try:
                 edge = (_get_id(g[0]), _get_id(g[1]))
                 graph.append(edge)
-            except IndexError:
+            except ValueError:
                 continue
 
         # if we have no graph, return
