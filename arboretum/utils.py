@@ -196,9 +196,14 @@ def load_hdf(filename: str,
         h._f_expr = filter_by
 
         # get the objects and strip out the data
-        obj = h.objects
-        loc = np.stack([[o.t, o.x, o.y, o.z, o.label] for o in obj], axis=0)
+        if 'objects' in h._hdf:
+            obj = h.objects
+            loc = np.stack([[o.t, o.x, o.y, o.z, o.label] for o in obj], axis=0)
+            loc = loc.astype(np.uint16)
+        else:
+            loc = []
 
+        # get the tracks
         if 'tracks' in h._hdf:
             tracks = h.tracks
         else:
@@ -206,6 +211,7 @@ def load_hdf(filename: str,
 
         if load_segmentation:
             seg = _color_segmentation_by_state(h, color_segmentation)
+            seg = seg.astype(np.uint8)
         else:
             seg = None
 
@@ -215,7 +221,7 @@ def load_hdf(filename: str,
                 if trk.is_root and trk.root == 0:
                     trk.root = trk.ID
 
-    return seg.astype(np.uint8), loc.astype(np.uint16), tracks
+    return seg, loc, tracks
 
 
 def load_json(filename: str):
@@ -244,8 +250,12 @@ def export_hdf(filename: str,
 
     with ArboretumHDFHandler(filename, 'w') as h:
         h.write_segmentation(segmentation)
-        h.write_objects(tracker_state, obj_type='obj_type_1')
-        h.write_tracks(tracker_state, obj_type='obj_type_1')
+
+        if tracker_state is not None:
+            if tracker_state.objects is not None:
+                h.write_objects(tracker_state, obj_type='obj_type_1')
+            if tracker_state.tracks is not None:
+                h.write_tracks(tracker_state, obj_type='obj_type_1')
 
 
 if __name__ == '__main__':

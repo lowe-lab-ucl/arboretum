@@ -149,6 +149,10 @@ class QtTracksControls(QtLayerControls):
             value = np.clip(value, 1, MAX_TAIL_LENGTH)
             self.tail_length_slider.setValue(value)
 
+    def _on_properties_change(self, event=None):
+        self.color_by_combobox.clear()
+        self.color_by_combobox.addItems(self.layer._property_keys)
+
     def change_tail_length(self, value):
         """Change edge line width of shapes on the layer model.
 
@@ -179,8 +183,3 @@ class QtTracksControls(QtLayerControls):
 
     def change_colormap(self, colormap: str):
         self.layer.colormap = colormap
-
-
-    def _on_properties_change(self, event=None):
-        self.color_by_combobox.clear()
-        self.color_by_combobox.addItems(self.layer._property_keys)

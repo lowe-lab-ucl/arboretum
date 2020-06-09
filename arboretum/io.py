@@ -84,7 +84,7 @@ class ArboretumHDFHandler(btrack.dataio.HDF5FileHandler):
                       obj_type='obj_type_1'):
 
         #TODO(arl): make sure that the objects are ordered in time
-
+                
         self._hdf.create_group('objects')
         grp = self._hdf['objects'].create_group(obj_type)
 
