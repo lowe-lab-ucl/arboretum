@@ -1,19 +1,16 @@
 from napari._qt.layers.qt_image_base_layer import QtLayerControls
-from napari._qt.layers.qt_image_base_layer import QtBaseImageControls
 
-from qtpy.QtCore import Qt, Slot
+from napari.utils.colormaps import AVAILABLE_COLORMAPS
+
+from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
-    QButtonGroup,
     QCheckBox,
     QComboBox,
-    QHBoxLayout,
     QLabel,
     QSlider,
-    QAbstractButton,
 )
 
 import numpy as np
-
 
 MAX_TAIL_LENGTH = 1500
 MAX_TAIL_WIDTH = 40
@@ -43,12 +40,14 @@ class QtTracksControls(QtLayerControls):
         self.layer.events.edge_width.connect(self._on_edge_width_change)
         self.layer.events.tail_length.connect(self._on_tail_length_change)
         self.layer.events.properties.connect(self._on_properties_change)
+        self.layer.events.colormap.connect(self._on_colormap_change)
 
         # combo box for track coloring, we can get these from the properties
         # keys
         self.color_by_combobox = QComboBox()
         self.colormap_combobox = QComboBox()
-        self.colormap_combobox.addItem('prism')
+        for colormap in AVAILABLE_COLORMAPS.keys():
+            self.colormap_combobox.addItem(colormap)
 
         # slider for track tail length
         self.tail_length_slider = QSlider(Qt.Horizontal)
@@ -78,6 +77,7 @@ class QtTracksControls(QtLayerControls):
         self.id_checkbox.stateChanged.connect(self.change_display_id)
         self.graph_checkbox.stateChanged.connect(self.change_display_graph)
         self.color_by_combobox.currentTextChanged.connect(self.change_color_by)
+        self.colormap_combobox.currentTextChanged.connect(self.change_colormap)
 
         # grid_layout created in QtLayerControls
         # addWidget(widget, row, column, [row_span, column_span])
@@ -107,6 +107,7 @@ class QtTracksControls(QtLayerControls):
         self._on_tail_length_change()
         self._on_edge_width_change()
         self._on_properties_change()
+        self._on_colormap_change()
 
 
 
@@ -158,6 +159,11 @@ class QtTracksControls(QtLayerControls):
         """
         self.layer.tail_length = value
 
+    def _on_colormap_change(self, event=None):
+        with self.layer.events.colormap.blocker():
+            colormap = self.layer.colormap
+            idx = self.colormap_combobox.findText(colormap, Qt.MatchFixedString)
+            self.colormap_combobox.selectedIndex = idx
 
     def change_display_tail(self, state):
         self.layer.display_tail = self.tail_checkbox.isChecked()
@@ -168,8 +174,11 @@ class QtTracksControls(QtLayerControls):
     def change_display_graph(self, state):
         self.layer.display_graph = self.graph_checkbox.isChecked()
 
-    def change_color_by(self, value):
+    def change_color_by(self, value: str):
         self.layer.color_by = value
+
+    def change_colormap(self, colormap: str):
+        self.layer.colormap = colormap
 
 
     def _on_properties_change(self, event=None):

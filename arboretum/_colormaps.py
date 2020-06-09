@@ -27,6 +27,9 @@ class IndexedColormap:
         idx = np.mod(idx, len(self)).tolist()
         return self.array[np.take(self.indices, idx),...]
 
+    def __getitem__(self, idx):
+        return self(idx)
+
     def __len__(self):
         return len(self.indices)
 
@@ -46,6 +49,9 @@ class ModuloColormap:
 
     def __call__(self, idx):
         return self.cmap(np.mod(idx, len(self)) / self.max_index)
+
+    def __getitem__(self, idx):
+        return self(idx)
 
 
 # state colors:

@@ -1,14 +1,14 @@
 from napari.layers.base.base import Layer
 from napari.utils.event import Event
-from napari.utils.colormaps import colormaps
+
+from napari.utils.colormaps import AVAILABLE_COLORMAPS
+from napari.utils.colormaps.colormaps import vispy_or_mpl_colormap
 
 from typing import Union, Dict, Tuple, List
 
 import numpy as np
 
 from scipy.spatial import cKDTree
-
-from matplotlib.cm import get_cmap
 
 class Tracks(Layer):
     """ Tracks
@@ -33,7 +33,7 @@ class Tracks(Layer):
         colomaps : dict
             dictionary list of colormap objects to use for track
             properties:
-            
+
             {'states': IndexedColormap}
 
     importantly, p (parent) is a list of track IDs that are parents of the
@@ -42,6 +42,7 @@ class Tracks(Layer):
     parents, but only one child) in the case of track merging
 
     """
+
     # The max number of points that will ever be used to render the thumbnail
     # If more points are present then they are randomly subsampled
     _max_tracks_thumbnail = 1024
@@ -54,7 +55,7 @@ class Tracks(Layer):
         graph=None,
         edge_width=2,
         tail_length=30,
-        color_by=0,
+        color_by='ID',
         n_dimensional=True,
         name=None,
         metadata=None,
@@ -63,7 +64,8 @@ class Tracks(Layer):
         opacity=1,
         blending='translucent',
         visible=True,
-        colormaps=None
+        colormap='viridis',
+        colormaps=None,
     ):
 
         # if not provided with any data, set up an empty layer in 2D+t
@@ -71,8 +73,6 @@ class Tracks(Layer):
             data = [np.empty((0, 3))]
 
         ndim = self._check_track_dimensionality(data)
-
-
 
         super().__init__(
             data,
@@ -97,6 +97,7 @@ class Tracks(Layer):
             current_properties=Event,
             n_dimensional=Event,
             color_by=Event,
+            colormap=Event,
             properties=Event,
         )
 
@@ -122,24 +123,27 @@ class Tracks(Layer):
         self._graph_connex = None
         self._graph_colors = None
 
-        self.data = data    # this is the track data
+        self.data = data  # this is the track data
         self.properties = properties or []
-        self.colormaps = colormaps or {}
+        self.colormaps = colormaps or {}  # additional colormaps
 
         self.edge_width = edge_width
         self.tail_length = tail_length
         self.display_id = False
         self.display_tail = True
         self.display_graph = True
-        self.color_by = 'ID' # default color by ID
+        self.color_by = color_by # default color by ID
+        self.colormap = colormap
 
         self._update_dims()
 
-
     def _get_extent(self) -> List[Tuple[int, int, int]]:
         """Determine ranges for slicing given by (min, max, step)."""
-        minmax = lambda x: (int(np.min(x)), int(np.max(x))+1, 1)
-        return [minmax(self._track_vertices[:,i]) for i in range(self.ndim)]
+
+        def _minmax(x):
+            return (int(np.min(x)), int(np.max(x)) + 1, 1)
+
+        return [_minmax(self._track_vertices[:, i]) for i in range(self.ndim)]
 
     def _get_ndim(self) -> int:
         """Determine number of dimensions of the layer."""
@@ -185,10 +189,9 @@ class Tracks(Layer):
         coords[2], coords[1] = coords[1], coords[2]
 
         d, idx = self._kdtree.query(coords, k=10)
-        pruned = [i for i in idx if self._points[i,0]==coords[0]]
+        pruned = [i for i in idx if self._points[i, 0] == coords[0]]
         if pruned and self._points_id is not None:
-            return self._points_id[pruned[0]] # return the track ID
-
+            return self._points_id[pruned[0]]  # return the track ID
 
     def _update_thumbnail(self):
         """Update thumbnail with current points and colors."""
@@ -202,7 +205,8 @@ class Tracks(Layer):
     @property
     def _view_graph(self):
         """ return a view of the graph """
-        if not self._graph: return None
+        if not self._graph:
+            return None
         return self._pad_display_data(self._graph_vertices)
 
     def _pad_display_data(self, vertices):
@@ -218,12 +222,11 @@ class Tracks(Layer):
         # if we're only displaying two dimensions, then pad the display dim
         # with zeros
         if self.dims.ndisplay == 2:
-            data = np.pad(data, ((0,0),(0,1)), 'constant')
-            data = data[:,(1,0,2)] # y, x, z
+            data = np.pad(data, ((0, 0), (0, 1)), 'constant')
+            data = data[:, (1, 0, 2)]  # y, x, z
         else:
-            data = data[:,(2,1,0)] # z, y, x
+            data = data[:, (2, 1, 0)]  # z, y, x
         return data
-
 
     @property
     def current_time(self):
@@ -231,9 +234,6 @@ class Tracks(Layer):
         if isinstance(self.dims.indices[0], slice):
             return int(np.max(self.track_times))
         return self.dims.indices[0]
-
-
-
 
     @property
     def data(self) -> list:
@@ -246,29 +246,28 @@ class Tracks(Layer):
         self._data = data
 
         # build the connex for the data
-        cnx = lambda d: [True]*(d.shape[0]-1) + [False]
+        def _cnx(d):
+            return [True] * (d.shape[0] - 1) + [False]
 
         # build the track data for vispy
         self._track_vertices = np.concatenate(self.data, axis=0)
-        self._track_connex = np.concatenate([cnx(d) for d in data], axis=0)
+        self._track_connex = np.concatenate([_cnx(d) for d in data], axis=0)
 
         # build the indices for sorting points by time
-        self._ordered_points_idx = np.argsort(self._track_vertices[:,0])
+        self._ordered_points_idx = np.argsort(self._track_vertices[:, 0])
         self._points = self._track_vertices[self._ordered_points_idx]
 
         # build a tree of the track data to allow fast lookup of nearest track
         self._kdtree = cKDTree(self._points)
 
         # make the lookup
-        frames = list(set(self._points[:,0].astype(np.uint).tolist()))
-        self._points_lookup = [None] * (max(frames)+1)
-        for f in range(max(frames)+1):
+        frames = list(set(self._points[:, 0].astype(np.uint).tolist()))
+        self._points_lookup = [None] * (max(frames) + 1)
+        for f in range(max(frames) + 1):
             # if we have some data for this frame, calculate the slice required
             if f in frames:
-                idx = np.where(self._points[:,0] == f)[0]
-                self._points_lookup[f] = slice(min(idx), max(idx)+1, 1)
-
-
+                idx = np.where(self._points[:, 0] == f)[0]
+                self._points_lookup[f] = slice(min(idx), max(idx) + 1, 1)
 
     @property
     def properties(self) -> list:
@@ -278,7 +277,10 @@ class Tracks(Layer):
     @properties.setter
     def properties(self, properties: list):
         """ set track properties """
-        assert(not properties or len(properties) == len(self.data))
+        assert not properties or len(properties) == len(self.data)
+
+        if not properties:
+            properties = [{'ID': i} for i in range(len(self.data))]
 
         points_id = []
 
@@ -291,14 +293,14 @@ class Tracks(Layer):
 
             # if there is not a track ID listed, generate one on the fly
             if 'ID' not in track:
-                track['ID'] = idx
+                properties[idx]['ID'] = idx
 
-            points_id += [track['ID']] * len(self.data[idx]) # track length
+            points_id += [track['ID']] * len(self.data[idx])  # track length
 
         self._properties = properties
         self._points_id = np.array(points_id)[self._ordered_points_idx]
 
-        #TODO(arl): not all tracks are guaranteed to have the same keys
+        # TODO(arl): not all tracks are guaranteed to have the same keys
         self._property_keys = list(properties[0].keys())
 
         # build the track graph
@@ -306,8 +308,6 @@ class Tracks(Layer):
 
         # properties have been updated, we need to alert the gui
         self.events.properties()
-
-
 
     def _build_graph(self):
         """ build_graph
@@ -330,13 +330,15 @@ class Tracks(Layer):
 
         # now remove any root nodes
         branches = zip(track_lookup, track_parents)
-        self._graph = [b for b in branches if b[0] != b [1]]
+        self._graph = [b for b in branches if b[0] != b[1]]
 
         # TODO(arl): parent can also be a list in the case of merging
         # need to deal with that here
 
         # lookup the actual indices for the tracks
-        _get_id = lambda x: track_lookup.index(x)
+        def _get_id(x):
+            return track_lookup.index(x)
+
         graph = []
         for g in self._graph:
             try:
@@ -346,7 +348,8 @@ class Tracks(Layer):
                 continue
 
         # if we have no graph, return
-        if not graph: return
+        if not graph:
+            return
 
         # we can use the graph to build the vertices and edges of the graph
         vertices = []
@@ -355,8 +358,8 @@ class Tracks(Layer):
         for node_idx, parent_idx in graph:
             # we join from the first observation of the node, to the last
             # observation of the parent
-            node = self.data[node_idx][0,...]
-            parent = self.data[parent_idx][-1,...]
+            node = self.data[node_idx][0, ...]
+            parent = self.data[parent_idx][-1, ...]
 
             verts = np.stack([node, parent], axis=0)
             vertices.append(verts)
@@ -370,9 +373,6 @@ class Tracks(Layer):
     def graph(self) -> list:
         """ return the graph """
         return self._graph
-
-
-
 
     @property
     def edge_width(self) -> Union[int, float]:
@@ -435,7 +435,26 @@ class Tracks(Layer):
     @color_by.setter
     def color_by(self, color_by: str):
         self._color_by = color_by
+        self._recolor_tracks()
+        # fire the events and update the display
+        self.events.color_by()
+        self.refresh()
 
+    @property
+    def colormap(self) -> str:
+        return self._colormap
+
+    @colormap.setter
+    def colormap(self, colormap: str):
+        if colormap not in AVAILABLE_COLORMAPS:
+            raise ValueError(f'Colormap {colormap} not available')
+        self._colormap = colormap
+        self._recolor_tracks()
+        self.events.colormap()
+        self.refresh()
+
+    def _recolor_tracks(self):
+        """ recolor the tracks """
         # if we change the coloring, rebuild the vertex colors array
         vertex_properties = []
         for idx, track_property in enumerate(self.properties):
@@ -444,30 +463,32 @@ class Tracks(Layer):
             if isinstance(property, (list, np.ndarray)):
                 p = property
             elif isinstance(property, (int, float, np.generic)):
-                p = [property] * len(self.data[idx]) # length of the track
+                p = [property] * len(self.data[idx])  # length of the track
             else:
-                raise TypeError('Property {track_property} type not recognized')
+                raise TypeError(
+                    'Property {track_property} type not recognized'
+                )
 
             vertex_properties.append(p)
 
         # concatenate them, and use a colormap to color them
         vertex_properties = np.concatenate(vertex_properties, axis=0)
 
+        def _norm(p):
+            return (p - np.min(p)) / np.max([1e-10, np.ptp(p)])
+
         # TODO(arl): remove matplotlib dependency?
         if self.color_by in self.colormaps:
             colormap = self.colormaps[self.color_by]
         else:
             # if we don't have a colormap, get one and scale the properties
-            colormap = get_cmap('gist_rainbow')
-            norm = lambda p: (p - np.min(p)) / np.max([1e-10, np.ptp(p)])
-            vertex_properties = norm(vertex_properties)
+            colormap = AVAILABLE_COLORMAPS[self.colormap]
+            # colormap = vispy_or_mpl_colormap(self.colormap)
+            vertex_properties = _norm(vertex_properties)
 
         # actually set the vertex colors
-        self._track_colors = colormap(vertex_properties)
+        self._track_colors = colormap[vertex_properties]
 
-        # fire the events and update the display
-        self.events.color_by()
-        self.refresh()
 
 
     def _check_track_dimensionality(self, data: list):
@@ -475,8 +496,8 @@ class Tracks(Layer):
 
         TODO(arl): we could allow a mix of 2D/3D etc...
         """
-        assert(all([isinstance(d, np.ndarray) for d in data]))
-        assert(all([d.shape[1] == data[0].shape[1] for d in data]))
+        assert all([isinstance(d, np.ndarray) for d in data])
+        assert all([d.shape[1] == data[0].shape[1] for d in data])
         return data[0].shape[1]
 
     @property
@@ -490,7 +511,6 @@ class Tracks(Layer):
         property """
         return self._track_colors
 
-
     @property
     def graph_connex(self):
         """ vertex connections for drawing the graph """
@@ -499,12 +519,13 @@ class Tracks(Layer):
     @property
     def track_times(self) -> np.ndarray:
         """ time points associated with each track vertex """
-        return self._track_vertices[:,0]
+        return self._track_vertices[:, 0]
 
     @property
     def graph_times(self) -> np.ndarray:
         """ time points assocaite with each graph vertex """
-        if self._graph: return self._graph_vertices[:,0]
+        if self._graph:
+            return self._graph_vertices[:, 0]
         return None
 
     @property
@@ -513,6 +534,6 @@ class Tracks(Layer):
         # this is the slice into the time ordered points array
         lookup = self._points_lookup[self.current_time]
         # TODO(arl): this breaks when changing dimensions
-        pos = self._pad_display_data(self._points[lookup,...])
+        pos = self._pad_display_data(self._points[lookup, ...])
         lbl = [f'ID:{i}' for i in self._points_id[lookup]]
         return zip(lbl, pos)

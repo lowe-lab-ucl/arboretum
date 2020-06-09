@@ -4,8 +4,6 @@ from vispy.scene.visuals import Compound
 
 from napari._vispy.vispy_base_layer import VispyBaseLayer
 
-import numpy as np
-
 from ._track_shader import TrackShader
 
 class VispyTracksLayer(VispyBaseLayer):
