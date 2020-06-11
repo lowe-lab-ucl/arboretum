@@ -3,8 +3,13 @@ from vispy.scene.visuals import Text
 from vispy.scene.visuals import Compound
 
 from napari._vispy.vispy_base_layer import VispyBaseLayer
-
 from ._track_shader import TrackShader
+
+# from .vispy_base_layer import VispyBaseLayer
+# from ..layers.tracks._track_shader import TrackShader
+
+
+
 
 class VispyTracksLayer(VispyBaseLayer):
     """ VispyTracksLayer

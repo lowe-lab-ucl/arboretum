@@ -129,9 +129,7 @@ class TrackShader(Filter):
         self._current_time = n
         if isinstance(n, slice):
             n = np.max(self._vertex_time)
-
         self.vshader['current_time'] = float(n)
-
 
     @property
     def use_fade(self) -> bool:
@@ -155,8 +153,6 @@ class TrackShader(Filter):
         super(TrackShader, self)._attach(visual)
         self.vshader['a_vertex_time'] = VertexBuffer(self.vertex_time)
         self.vshader['a_vertex_mask'] = VertexBuffer(self.vertex_mask)
-
-
 
     @property
     def vertex_time(self):

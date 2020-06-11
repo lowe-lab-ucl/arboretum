@@ -1,7 +1,10 @@
 from napari.layers.base.base import Layer
 from napari.utils.event import Event
-
 from napari.utils.colormaps import AVAILABLE_COLORMAPS
+
+# from ..base import Layer
+# from ...utils.event import Event
+# from ...utils.colormaps import AVAILABLE_COLORMAPS
 
 from typing import Union, Dict, Tuple, List
 
@@ -142,7 +145,7 @@ class Tracks(Layer):
         self.display_id = False
         self.display_tail = True
         self.display_graph = True
-        self.color_by = color_by # default color by ID
+        self._color_by = color_by # default color by ID
         self.colormap = colormap
 
         self._update_dims()
@@ -367,6 +370,9 @@ class Tracks(Layer):
         """ recolor the tracks """
         # if we change the coloring, rebuild the vertex colors array
         vertex_properties = self._manager.vertex_properties(self.color_by)
+
+        def _norm(p):
+            return (p - np.min(p)) / np.max([1e-10, np.ptp(p)])
 
         if self.color_by in self.colormaps_dict:
             colormap = self.colormaps_dict[self.color_by]

@@ -1,6 +1,8 @@
 from napari._qt.layers.qt_image_base_layer import QtLayerControls
-
 from napari.utils.colormaps import AVAILABLE_COLORMAPS
+
+# from .qt_image_base_layer import QtLayerControls
+# from ...utils.colormaps import AVAILABLE_COLORMAPS
 
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
@@ -16,7 +18,6 @@ MAX_TAIL_LENGTH = 1500
 MAX_TAIL_WIDTH = 40
 
 
-# class QtTracksControls(QtBaseImageControls):
 class QtTracksControls(QtLayerControls):
     """Qt view and controls for the arboretum Tracks layer.
 
