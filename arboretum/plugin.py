@@ -205,16 +205,21 @@ class Arboretum(QWidget):
 
     def export_data(self):
         """ export track data """
+        export_fn = os.path.join(DEFAULT_PATH, 'tracks.h5')
         filename = QFileDialog.getSaveFileName(self,
                                                'Export tracking data',
-                                               DEFAULT_PATH,
-                                               'Tracking files (*.h5)')
+                                               export_fn,
+                                               'Tracking files (*.h5, *.csv)')
         # only export file if we actually chose one
         if filename[0]:
-            filename, _= os.path.splitext(filename[0])
-            utils.export_hdf(f'{filename}.h5',
-                             self.segmentation,
-                             self.tracker_state)
+            filename, ext = os.path.splitext(filename[0])
+            if ext == '.h5':
+                utils.export_hdf(f'{filename}.h5',
+                                 self.segmentation,
+                                 self.tracker_state)
+            elif ext == '.csv':
+                # btrack.dataio.export_CSV(f'{filename}.csv', self.tracker_state)
+                raise NotImplementedError
 
 
 

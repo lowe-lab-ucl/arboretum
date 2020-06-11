@@ -61,6 +61,7 @@ class ArboretumHDFHandler(btrack.dataio.HDF5FileHandler):
         super().__init__(*args, **kwargs)
 
     @property
+    # @brack.dataio.h5check_property_exists('segmentation')
     def segmentation(self):
         return self._hdf['segmentation']['images'][:].astype(np.uint8)
 
@@ -84,7 +85,7 @@ class ArboretumHDFHandler(btrack.dataio.HDF5FileHandler):
                       obj_type='obj_type_1'):
 
         #TODO(arl): make sure that the objects are ordered in time
-                
+
         self._hdf.create_group('objects')
         grp = self._hdf['objects'].create_group(obj_type)
 
