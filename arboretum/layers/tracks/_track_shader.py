@@ -43,6 +43,8 @@ class TrackShader(Filter):
             can be an arbitrary float
         tail_length: int, float
             the upper limit on length of the 'tail'
+        use_fade: bool
+            this will enable/disable tail fading with time
         vertex_time: 1D array, list
             a vector describing the time associated with each vertex
         vertex_mask: 1D array, list
@@ -78,13 +80,16 @@ class TrackShader(Filter):
                 alpha = clamp(1.0-fade, 0.0, 1.0);
             }
 
+            // when use_fade is disabled, the entire track is visible
+            if ($use_fade == 0) {
+                alpha = 1.0;
+            }
+
             // finally, if we're applying a mask (for e.g. slicing ND data),
             // do it here. THIS WILL OVERIDE the time based vertex shading and
             // set the vertex alpha to zero
 
-            if ($a_vertex_mask == 1) {
-                alpha = 0.;
-            }
+            alpha = (1.-$a_vertex_mask) * alpha;
 
             // set the vertex alpha according to the fade
             v_track_color.a = alpha;
@@ -102,6 +107,7 @@ class TrackShader(Filter):
     def __init__(self,
                  current_time = 0,
                  tail_length = 30,
+                 use_fade: bool = True,
                  vertex_time: Union[List, np.ndarray] = [],
                  vertex_mask: Union[List, np.ndarray] = []):
 
@@ -110,6 +116,7 @@ class TrackShader(Filter):
 
         self.current_time = current_time
         self.tail_length = tail_length
+        self.use_fade = use_fade
         self.vertex_time = vertex_time
         self.vertex_mask = vertex_mask
 
@@ -120,13 +127,20 @@ class TrackShader(Filter):
     @current_time.setter
     def current_time(self, n: Union[int, float]):
         self._current_time = n
-
-        # TODO(arl): deal with change of dimensions here, if there is no
-        # 'current_frame'
         if isinstance(n, slice):
             n = np.max(self._vertex_time)
 
         self.vshader['current_time'] = float(n)
+
+
+    @property
+    def use_fade(self) -> bool:
+        return self._use_fade
+
+    @use_fade.setter
+    def use_fade(self, value: bool):
+        self._use_fade = value
+        self.vshader['use_fade'] = float(value)
 
     @property
     def tail_length(self) -> Union[int, float]:
@@ -141,6 +155,7 @@ class TrackShader(Filter):
         super(TrackShader, self)._attach(visual)
         self.vshader['a_vertex_time'] = VertexBuffer(self.vertex_time)
         self.vshader['a_vertex_mask'] = VertexBuffer(self.vertex_mask)
+
 
 
     @property

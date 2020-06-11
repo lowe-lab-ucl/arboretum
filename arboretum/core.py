@@ -67,7 +67,7 @@ def build_plugin(viewer, tracks):
     track_layer = Tracks(name='Tracks',
                          data=manager.data,
                          properties=manager.properties,
-                         colormaps=colormaps)
+                         colormaps_dict=colormaps)
     viewer.add_layer(track_layer)
 
 
@@ -121,10 +121,10 @@ def build_plugin_v2(viewer,
                 # build a track manager
                 manager = TrackManager(track_set)
 
-                _trk_layer = Tracks(data=manager.data,
+                _trk_layer = Tracks(name=new_layer_name(f'Tracks {i}'),
+                                    data=manager.data,
                                     properties=manager.properties,
-                                    name=new_layer_name(f'Tracks {i}'),
-                                    colormaps=colormaps)
+                                    colormaps_dict=colormaps)
                 track_layer = viewer.add_layer(_trk_layer)
 
 

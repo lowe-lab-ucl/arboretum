@@ -27,7 +27,7 @@ def mercator(track):
     return np.stack([t, x, y, z], axis=-1)
 
 
-objects = btrack.utils.import_JSON('./objects.json')
+objects = btrack.dataio.import_JSON('./objects.json')
 config = btrack.utils.load_config('./cell_config.json')
 
 # track the objects

@@ -3,6 +3,7 @@ __pycache__
 octopuslite.py
 arboretum/turbo.py
 arboretum/tree_viewer.py
+arboretum/layers/tracks/deprecated
 dist
 arboretum.egg-info
 *.spec

@@ -8,7 +8,7 @@ import napari
 import numpy as np
 
 
-objects = btrack.utils.import_JSON('./objects.json')
+objects = btrack.dataio.import_JSON('./objects.json')
 config = btrack.utils.load_config('./cell_config.json')
 
 # track the objects
