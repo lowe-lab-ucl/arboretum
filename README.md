@@ -28,7 +28,7 @@ Features:
 + [x] pip installer
 + [x] GUI for bTrack localization and tracking directly from Napari
 + [x] 3D track visualization (2D+t -> 3D, and 3D+t)
-+ [ ] Mouse interaction with tracks, click to select etc...
++ [x] Mouse interaction with tracks, click to select etc...
 + [x] Mouse cursor returns nearest track ID
 + [x] Store localizations in points layer, allowing interactive track editing
 + [x] Migrate to unified track data model
@@ -37,7 +37,7 @@ Features:
 + [x] Color tracks by properties
 + [x] Proper slicing when working in nd space
 + [x] Overhaul Export/Import with HDF5
-+ [ ] Tree plotting
++ [x] Tree plotting
 + [ ] PyPi package
 + [ ] Use integer labelled segmentation images as input
 + [ ] Remove redundant points/localizations storage of data
