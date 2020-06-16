@@ -1,50 +1,20 @@
 import btrack
-# from btrack.optimise.lineage import LineageTree
-#
-# def build_trees(tracks):
-#     _recover_children(tracks)
-#
-#     trees = LineageTree(tracks)
-#     trees.create()
-#
-#     return trees
+from napari.utils.colormaps import AVAILABLE_COLORMAPS
 
-# def _recover_children(tracks):
-#     # # do a bit of tree processing, only needed for HDF import - needs to be
-#     # sorted out in a release version
-#     trees = {}
-#     for trk in tracks:
-#         if trk.root == 0:
-#             trk.root = trk.ID
-#
-#         if trk.parent not in trees:
-#             trees[trk.parent] = [trk.ID]
-#         else:
-#             trees[trk.parent].append(trk.ID)
-#
-#     for tree in trees:
-#         if tree > 0:
-#             trk = list(filter(lambda t: t.ID == tree, tracks))
-#             if trk:
-#                 trk[0].children = trees[tree]
-#
-#
-# def generation(tree_manager, track):
-#     """ get the generational depth of any track """
-#     for tree in tree_manager.linear_trees:
-#         node = [node for node in tree if node.track.ID == track.ID]
-#         if node:
-#             return node[0].depth
-#     return 0
+turbo = AVAILABLE_COLORMAPS['turbo']
+
+def is_leaf(node):
+    return len(node.children) >= 1
 
 
-
-def _build_tree_graph(root_node, COLOR_CYCLE, color_by=None):
+def _build_tree_graph(root, nodes):
     """ built the graph of the tree """
 
+    max_generational_depth = max([n.generation for n in nodes])
+
     #put the start vertex into the queue, and the marked list
-    queue = [root_node]
-    marked = [root_node]
+    queue = [root]
+    marked = [root]
     y_pos = [0]
 
     # store the line coordinates that need to be plotted
@@ -53,30 +23,36 @@ def _build_tree_graph(root_node, COLOR_CYCLE, color_by=None):
     markers = []
 
     # now step through
-    while len(queue) > 0:
+    while queue:
         # pop the root from the tree
         node = queue.pop(0)
         y = y_pos.pop(0)
 
+        # TODO(arl): sync this with layer coloring
+        depth = float(node.generation) / max_generational_depth
+        edge_color = turbo[depth].RGB.tolist()[0]
+
         # draw the root of the tree
-        edges.append(([y,y],
-                      [node.start,node.end],
-                      COLOR_CYCLE(color_by(node))*255))
-        markers.append((y, node.start,'k.'))
+        edges.append(([y, y],
+                      [node.t[0], node.t[-1]],
+                      edge_color))
+        markers.append((y, node.t[0],'k.'))
 
         # mark if this is an apoptotic tree
-        if node.leaf:
-            if node.track.fate == btrack.constants.Fates.APOPTOSIS:
-                markers.append((y, node.end, 'rx'))
-                annotations.append((y, node.end, str(node.ID), 'r'))
+        if is_leaf(node):
+            if node.fate == btrack.constants.Fates.APOPTOSIS:
+                markers.append((y, node.t[-1], 'rx'))
+                annotations.append((y, node.t[-1], str(node.ID), 'r'))
             else:
-                markers.append((y, node.end, 'ks'))
-                annotations.append((y, node.end, str(node.ID), 'w'))
+                markers.append((y, node.t[-1], 'ks'))
+                annotations.append((y, node.t[-1], str(node.ID), 'w'))
 
-        if root_node.ID == node.ID:
-            annotations.append((y, node.start, str(node.ID), 'w'))
+        if node.is_root:
+            annotations.append((y, node.t[0], str(node.ID), 'w'))
 
-        for child in node.children:
+        children = [t for t in nodes if t.ID in node.children]
+
+        for child in children:
             if child not in marked:
 
                 # mark the children
@@ -84,18 +60,18 @@ def _build_tree_graph(root_node, COLOR_CYCLE, color_by=None):
                 queue.append(child)
 
                 # calculate the depth modifier
-                depth_mod = 2./(2.**(node.depth-1.))
+                depth_mod = 2./(2.**(node.generation+1))
 
-                if child == node.children[0]:
+                if child == children[0]:
                     y_pos.append(y+depth_mod)
                 else:
                     y_pos.append(y-depth_mod)
 
                 # plot a linking line to the children
-                edges.append(([y, y_pos[-1]], [node.end, child.start], 'w'))
-                markers.append((y, node.end,'go'))
+                edges.append(([y, y_pos[-1]], [node.t[-1], child.t[0]], 'w'))
+                markers.append((y, node.t[-1],'go'))
                 annotations.append((y_pos[-1],
-                                    child.end-(child.end-child.start)/2.,
+                                    child.t[-1]-(child.t[-1]-child.t[0])/2.,
                                     str(child.ID), 'w'))
 
 

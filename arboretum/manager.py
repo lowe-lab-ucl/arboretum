@@ -2,14 +2,14 @@
 
 import numpy as np
 
-from .lineage import generation
-
 
 def displacement(track):
     """ hacky displacement calculation """
     displacements = [0.]
     for i in range(1,len(track)):
-        d = np.sqrt((track.x[i]-track.x[i-1])**2 + (track.y[i]-track.y[i-1])**2 + (track.z[i]-track.z[i-1])**2)
+        d = np.sqrt((track.x[i]-track.x[i-1])**2
+                    + (track.y[i]-track.y[i-1])**2
+                    + (track.z[i]-track.z[i-1])**2)
         displacements.append(d)
     return displacements
 
