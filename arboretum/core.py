@@ -15,6 +15,8 @@ import os
 import enum
 import heapq
 
+import btrack
+
 import numpy as np
 
 import napari
@@ -27,7 +29,8 @@ from .layers.tracks import Tracks
 
 from ._colormaps import colormaps
 
-
+PLUGIN_NAME = 'arboretum'
+PLUGIN_VERSION = f'{PLUGIN_NAME} (btrack: v{btrack.__version__})'
 
 def _register_tracks_layer():
     """ _register_tracks_layer
@@ -83,7 +86,7 @@ def build_plugin_v2(viewer,
 
     """
 
-    from .plugin import Arboretum
+    from .plugin import Arboretum, ArboretumTreeViewer
     from . import utils
 
     # register the custom layers with this napari instance
@@ -91,10 +94,17 @@ def build_plugin_v2(viewer,
 
     # build the plugin
     arbor = Arboretum()
+    tree_viewer = ArboretumTreeViewer()
+
+
 
     # add the widget to Napari
     viewer.window.add_dock_widget(arbor,
-                                  name='arboretum',
+                                  name=PLUGIN_VERSION,
+                                  area='right')
+
+    viewer.window.add_dock_widget(tree_viewer,
+                                  name='arboretum-tree-viewer',
                                   area='right')
 
     # name a new layer using the source layer
@@ -126,6 +136,13 @@ def build_plugin_v2(viewer,
                                     properties=manager.properties,
                                     colormaps_dict=colormaps)
                 track_layer = viewer.add_layer(_trk_layer)
+
+                @track_layer.mouse_drag_callbacks.append
+                def show_tree(track_layer, event):
+                    track_id = track_layer._get_value()
+                    tree = arbor.get_tree(track_id)
+                    if tree is not None:
+                        tree_viewer.plot_tree(*tree)
 
 
     def add_layers(*layers):
@@ -219,8 +236,7 @@ def build_plugin_v2(viewer,
         arbor.segmentation = segmentation
         add_segmentation_layer(editable=True)
 
-    #
-    # track_layer.mouse_drag_callbacks.append(select_track)
+
 
 
 

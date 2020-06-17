@@ -6,61 +6,74 @@ from napari.utils.colormaps import AVAILABLE_COLORMAPS
 # from ...utils.event import Event
 # from ...utils.colormaps import AVAILABLE_COLORMAPS
 
-from typing import Union, Dict, Tuple, List
+from typing import Union, Tuple, List
 
 import numpy as np
 
-from ._track_utils import *
+from ._track_utils import TrackManager, check_track_dimensionality
+
+
+ALLOW_ND_SLICING = True
+
 
 class Tracks(Layer):
     """ Tracks
 
-    A napari-style Tracks layer for overlaying trajectories on image data.
-
+    A Tracks layer for overlaying trajectories on image data.
 
     Parameters
     ----------
+    data : list
+        list of (NxD) arrays of the format: time, x, y, (z), ....
+    properties : list (optional)
+        list of dictionaries of track properties, e.g.:
 
-        data : list
-            list of (NxD) arrays of the format: t,x,y,(z),....,n
+        [{'ID': 0,
+          'parent': [],
+          'root': 0,
+          'states': [], ...}, ...]
 
-        properties : list (optional)
-
-            list of dictionaries of track properties:
-
-            [{'ID': 0,
-              'parent': [],
-              'root': 0,
-              'states': [], ...}, ...]
-
-            List needs to be the same length as data, and all items need to
-            contain the same dictionary keys etc...
-
-            If no properties are provided, autogenerates the ID property
-            based on the track index in the list. Properties can have any
-            numeric type (scalar, array), although not much type checking
-            at the moment.
-
-            importantly, parent is a list of track IDs that are parents of the
-            track, this can be one (the track has one parent, and the parent
-            has >=1 child) in the case of splitting, or more than one (the
-            track has multiple parents, but only one child) in the case of
-            track merging.
-
-        color_by: str
-            track property to color vertices by
-
-        colormap: str:
-            default colormap to use for vertex coloring
-
-        colomaps_dict : dict
-            dictionary list of colormap objects to use for coloring by track
-            properties:
-
-            colormaps are any object with a __getitem__, that return RGBA
-
-            {'states': IndexedColormap}
-
+        List needs to be the same length as data, and all items need to
+        contain the same dictionary keys etc. If no properties are provided,
+        the layer autogenerates the ID property based on the track index in
+        the list. Properties can have any numeric type (scalar, array).
+        Importantly, 'parent' is a special property which defines a list of
+        track IDs that are parents of the track. This can be one (the track
+        has one parent, and the parent has >=1 child) in the case of track
+        splitting, or more than one (the track has multiple parents, but
+        only one child) in the case of track merging.
+    color_by: str
+        track property (from property keys) to color vertices by
+    edge_width : float
+        Width for all vectors in pixels.
+    tail_length : float
+        Length of the projection of time as a tail, in units of time.
+    colormap : str
+        Default colormap to use to set vertex colors. Specialized colormaps,
+        relating to specified properties can be passed to the layer via
+        colormaps_dict.
+    colomaps_dict : dict
+        dictionary list of colormap objects to use for coloring by track
+        properties. when coloring vertices, the layer looks in this
+        dictionary to find a matching colormap. the value is any object
+        with a __getitem__, that returns RGBA values that can be mapped to
+        the property
+    name : str
+        Name of the layer.
+    metadata : dict
+        Layer metadata.
+    scale : tuple of float
+        Scale factors for the layer.
+    translate : tuple of float
+        Translation values for the layer.
+    opacity : float
+        Opacity of the layer visual, between 0.0 and 1.0.
+    blending : str
+        One of a list of preset blending modes that determines how RGB and
+        alpha values of the layer visual get mixed. Allowed values are
+        {'opaque', 'translucent', and 'additive'}.
+    visible : bool
+        Whether the layer visual is currently being displayed.
 
     Notes
     -----
@@ -77,7 +90,7 @@ class Tracks(Layer):
 
     def __init__(
         self,
-        data=None,
+        data,
         *,
         properties=None,
         edge_width=2,
@@ -88,7 +101,7 @@ class Tracks(Layer):
         scale=None,
         translate=None,
         opacity=1,
-        blending='translucent',
+        blending='additive',
         visible=True,
         colormap='viridis',
         color_by='ID',
@@ -130,11 +143,18 @@ class Tracks(Layer):
 
         # store the currently displayed dims, we can use changes to this to
         # refactor what is sent to vispy
-        self._current_dims_displayed = self.dims.displayed
+        # self._current_dims_displayed = self.dims.displayed
 
         # track manager deals with data slicing, graph building an properties
         self._manager = TrackManager()
-        self._track_colors = None # this layer takes care of coloring the tracks
+        self._track_colors = (
+            None  # this layer takes care of coloring the tracks
+        )
+
+        # masks used when slicing nD data, None indicates that everything
+        # should be displayed
+        self._mask_data = None
+        self._mask_graph = None
 
         self.data = data  # this is the track data
         self.properties = properties or []
@@ -145,7 +165,7 @@ class Tracks(Layer):
         self.display_id = False
         self.display_tail = True
         self.display_graph = True
-        self._color_by = color_by # default color by ID
+        self._color_by = color_by  # default color by ID
         self.colormap = colormap
 
         self._update_dims()
@@ -153,7 +173,6 @@ class Tracks(Layer):
     def _get_extent(self) -> List[Tuple[int, int, int]]:
         """Determine ranges for slicing given by (min, max, step)."""
         return self._manager.extent
-
 
     def _get_ndim(self) -> int:
         """Determine number of dimensions of the layer."""
@@ -179,7 +198,7 @@ class Tracks(Layer):
                 'display_tail': self.display_tail,
                 'display_graph': self.display_graph,
                 'color_by': self.color_by,
-                'colormap': self.colormap
+                'colormap': self.colormap,
             }
         )
         return state
@@ -187,11 +206,25 @@ class Tracks(Layer):
     def _set_view_slice(self):
         """Sets the view given the indices to slice with."""
 
-        # check whether we want to slice the data
-        if self.dims.displayed != self._current_dims_displayed:
-            self._current_dims_displayed = self.dims.displayed
-            # TODO(arl): we can use the shader masking to slice the data
-            print(self.dims.displayed, self.dims.indices)
+        if not ALLOW_ND_SLICING:
+            return
+
+        self._mask_data = np.array([True] * self._manager.track_vertices.shape[0])
+        self._mask_graph = np.array([True] * self._manager.graph_vertices.shape[0])
+
+        # if none of the dims need slicing, return
+        if all([isinstance(idx, slice) for idx in self.dims.indices[1:]]):
+            return
+
+        # this bins the data into integer bins for slicing
+        bin_track_vertices = np.round(self._manager.track_vertices[:,1:]).astype(np.int32)
+        bin_graph_vertices = np.round(self._manager.graph_vertices[:,1:]).astype(np.int32)
+        for i, idx in enumerate(self.dims.indices[1:]):
+            if not isinstance(idx, slice):
+                axis_mask_data = bin_track_vertices[:,i] == idx
+                axis_mask_graph = bin_graph_vertices[:,i] == idx
+                self._mask_data = np.logical_and(axis_mask_data, self._mask_data)
+                self._mask_graph = np.logical_and(axis_mask_graph, self._mask_graph)
 
         return
 
@@ -414,4 +447,5 @@ class Tracks(Layer):
     def track_labels(self) -> zip:
         """ return track labels at the current time """
         labels, positions = self._manager.track_labels(self.current_time)
-        return zip(labels, self._pad_display_data(positions))
+        padded_positions = self._pad_display_data(positions)
+        return labels, padded_positions

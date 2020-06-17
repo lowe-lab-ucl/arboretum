@@ -13,12 +13,14 @@
 __author__ = 'Alan R. Lowe'
 __email__ = 'code@arlowe.co.uk'
 
+
 from vispy.visuals.filters.base_filter import Filter
 from vispy.gloo import VertexBuffer
 
 from typing import Union, List
 
 import numpy as np
+
 
 class TrackShader(Filter):
     """ TrackShader
@@ -64,6 +66,7 @@ class TrackShader(Filter):
         void apply_track_shading() {
 
             float alpha;
+            float masked_alpha;
 
             if ($a_vertex_time > $current_time) {
                 // this is a hack to minimize the frag shader rendering ahead
@@ -89,10 +92,10 @@ class TrackShader(Filter):
             // do it here. THIS WILL OVERIDE the time based vertex shading and
             // set the vertex alpha to zero
 
-            alpha = (1.-$a_vertex_mask) * alpha;
+            masked_alpha = $a_vertex_mask * alpha;
 
             // set the vertex alpha according to the fade
-            v_track_color.a = alpha;
+            v_track_color.a = masked_alpha;
         }
     """
 
@@ -104,15 +107,18 @@ class TrackShader(Filter):
         }
     """
 
-    def __init__(self,
-                 current_time = 0,
-                 tail_length = 30,
-                 use_fade: bool = True,
-                 vertex_time: Union[List, np.ndarray] = [],
-                 vertex_mask: Union[List, np.ndarray] = []):
+    def __init__(
+        self,
+        current_time=0,
+        tail_length=30,
+        use_fade: bool = True,
+        vertex_time: Union[List, np.ndarray] = None,
+        vertex_mask: Union[List, np.ndarray] = None,
+    ):
 
-        super().__init__(vcode=self.VERT_SHADER, vpos=3,
-                         fcode=self.FRAG_SHADER, fpos=9)
+        super().__init__(
+            vcode=self.VERT_SHADER, vpos=3, fcode=self.FRAG_SHADER, fpos=9
+        )
 
         self.current_time = current_time
         self.tail_length = tail_length
@@ -151,8 +157,6 @@ class TrackShader(Filter):
 
     def _attach(self, visual):
         super(TrackShader, self)._attach(visual)
-        self.vshader['a_vertex_time'] = VertexBuffer(self.vertex_time)
-        self.vshader['a_vertex_mask'] = VertexBuffer(self.vertex_mask)
 
     @property
     def vertex_time(self):
@@ -160,7 +164,8 @@ class TrackShader(Filter):
 
     @vertex_time.setter
     def vertex_time(self, v_time):
-        self._vertex_time = np.array(v_time).reshape(-1 ,1).astype(np.float32)
+        self._vertex_time = np.array(v_time).reshape(-1, 1).astype(np.float32)
+        self.vshader['a_vertex_time'] = VertexBuffer(self.vertex_time)
 
     @property
     def vertex_mask(self):
@@ -168,6 +173,7 @@ class TrackShader(Filter):
 
     @vertex_mask.setter
     def vertex_mask(self, v_mask):
-        if not v_mask:
-            v_mask = np.zeros(self.vertex_time.shape, dtype=np.float32)
-        self._vertex_mask = v_mask
+        if v_mask is None:
+            v_mask = np.ones(self.vertex_time.shape, dtype=np.float32)
+        self._vertex_mask = v_mask.reshape(-1, 1).astype(np.float32)
+        self.vshader['a_vertex_mask'] = VertexBuffer(self.vertex_mask)

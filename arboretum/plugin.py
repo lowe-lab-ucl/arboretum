@@ -17,7 +17,7 @@ import enum
 import heapq
 
 import numpy as np
-# import pyqtgraph as pg
+import pyqtgraph as pg
 
 from qtpy.QtWidgets import (
     QButtonGroup,
@@ -52,12 +52,9 @@ from napari.layers import Labels
 from napari._qt.qt_range_slider import QHRangeSlider
 
 
-cmap = plt.cm.get_cmap('prism')
-COLOR_CYCLE = lambda x: np.array(cmap(np.mod(x, 32) * 8))
-
-
 DEFAULT_PATH = os.getcwd()
-
+GUI_MAXIMUM_WIDTH = 250
+GUI_MAXIMUM_HEIGHT = 300
 
 
 
@@ -76,7 +73,7 @@ class Arboretum(QWidget):
 
         super(Arboretum, self).__init__(*args, **kwargs)
 
-        layout = QGridLayout()
+        layout = QVBoxLayout()
 
 
         # add some buttons
@@ -120,15 +117,19 @@ class Arboretum(QWidget):
         self.search_radius_label.setAlignment(Qt.AlignRight)
 
         # load/save buttons
-        layout.addWidget(self.load_button, 0, 0)
-        layout.addWidget(self.save_button, 0, 1)
+        io_panel = QWidget()
+        io_layout = QHBoxLayout()
+        io_layout.addWidget(self.load_button)
+        io_layout.addWidget(self.save_button)
+        io_panel.setLayout(io_layout)
+        io_panel.setMaximumWidth(GUI_MAXIMUM_WIDTH)
+        layout.addWidget(io_panel)
 
         # tracking panel
         tracking_panel = QGroupBox('tracking')
         tracking_layout = QGridLayout()
         tracking_layout.addWidget(QLabel('method: '), 0, 0)
         tracking_layout.addWidget(self.tracking_mode_combobox, 0, 1)
-        # tracking_layout.addWidget(QLabel('radius: '), 1, 0)
         tracking_layout.addWidget(self.search_radius_label, 1, 0)
         tracking_layout.addWidget(self.search_radius_slider, 1, 1)
         tracking_layout.addWidget(QLabel('optimize: '), 2, 0)
@@ -140,20 +141,24 @@ class Arboretum(QWidget):
         tracking_layout.addWidget(self.track_button, 5, 0)
         tracking_layout.addWidget(self.tracks_label, 5, 1)
         tracking_layout.setColumnMinimumWidth(1, 150)
+        tracking_panel.setMaximumWidth(GUI_MAXIMUM_WIDTH)
         tracking_panel.setLayout(tracking_layout)
-        layout.addWidget(tracking_panel, 1, 0, 1, 2)
+        layout.addWidget(tracking_panel)
 
         # status panel
         status_panel = QGroupBox('status')
         status_layout = QHBoxLayout()
         status_layout.addWidget(self.status_label)
+        status_panel.setMaximumWidth(GUI_MAXIMUM_WIDTH)
         status_panel.setLayout(status_layout)
-        layout.addWidget(status_panel, 7, 0, 1, 2)
+        layout.addWidget(status_panel)
 
         # set the layout
         layout.setAlignment(Qt.AlignTop)
         layout.setSpacing(4)
+
         self.setLayout(layout)
+        self.setMaximumHeight(GUI_MAXIMUM_HEIGHT)
 
         # callbacks
         self.load_button.clicked.connect(self.load_data)
@@ -296,7 +301,6 @@ class Arboretum(QWidget):
 
             return tuple(volume)
 
-
     @property
     def active_layer(self) -> str:
         if self._active_layer is None: return ''
@@ -336,3 +340,74 @@ class Arboretum(QWidget):
     def _on_radius_change(self, value):
         self.search_radius_label.setText(f'{value}')
         self._search_radius = value
+
+
+    def get_tree(self, track_id: int):
+        """ get a tree associated with this track """
+        print(f'Selected track: {track_id}')
+
+        if track_id:
+
+            # test, plot the track we've selected
+            selected_track = filter(lambda t: t.ID == track_id, self.tracks[0])
+            track = list(selected_track)[0]
+
+            # get the root node?
+            root = [t for t in self.tracks[0] if t.ID == track.root]
+            if root:
+                root = root[0]
+            else:
+                return
+
+            return (track_id,) + tuple(_build_tree_graph(root, self.tracks[0]))
+
+        return
+
+
+
+
+class ArboretumTreeViewer(QWidget):
+    """ separate tree viewer widget """
+    def __init__(self, *args, **kwargs):
+        super(ArboretumTreeViewer, self).__init__(*args, **kwargs)
+        layout = QVBoxLayout()
+        plot_widget = pg.GraphicsLayoutWidget()
+        self.plot_view = plot_widget.addPlot(title='Lineage tree',
+                                             labels={'left': 'Time'})
+        self.plot_view.hideAxis('bottom')
+        layout.addWidget(plot_widget)
+        layout.setAlignment(Qt.AlignTop)
+        layout.setSpacing(4)
+        self.setLayout(layout)
+
+
+    def plot_tree(self, track_id, edges, markers, annotations):
+
+        self.clear()
+
+        self.plot_view.setTitle(f'Lineage tree: {track_id}')
+
+        for ex, ey, ec in edges:
+            self.plot_view.plot(ex, ey, pen=pg.mkPen(color=ec, width=3))
+
+        # labels
+        for tx, ty, tstr, tcol in annotations:
+
+            if tstr == str(track_id):
+                tcol[3] = 255
+            else:
+                tcol[3] = 64
+
+            pt = pg.TextItem(text=tstr,
+                             color=tcol,
+                             html=None,
+                             anchor=(0, 0),
+                             border=None,
+                             fill=None,
+                             angle=0,
+                             rotateAxis=None)
+            pt.setPos(tx, ty)
+            self.plot_view.addItem(pt, ignoreBounds=True)
+
+    def clear(self):
+        self.plot_view.clear()

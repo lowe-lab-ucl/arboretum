@@ -14,7 +14,7 @@ from qtpy.QtWidgets import (
 
 import numpy as np
 
-MAX_TAIL_LENGTH = 1500
+MAX_TAIL_LENGTH = 300
 MAX_TAIL_WIDTH = 40
 
 
@@ -23,7 +23,7 @@ class QtTracksControls(QtLayerControls):
 
     Parameters
     ----------
-    layer : arboretum.layers.Tracks
+    layer : napari.layers.Tracks
         An instance of a Tracks layer.
 
     Attributes
@@ -71,7 +71,6 @@ class QtTracksControls(QtLayerControls):
         self.graph_checkbox = QCheckBox()
         self.graph_checkbox.setChecked(True)
 
-
         self.edge_width_slider.valueChanged.connect(self.change_width)
         self.tail_length_slider.valueChanged.connect(self.change_tail_length)
         self.tail_checkbox.stateChanged.connect(self.change_display_tail)
@@ -110,9 +109,6 @@ class QtTracksControls(QtLayerControls):
         self._on_properties_change()
         self._on_colormap_change()
 
-
-
-
     def _on_edge_width_change(self, event=None):
         """Receive layer model edge line width change event and update slider.
 
@@ -134,8 +130,7 @@ class QtTracksControls(QtLayerControls):
         value : float
             Line width of shapes.
         """
-        self.layer.edge_width = float(value) / 2.
-
+        self.layer.edge_width = float(value) / 2.0
 
     def _on_tail_length_change(self, event=None):
         """Receive layer model edge line width change event and update slider.
@@ -167,7 +162,9 @@ class QtTracksControls(QtLayerControls):
     def _on_colormap_change(self, event=None):
         with self.layer.events.colormap.blocker():
             colormap = self.layer.colormap
-            idx = self.colormap_combobox.findText(colormap, Qt.MatchFixedString)
+            idx = self.colormap_combobox.findText(
+                colormap, Qt.MatchFixedString
+            )
             self.colormap_combobox.selectedIndex = idx
 
     def change_display_tail(self, state):
