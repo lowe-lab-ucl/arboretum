@@ -61,7 +61,7 @@ class ArboretumHDFHandler(btrack.dataio.HDF5FileHandler):
         super().__init__(*args, **kwargs)
 
     @property
-    # @brack.dataio.h5check_property_exists('segmentation')
+    @brack.dataio.h5check_property_exists('segmentation')
     def segmentation(self):
         return self._hdf['segmentation']['images'][:].astype(np.uint8)
 

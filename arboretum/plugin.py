@@ -53,8 +53,9 @@ from napari._qt.qt_range_slider import QHRangeSlider
 
 
 DEFAULT_PATH = os.getcwd()
-GUI_MAXIMUM_WIDTH = 250
-GUI_MAXIMUM_HEIGHT = 300
+GUI_MAXIMUM_WIDTH = 225
+GUI_MAXIMUM_HEIGHT = 350
+GUI_MINIMUM_HEIGHT = 300
 
 
 
@@ -141,6 +142,7 @@ class Arboretum(QWidget):
         tracking_layout.addWidget(self.track_button, 5, 0)
         tracking_layout.addWidget(self.tracks_label, 5, 1)
         tracking_layout.setColumnMinimumWidth(1, 150)
+        tracking_layout.setSpacing(4)
         tracking_panel.setMaximumWidth(GUI_MAXIMUM_WIDTH)
         tracking_panel.setLayout(tracking_layout)
         layout.addWidget(tracking_panel)
