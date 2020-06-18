@@ -24,9 +24,10 @@ from napari.qt.threading import thread_worker
 
 from typing import Union
 
+from . import utils
+from .plugin import Arboretum, ArboretumTreeViewer
 from .manager import TrackManager
 from .layers.tracks import Tracks
-
 from ._colormaps import colormaps
 
 PLUGIN_NAME = 'arboretum'
@@ -85,9 +86,6 @@ def build_plugin_v2(viewer,
         segmentation: optional segmentation to be loaded as as a `labels` layer
 
     """
-
-    from .plugin import Arboretum, ArboretumTreeViewer
-    from . import utils
 
     # register the custom layers with this napari instance
     _register_tracks_layer()
@@ -156,10 +154,12 @@ def build_plugin_v2(viewer,
             """ import track data """
             # get the extension, and pick the correct file loader
             if arbor.filename is not None:
+                arbor.status_label.setText('Loading...')
                 seg, loc, tracks = utils.load_hdf(arbor.filename)
                 arbor.segmentation = seg
                 arbor.tracks = tracks
                 arbor.localizations = loc
+                arbor.status_label.setText('')
 
 
         new_layers = lambda: add_layers(add_segmentation_layer,
