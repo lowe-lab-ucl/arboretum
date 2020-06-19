@@ -26,7 +26,7 @@ from typing import Union
 
 from . import utils
 from .plugin import Arboretum, ArboretumTreeViewer
-from .manager import TrackManager
+from .manager import TrackManager, temporal
 from .layers.tracks import Tracks
 from ._colormaps import colormaps
 
@@ -101,7 +101,7 @@ def build_plugin_v2(viewer,
 
     viewer.window.add_dock_widget(tree_viewer,
                                   name='arboretum-tree-viewer',
-                                  area='right')
+                                  area='bottom')
 
     # name a new layer using the source layer
     new_layer_name = lambda s: f'{s} {arbor.active_layer}'
@@ -199,8 +199,6 @@ def build_plugin_v2(viewer,
         volume = arbor.volume
         search_radius = arbor.search_radius
 
-        print(search_radius, method)
-
         @thread_worker
         def _track():
             """ track objects """
@@ -233,6 +231,19 @@ def build_plugin_v2(viewer,
     if segmentation is not None:
         arbor.segmentation = segmentation
         add_segmentation_layer(editable=True)
+
+
+    @viewer.bind_key('m')
+    def make_movie(viewer):
+        """ make a movie """
+        num_frames = int(viewer.dims.max_indices[0])
+        def _make_movie():
+            for i in range(num_frames):
+                viewer.dims.set_point(0, i)
+                image = viewer.screenshot(path=os.path.join('/media/quantumjot/Data/movie', f'movie_{i}.png'))
+
+        _make_movie()
+
 
 
 

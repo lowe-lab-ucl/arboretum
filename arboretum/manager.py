@@ -33,6 +33,9 @@ def planar(track):
 def volumetric(track):
     return np.stack([track.t, track.x, track.y, track.z], axis=-1)
 
+def temporal(track):
+    return np.stack([track.t, track.x, track.y, track.t], axis=-1)
+
 def mercator(track):
     """ mercator projection """
     R = 160.
@@ -65,9 +68,6 @@ class TrackManager:
 
         self.tracks = tracks
         self.transform = transform
-
-        # build trees from the tracks
-        # self._trees = build_trees(self.tracks)
 
     @property
     def trees(self): return self._trees

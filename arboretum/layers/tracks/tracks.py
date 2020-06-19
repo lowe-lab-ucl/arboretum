@@ -13,7 +13,7 @@ import numpy as np
 from ._track_utils import TrackManager, check_track_dimensionality
 
 
-ALLOW_ND_SLICING = True
+ALLOW_ND_SLICING = False
 
 
 class Tracks(Layer):
@@ -206,25 +206,36 @@ class Tracks(Layer):
     def _set_view_slice(self):
         """Sets the view given the indices to slice with."""
 
-        if not ALLOW_ND_SLICING:
-            return
+        if not ALLOW_ND_SLICING: return
 
-        self._mask_data = np.array([True] * self._manager.track_vertices.shape[0])
-        self._mask_graph = np.array([True] * self._manager.graph_vertices.shape[0])
-
-        # if none of the dims need slicing, return
+        # if none of the dims need slicing, return since this function gets
+        # called every time a slider changes
         if all([isinstance(idx, slice) for idx in self.dims.indices[1:]]):
             return
 
-        # this bins the data into integer bins for slicing
+        # NOTE(arl): to whoever is reading this. The implementation is a bit
+        # clunky here - no real need to iterate over the dims, but it works
+        # by building a vertex mask (i.e.) those vertices that should be
+        # displayed, give the current slicing. This is only applied to the
+        # dims>0 since we always want to project time
+
+        n_track_vertices = self._manager.track_vertices.shape[0]
+        n_graph_vertices = self._manager.graph_vertices.shape[0]
+        self._mask_data = np.array([True] * n_track_vertices)
+        self._mask_graph = np.array([True] * n_graph_vertices)
+
+        # this bins the data into integer bins for slicing.
+        # NOTE(arl): we could also use a hash bin here
         bin_track_vertices = np.round(self._manager.track_vertices[:,1:]).astype(np.int32)
         bin_graph_vertices = np.round(self._manager.graph_vertices[:,1:]).astype(np.int32)
         for i, idx in enumerate(self.dims.indices[1:]):
-            if not isinstance(idx, slice):
-                axis_mask_data = bin_track_vertices[:,i] == idx
-                axis_mask_graph = bin_graph_vertices[:,i] == idx
-                self._mask_data = np.logical_and(axis_mask_data, self._mask_data)
-                self._mask_graph = np.logical_and(axis_mask_graph, self._mask_graph)
+            if isinstance(idx, slice):
+                continue
+
+            axis_mask_data = bin_track_vertices[:,i] == idx
+            axis_mask_graph = bin_graph_vertices[:,i] == idx
+            self._mask_data = np.logical_and(axis_mask_data, self._mask_data)
+            self._mask_graph = np.logical_and(axis_mask_graph, self._mask_graph)
 
         return
 
@@ -381,7 +392,6 @@ class Tracks(Layer):
             return
         self._color_by = color_by
         self._recolor_tracks()
-        # fire the events and update the display
         self.events.color_by()
         self.refresh()
 

@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Name:     Arboretum
 # Purpose:  Dockable widget, and custom track visualization layers for Napari,
-#           to cell/object track data.
+#           for cell/object track data.
 #
 # Authors:  Alan R. Lowe (arl) a.lowe@ucl.ac.uk
 #

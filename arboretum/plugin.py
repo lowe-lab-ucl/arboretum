@@ -245,7 +245,10 @@ class Arboretum(QWidget):
 
     @segmentation.setter
     def segmentation(self, segmentation: Union[np.ndarray, Labels]):
-        if isinstance(segmentation, np.ndarray):
+        if segmentation is None:
+            self._segmentation = None
+            return
+        elif isinstance(segmentation, np.ndarray):
             self._segmentation = segmentation
         else:
             # assume this is a napari layer

@@ -187,21 +187,28 @@ def _color_segmentation_by_state(h, color_segmentation=False):
 
 
 def load_hdf(filename: str,
-             filter_by: str = 'area>=50',
+             filter_by: str = 'area>=100',
              load_segmentation: bool = True,
+             load_objects: bool = True,
              color_segmentation: bool = True):
 
     """ load data from an HDF file """
     with ArboretumHDFHandler(filename) as h:
         h._f_expr = filter_by
 
+        if 'segmentation' in h._hdf and load_segmentation:
+            seg = _color_segmentation_by_state(h, color_segmentation)
+            seg = seg.astype(np.uint8)
+        else:
+            seg = None
+
         # get the objects and strip out the data
-        if 'objects' in h._hdf:
-            obj = h.objects
+        if 'objects' in h._hdf and load_objects:
+            obj = h.filtered_objects(f_expr=filter_by)
             loc = np.stack([[o.t, o.x, o.y, o.z, o.label] for o in obj], axis=0)
             loc = loc.astype(np.uint16)
         else:
-            loc = []
+            loc = np.empty((0,3))
 
         # get the tracks
         if 'tracks' in h._hdf:
@@ -209,11 +216,7 @@ def load_hdf(filename: str,
         else:
             tracks = []
 
-        if load_segmentation:
-            seg = _color_segmentation_by_state(h, color_segmentation)
-            seg = seg.astype(np.uint8)
-        else:
-            seg = None
+
 
         # correct files originating from earlier versions of the tracker
         for trk_set in tracks:
