@@ -161,6 +161,7 @@ class Arboretum(QWidget):
 
         self.setLayout(layout)
         self.setMaximumHeight(GUI_MAXIMUM_HEIGHT)
+        self.setMaximumWidth(GUI_MAXIMUM_WIDTH)
 
         # callbacks
         self.load_button.clicked.connect(self.load_data)
@@ -197,6 +198,8 @@ class Arboretum(QWidget):
         # only load file if we actually chose one
         if filename[0]:
             self.filename = filename[0]
+        else:
+            self.filename = None
 
 
     def load_config(self):
@@ -208,6 +211,8 @@ class Arboretum(QWidget):
         # only load file if we actually chose one
         if filename[0]:
             self.btrack_cfg = utils._get_btrack_cfg(filename=filename[0])
+        else:
+            self.btrack_cfg = None
 
 
     def export_data(self):
@@ -225,8 +230,7 @@ class Arboretum(QWidget):
                                  self.segmentation,
                                  self.tracker_state)
             elif ext == '.csv':
-                # btrack.dataio.export_CSV(f'{filename}.csv', self.tracker_state)
-                raise NotImplementedError
+                btrack.dataio.export_CSV(f'{filename}.csv', self.tracker_state)
 
 
 

@@ -216,8 +216,6 @@ def load_hdf(filename: str,
         else:
             tracks = []
 
-
-
         # correct files originating from earlier versions of the tracker
         for trk_set in tracks:
             for trk in trk_set:

@@ -97,7 +97,7 @@ def build_plugin_v2(viewer,
     # add the widget to Napari
     viewer.window.add_dock_widget(arbor,
                                   name=PLUGIN_VERSION,
-                                  area='right')
+                                  area='bottom')
 
     viewer.window.add_dock_widget(tree_viewer,
                                   name='arboretum-tree-viewer',
