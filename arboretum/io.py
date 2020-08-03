@@ -73,7 +73,6 @@ class ArboretumHDFHandler(btrack.dataio.HDF5FileHandler):
 
         # write the segmentation out
         grp = self._hdf.create_group('segmentation')
-        # grp.create_dataset(f'images_{obj_type}',
         grp.create_dataset(f'images',
                            data=segmentation,
                            dtype='uint8',
