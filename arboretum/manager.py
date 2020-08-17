@@ -27,16 +27,16 @@ def survivor(tracks, track):
 
 
 
-def planar(track):
+def tform_planar(track):
     return np.stack([track.t, track.x, track.y], axis=-1)
 
-def volumetric(track):
-    return np.stack([track.t, track.x, track.y, track.z], axis=-1)
+def tform_volumetric(track):
+    return np.stack([track.t, track.z, track.x, track.y], axis=-1)
 
-def temporal(track):
+def tform_temporal(track):
     return np.stack([track.t, track.x, track.y, track.t], axis=-1)
 
-def mercator(track):
+def tform_mercator(track):
     """ mercator projection """
     R = 160.
     S = 100.
@@ -63,8 +63,7 @@ class TrackManager:
     """
     def __init__(self,
                  tracks,
-                 transform=planar):
-
+                 transform=tform_planar):
 
         self.tracks = tracks
         self.transform = transform
@@ -83,6 +82,7 @@ class TrackManager:
                  'root': t.root,
                  'parent': t.parent,
                  'time': t.t,
+                 'z': t.z,
                  'states': t.state,
                  'fate': t.fate.value,
                  'survivor': survivor(self.tracks, t),

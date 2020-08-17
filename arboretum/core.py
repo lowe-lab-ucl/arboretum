@@ -11,6 +11,9 @@
 # Created:  01/05/2020
 #-------------------------------------------------------------------------------
 
+EXPORT_PATH = '/media/quantumjot/Data/movie'
+
+
 import os
 import enum
 import heapq
@@ -26,7 +29,7 @@ from typing import Union
 
 from . import utils
 from .plugin import Arboretum, ArboretumTreeViewer
-from .manager import TrackManager, temporal
+from .manager import TrackManager, tform_planar, tform_volumetric
 from .layers.tracks import Tracks
 from ._colormaps import colormaps
 
@@ -116,7 +119,13 @@ def build_plugin_v2(viewer,
     def add_localizations_layer():
         """ add a localizations layer """
         if arbor.localizations is not None:
-            pts_layer = viewer.add_points(arbor.localizations[:,:3],
+
+            if arbor.ndim == 4:
+                loc = arbor.localizations[:, (0, 3, 1, 2)]
+            else:
+                loc = arbor.localizations[:, (0, 1, 2)]
+
+            pts_layer = viewer.add_points(loc,
                                           name=new_layer_name('Localizations'),
                                           face_color='b')
     def add_track_layer():
@@ -124,8 +133,14 @@ def build_plugin_v2(viewer,
         if arbor.tracks is not None:
             for i, track_set in enumerate(arbor.tracks):
 
+                if arbor.ndim == 4:
+                    transform = tform_volumetric
+                else:
+                    transform = tform_planar
+
                 # build a track manager
-                manager = TrackManager(track_set)
+                manager = TrackManager(track_set,
+                                       transform=transform)
 
                 _trk_layer = Tracks(name=new_layer_name(f'Tracks {i}'),
                                     data=manager.data,
@@ -238,9 +253,10 @@ def build_plugin_v2(viewer,
         """ make a movie """
         num_frames = int(viewer.dims.max_indices[0])
         def _make_movie():
-            for i in range(num_frames):
+            for i in range(num_frames+1):
                 viewer.dims.set_point(0, i)
-                image = viewer.screenshot(path=os.path.join('/media/quantumjot/Data/movie', f'movie_{i}.png'))
+                fn = os.path.join(EXPORT_PATH, f'movie_{i}.png')
+                image = viewer.screenshot(path=fn, canvas_only=False)
 
         _make_movie()
 

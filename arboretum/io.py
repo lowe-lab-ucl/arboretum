@@ -63,7 +63,7 @@ class ArboretumHDFHandler(btrack.dataio.HDF5FileHandler):
     @property
     @btrack.dataio.h5check_property_exists('segmentation')
     def segmentation(self):
-        return self._hdf['segmentation']['images'][:].astype(np.uint8)
+        return self._hdf['segmentation']['images'][:].astype(np.uint16)
 
     def write_segmentation(self,
                            segmentation: np.ndarray,
@@ -75,7 +75,7 @@ class ArboretumHDFHandler(btrack.dataio.HDF5FileHandler):
         grp = self._hdf.create_group('segmentation')
         grp.create_dataset(f'images',
                            data=segmentation,
-                           dtype='uint8',
+                           dtype='uint16',
                            compression='gzip',
                            compression_opts=7)
 

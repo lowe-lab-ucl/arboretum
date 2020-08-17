@@ -232,6 +232,9 @@ class Arboretum(QWidget):
             elif ext == '.csv':
                 btrack.dataio.export_CSV(f'{filename}.csv', self.tracker_state)
 
+    @property
+    def ndim(self):
+        return self.segmentation.ndim
 
 
     @property
@@ -302,11 +305,11 @@ class Arboretum(QWidget):
         else:
             volume = []
             # assumes time is the first dimension
-            for dim in self.segmentation.shape[1:]:
+            for dim in self.segmentation.shape[-2:]:
                 volume.append((0, dim))
-
-            if len(volume) == 2:
-                volume.append((-1e5, 1e5))
+            #
+            # if len(volume) == 2:
+            volume.append((-1e5, 1e5))
 
             return tuple(volume)
 

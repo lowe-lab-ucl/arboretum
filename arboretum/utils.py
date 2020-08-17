@@ -54,36 +54,56 @@ class _Stack:
 
 
 
-def _localize_process(data) -> np.ndarray:
+def _localize_process(data: tuple,
+                      is_binary: bool = True) -> np.ndarray:
     # image: np.ndarray, frame: int) -> np.ndarray:
     """ worker process for localizing and labelling objects
+
+    volumetric data is usually of the format: t, z, x, y
 
     Returns:
         combined data in form of nx5 array (t, x, y, z, label) adding a
         z-dimension of uniform zero, if one doesn't exist.
     """
+
     image, frame = data
-    labeled, n = measurements.label(image.astype(np.bool))
+    assert image.dtype in (np.uint8, np.uint16)
+
+    if is_binary:
+        labeled, n = measurements.label(image.astype(np.bool))
+    else:
+        labeled = image
+        n = len([p for p in np.unique(labeled) if p>0])
+
+    # calculate the centroids
     idx = list(range(1, n+1))
-    centroids = np.array(measurements.center_of_mass(image, labels=labeled, index=idx))
-    labels = np.array(measurements.maximum(image, labels=labeled, index=idx))
+    centroids = np.array(measurements.center_of_mass(image,
+                                                     labels=labeled,
+                                                     index=idx))
+
+    # if we're dealing with volumetric data, reorder so that z is last
+    if image.ndim == 3:
+        centroids = np.roll(centroids, -1)
 
     localizations = np.zeros((centroids.shape[0], 5), dtype=np.uint16)
     localizations[:,0] = frame # time
     localizations[:,1:centroids.shape[1]+1] = centroids
-    localizations[:,-1] = labels-1 #-1 because we use a label of zero for states
+    localizations[:,-1] = 0 #labels-1 #-1 because we use a label of zero for states
 
     return localizations
 
 
-
-# def _color_process(data) -> np.ndarray:
-#     """ worker process for coloring arrays by state """
+def _is_binary_segmentation(image):
+    """ guess whether this is a binary or unique/integer segmentation based on
+    the data in the image. """
+    objects = measurements.find_objects(image)
+    labeled, n = measurements.label(image.astype(np.bool))
+    return n > len(objects)
 
 
 
 def localize(stack_as_array: np.ndarray,
-             num_workers: int = 8):
+             **kwargs):
     """ localize
 
     get the centroids of all objects given a segmentaion mask from Napari.
@@ -94,19 +114,23 @@ def localize(stack_as_array: np.ndarray,
     Parameters:
         stack_as_array: a numpy array of the stack, typically the data from
             a napari 'labels' layer
-        num_workers: number of processes to distribute the job accross
 
     Notes:
         - multiprocessing is not a good options for use with the GUI. Change to
         a generator
     """
 
+    if 'binary_segmentation' not in kwargs:
+        is_binary = _is_binary_segmentation(stack_as_array[0,...])
+        print(f'guessing is_binary: {is_binary}')
+    else:
+        is_binary = kwargs['binary_segmentation']
+        assert type(is_binary) == type(bool)
+
     stack = _Stack(stack_as_array)
-    localizations=[_localize_process(s) for s in stack]
+    localizations=[_localize_process(s, is_binary=is_binary) for s in stack]
     return np.concatenate(localizations, axis=0)
 
-    # for s in stack:
-    #     yield _localize_process(s)
 
 
 
@@ -134,7 +158,8 @@ def track(localizations: np.ndarray,
           volume: tuple = ((0,1200),(0,1600),(-1e5,1e5)),
           optimize: bool = True,
           method: BayesianUpdates = BayesianUpdates.EXACT,
-          search_radius: int = None):
+          search_radius: int = None,
+          min_track_len: int = 3):
 
     """ track
 
@@ -172,6 +197,8 @@ def track(localizations: np.ndarray,
         # dump all of the data into the frozen state
         frozen_tracker = TrackerFrozenState()
         frozen_tracker.set(tracker)
+
+        frozen_tracker.tracks = [t for t in frozen_tracker.tracks if len(t)>min_track_len]
 
     return frozen_tracker
 
