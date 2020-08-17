@@ -103,7 +103,7 @@ class TrackShader(Filter):
         varying vec4 v_track_color;
         void apply_track_shading() {
             // interpolate
-            gl_FragColor.a = v_track_color.a;
+            gl_FragColor.a = clamp(v_track_color.a, 0.0, 1.0);
         }
     """
 
