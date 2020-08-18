@@ -336,18 +336,19 @@ class Arboretum(QWidget):
 
     @property
     def search_radius(self) -> int:
-        if self.tracking_mode == BayesianUpdates.APPROXIMATE:
-            return self._search_radius
-        else:
-            return None
+        return self._search_radius
+        # if self.tracking_mode == BayesianUpdates.APPROXIMATE:
+        #     return self._search_radius
+        # else:
+        #     return None
 
     def _on_mode_change(self, event=None):
         mode = self.tracking_mode_combobox.currentText().upper()
         self.tracking_mode = BayesianUpdates[mode]
-        if self.tracking_mode == BayesianUpdates.APPROXIMATE:
-            self.search_radius_slider.setEnabled(True)
-        else:
-            self.search_radius_slider.setEnabled(False)
+        # if self.tracking_mode == BayesianUpdates.APPROXIMATE:
+        #     self.search_radius_slider.setEnabled(True)
+        # else:
+        #     self.search_radius_slider.setEnabled(False)
 
     def _on_radius_change(self, value):
         self.search_radius_label.setText(f'{value}')

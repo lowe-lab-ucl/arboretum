@@ -160,7 +160,7 @@ def track(localizations: np.ndarray,
           optimize: bool = True,
           method: BayesianUpdates = BayesianUpdates.EXACT,
           search_radius: int = None,
-          min_track_len: int = 3):
+          min_track_len: int = 2):
 
     """ track
 
@@ -202,7 +202,7 @@ def track(localizations: np.ndarray,
         frozen_tracker = TrackerFrozenState()
         frozen_tracker.set(tracker)
 
-        frozen_tracker.tracks = [t for t in frozen_tracker.tracks if len(t)>min_track_len]
+        frozen_tracker.tracks = [t for t in frozen_tracker.tracks if len(t)>=min_track_len]
 
     # for track in frozen_tracker.tracks:
     #     for obj in track._data:
