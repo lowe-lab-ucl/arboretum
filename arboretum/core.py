@@ -25,6 +25,8 @@ import numpy as np
 import napari
 from napari.qt.threading import thread_worker
 
+from multiprocessing import Process, SimpleQueue
+
 from typing import Union
 
 from . import utils
@@ -214,17 +216,30 @@ def build_plugin_v2(viewer,
         volume = arbor.volume
         search_radius = arbor.search_radius
 
+
+        def _track_process(q, *args, **kwargs):
+            tracker_state = utils.track(*args, **kwargs)
+            q.put(tracker_state)
+
         @thread_worker
         def _track():
             """ track objects """
             if arbor.localizations is not None:
                 arbor.status_label.setText('Tracking...')
-                tracker_state = utils.track(arbor.localizations,
-                                            config,
-                                            method=method,
-                                            optimize=optimize,
-                                            volume=volume,
-                                            search_radius=search_radius)
+
+                # launch the tracking as a separate process
+                q = SimpleQueue()
+                args = (q, arbor.localizations, config)
+                kwargs = {'method': method,
+                          'optimize': optimize,
+                          'volume': volume,
+                          'search_radius': search_radius}
+
+                p = Process(target=_track_process, args=args, kwargs=kwargs)
+                p.start()
+                tracker_state = q.get()
+                p.join()
+
                 arbor.tracker_state = tracker_state
                 arbor.status_label.setText('')
 
