@@ -71,12 +71,13 @@ def _localize_process(data: tuple,
 
     if is_binary:
         labeled, n = measurements.label(image.astype(np.bool))
+        idx = list(range(1, n+1))
     else:
         labeled = image
-        n = len([p for p in np.unique(labeled) if p>0])
+        idx = [p for p in np.unique(labeled) if p>0]
 
     # calculate the centroids
-    idx = list(range(1, n+1))
+
     centroids = np.array(measurements.center_of_mass(image,
                                                      labels=labeled,
                                                      index=idx))
@@ -175,6 +176,9 @@ def track(localizations: np.ndarray,
     factory = _PyTrackObjectFactory()
     objects = [factory.get(localizations[i,:4], label=int(localizations[i,-1])) for i in idx]
 
+    # for obj in objects:
+    #     obj.z = obj.z * 10.
+
     # initialise a tracker session using a context manager
     with btrack.BayesianTracker() as tracker:
 
@@ -199,6 +203,10 @@ def track(localizations: np.ndarray,
         frozen_tracker.set(tracker)
 
         frozen_tracker.tracks = [t for t in frozen_tracker.tracks if len(t)>min_track_len]
+
+    # for track in frozen_tracker.tracks:
+    #     for obj in track._data:
+    #         obj.z = obj.z / 10.
 
     return frozen_tracker
 
