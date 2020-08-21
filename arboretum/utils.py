@@ -19,10 +19,33 @@ import multiprocessing
 import numpy as np
 from scipy.ndimage import measurements
 
-from .io import ArboretumHDFHandler, TrackerFrozenState
 
+from .io import ArboretumHDFHandler, TrackerFrozenState
 from btrack.constants import BayesianUpdates
 
+
+from functools import wraps
+from multiprocessing import Process, SimpleQueue
+
+def process_worker(fn):
+    """ Decorator to run function as a process """
+    @wraps(fn)
+    def _process(*args, **kwargs):
+
+        def _worker(*args, **kwargs):
+            q = args[0]
+            r = fn(*args[1:], **kwargs)
+            q.put(r)
+
+        queue = SimpleQueue()
+        process = Process(target=_worker, args=(queue, *args), kwargs=kwargs)
+        process.start()
+        result = queue.get()
+        process.join()
+
+        return result
+
+    return _process
 
 
 
@@ -196,7 +219,7 @@ def track(localizations: np.ndarray,
         tracker.track_interactive(step_size=100)
 
         if optimize:
-            tracker.optimize()
+            tracker.optimize(options={'tm_lim': int(6e4)})
 
         # dump all of the data into the frozen state
         frozen_tracker = TrackerFrozenState()

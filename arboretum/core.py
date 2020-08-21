@@ -179,12 +179,19 @@ def build_plugin_v2(viewer,
                 arbor.status_label.setText('')
 
 
-        new_layers = lambda: add_layers(add_segmentation_layer,
-                                        add_localizations_layer,
-                                        add_track_layer)
+
+
+        def add_new_layers():
+            """ note that, if the data has already been loaded, then the user
+            goes to load again, but cancels - this creates duplicate layers
+            """
+            if arbor.filename is None: return
+            add_layers(add_segmentation_layer,
+                       add_localizations_layer,
+                       add_track_layer)
 
         worker = _import()
-        worker.returned.connect(new_layers)
+        worker.returned.connect(add_new_layers)
         worker.start()
 
 
@@ -207,6 +214,8 @@ def build_plugin_v2(viewer,
 
 
 
+
+
     def track_objects():
         """ wrapper to launch a tracking thread """
 
@@ -216,29 +225,26 @@ def build_plugin_v2(viewer,
         volume = arbor.volume
         search_radius = arbor.search_radius
 
+        @utils.process_worker
+        def _track_process(*args, **kwargs):
+            """ spawn a process to run the tracker """
+            return utils.track(*args, **kwargs)
 
-        def _track_process(q, *args, **kwargs):
-            tracker_state = utils.track(*args, **kwargs)
-            q.put(tracker_state)
 
         @thread_worker
         def _track():
-            """ track objects """
+            """ track objects using a manager thread """
             if arbor.localizations is not None:
                 arbor.status_label.setText('Tracking...')
 
                 # launch the tracking as a separate process
-                q = SimpleQueue()
-                args = (q, arbor.localizations, config)
+                args = (arbor.localizations, config)
                 kwargs = {'method': method,
                           'optimize': optimize,
                           'volume': volume,
                           'search_radius': search_radius}
 
-                p = Process(target=_track_process, args=args, kwargs=kwargs)
-                p.start()
-                tracker_state = q.get()
-                p.join()
+                tracker_state = _track_process(*args, **kwargs)
 
                 arbor.tracker_state = tracker_state
                 arbor.status_label.setText('')
@@ -246,7 +252,6 @@ def build_plugin_v2(viewer,
         worker = _track()
         worker.returned.connect(add_track_layer)
         worker.start()
-
 
     # if we loaded some data add both the segmentation and tracks layer
     arbor.load_button.clicked.connect(import_objects)
