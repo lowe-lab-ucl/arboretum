@@ -47,14 +47,25 @@ Features:
 
 ### Installation
 
+We recommend that you first install Napari. Detailed instructions are here: https://github.com/napari/napari:
+
 ```sh
-$ git clone https://github.com/quantumjot/arboretum.git
-$ cd arboretum
-$ pip install -e .
+pip install napari[all]
+```
+
+then install arboretum:
+
+```sh
+git clone https://github.com/quantumjot/arboretum.git
+cd arboretum
+pip install -e .
 ```
 
 
 ### Testing the installation
+
+
+
 
 Following installation, you can test the `Track` layer, as well as the btrack
 package by running a built-in test. The test downloads some example data and a
@@ -62,8 +73,8 @@ tracker configuration file, tracks the objects and then renders the tracks with
 napari:
 
 ```sh
-$ cd tests
-$ python test.py
+cd tests
+python test.py
 ```
 
 ### Example usage
@@ -77,18 +88,25 @@ this:
 import arboretum
 
 from skimage import io
-seg = io.imread('path/to/your/segmentation.tif') # should be 8-bit
+seg = io.imread('path/to/your/segmentation.tif')
 
-# launch the viewer with plugin  
+# launch the viewer with plugin and automatically add image and segmentation
 arboretum.run(segmentation=seg)
+```
+
+You can also add the raw image data when loading the plugin:
+```python
+
+img = io.imread('path/to/your/movie.tif')
+arboretum.run(image=img, segmentation=seg)
 ```
 
 At the moment there are a few buttons:
 + Load (load HDF created by btrack)
++ Save (export as HDF)
 + Configure (load a btrack configuration file)
 + Localize (find objects using the segmentation layer)
 + Track (track the localized objects)
-+ Save (export as HDF)
 
 ### Configuration files for the tracker
 
@@ -99,7 +117,7 @@ An example config is available [here](https://github.com/quantumjot/arboretum/bl
 
 btrack supports three different methods:
 + `EXACT` - (DEFAULT) exact calculation of Bayesian belief matrix, but can be slow on large datasets
-+ `APPROXIMATE` - approximate calculation, faster, for use with large datasets. This has an additional `max_search_radius` parameter, which sets the local spatial search radius (isotropic, pixels) of the algorithm.
++ `APPROXIMATE` - approximate calculation, faster, for use with large datasets.
 + `CUDA` - GPU implementation of the EXACT method (*in progress*)
 
 For most cell datasets (<1000 cells) we recommend `EXACT`. If you have larger
@@ -109,7 +127,25 @@ If the tracking does not complete, and is stuck on the optimization step, this
 means that your configuration is poorly suited to your data. Try turning off
 optimization, followed by modifying the parameters of the config file.
 
+This has an additional `max_search_radius` parameter, which sets the local
+spatial search radius (isotropic, pixels) of the algorithm.
+
 ### State labelling
+
+If your binary segmentation contains image labels (e.g. regions are labelled
+with a specific state label), you can specify this when loading the segmentation
+using the following flag:
+
+```python
+import arboretum
+
+from skimage import io
+img = io.imread('path/to/your/movie.tif')
+seg = io.imread('path/to/your/segmentation_with_labels.tif')
+
+# launch the viewer with plugin  
+arboretum.run(image=img, segmentation=seg, use_labels=True)
+```
 
 You can improve the quality of the tracking by providing cell 'states' along
 with the segmentation. The plugin uses the following labels for the segmentation:
