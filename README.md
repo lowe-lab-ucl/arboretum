@@ -47,7 +47,7 @@ Features:
 
 ### Installation
 
-We recommend that you first install Napari. Detailed instructions are here: https://github.com/napari/napari:
+We recommend that you first install Napari. Detailed instructions are here: https://github.com/napari/napari.
 
 ```sh
 pip install napari[all]
