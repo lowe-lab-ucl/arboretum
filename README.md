@@ -39,7 +39,7 @@ Features:
 + [x] Overhaul Export/Import with HDF5
 + [x] Tree plotting
 + [ ] PyPi package
-+ [ ] Use integer labelled segmentation images as input
++ [x] Use integer labelled segmentation images as input (now guesses segmentation type)
 + [ ] Remove redundant points/localizations storage of data
 
 
