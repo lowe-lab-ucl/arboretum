@@ -78,7 +78,9 @@ class _Stack:
 
 
 def _localize_process(data: tuple,
-                      is_binary: bool = True) -> np.ndarray:
+                      is_binary: bool = True,
+                      use_labels: bool = False) -> np.ndarray:
+                      
     # image: np.ndarray, frame: int) -> np.ndarray:
     """ worker process for localizing and labelling objects
 
@@ -88,6 +90,8 @@ def _localize_process(data: tuple,
         combined data in form of nx5 array (t, x, y, z, label) adding a
         z-dimension of uniform zero, if one doesn't exist.
     """
+
+    if use_labels: assert is_binary
 
     image, frame = data
     assert image.dtype in (np.uint8, np.uint16)
@@ -114,6 +118,14 @@ def _localize_process(data: tuple,
     localizations[:,1:centroids.shape[1]+1] = centroids
     localizations[:,-1] = 0 #labels-1 #-1 because we use a label of zero for states
 
+    # if we're not using labels from the segmentation, return here
+    if not use_labels:
+        return localizations
+
+    # get the labels from the image data
+    labels = np.array(measurements.maximum(image, labels=labeled, index=idx))
+    localizations[:,-1] = labels-1 #-1 because we use a label of zero for states
+
     return localizations
 
 
@@ -139,6 +151,8 @@ def localize(stack_as_array: np.ndarray,
         stack_as_array: a numpy array of the stack, typically the data from
             a napari 'labels' layer
 
+        use_labels: bool, use the labels present in a binary image
+
     Notes:
         - multiprocessing is not a good options for use with the GUI. Change to
         a generator
@@ -151,8 +165,12 @@ def localize(stack_as_array: np.ndarray,
         is_binary = kwargs['binary_segmentation']
         assert type(is_binary) == type(bool)
 
+    use_labels = kwargs.get('use_labels', False)
+
     stack = _Stack(stack_as_array)
-    localizations=[_localize_process(s, is_binary=is_binary) for s in stack]
+    localizations=[_localize_process(s,
+                                     is_binary=is_binary,
+                                     use_labels=use_labels) for s in stack]
     return np.concatenate(localizations, axis=0)
 
 

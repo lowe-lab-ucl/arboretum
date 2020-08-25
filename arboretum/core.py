@@ -83,7 +83,10 @@ def build_plugin(viewer, tracks):
 
 
 def build_plugin_v2(viewer,
-                    segmentation: Union[None, np.ndarray] = None):
+                    image: np.ndarray = None,
+                    segmentation: np.ndarray = None,
+                    use_labels: bool = False):
+
     """ build the plugin
 
     Arguments:
@@ -205,7 +208,8 @@ def build_plugin_v2(viewer,
             arbor.active_layer = viewer.active_layer
             arbor.segmentation = viewer.layers[viewer.active_layer]
             arbor.status_label.setText('Localizing...')
-            arbor.localizations = utils.localize(arbor.segmentation)
+            arbor.localizations = utils.localize(arbor.segmentation,
+                                                 use_labels=use_labels)
             arbor.status_label.setText('')
 
         worker = _localize()
@@ -261,6 +265,11 @@ def build_plugin_v2(viewer,
 
     # do some tracking using the currently selected localizations
     arbor.track_button.clicked.connect(track_objects)
+
+
+    # if we're also passing image data, add an image layer
+    if image is not None:
+        viewer.add_image(image)
 
     # if we're passing a segmentation, add it as a labels layer
     if segmentation is not None:
