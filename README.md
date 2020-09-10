@@ -50,7 +50,7 @@ Features:
 We recommend that you first install Napari. Detailed instructions are here: https://github.com/napari/napari.
 
 ```sh
-pip install napari[all]
+pip install napari==0.3.6
 ```
 
 then install arboretum:

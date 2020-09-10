@@ -3,6 +3,6 @@ h5py>=2.10.0
 matplotlib>=3.1.1
 numpy>=1.17.3
 scipy>=1.3.1
-napari>=0.3.3
+napari==0.3.6
 btrack>=0.3.10
 pyqtgraph>=0.10.0
