@@ -1,57 +1,18 @@
 import numpy as np
-
-from matplotlib.cm import get_cmap
-from matplotlib.colors import ListedColormap
-
 from btrack.constants import Fates, States
+from napari.utils.colormaps import Colormap, AVAILABLE_COLORMAPS
 
 
-class IndexedColormap:
-    """ Simple Indexed Colormap """
-    def __init__(self,
-                 array,
-                 enum=None):
-
-        self.array = array
-
-        if enum is not None:
-            self.indices = [e.value for e in list(enum)]
-        else:
-            self.indices = list(range(array.shape[0]))
-
-        assert(len(self.indices) == self.array.shape[0])
-        assert(self.array.shape[1] == 4)
-        assert(self.array.ndim == 2)
-
-    def __call__(self, idx):
-        idx = np.mod(idx, len(self)).tolist()
-        return self.array[np.take(self.indices, idx),...]
-
-    def __getitem__(self, idx):
-        return self(idx)
-
-    def __len__(self):
-        return len(self.indices)
+def colormap_bins(cmap: Colormap):
+    return np.linspace(-0.5, cmap.shape[0]-0.5, cmap.shape[0]+1)
 
 
-class ModuloColormap:
-    """ ModuloColormap """
-    def __init__(self,
-                 cmap_name,
-                 max_index=32):
+class ModuloColormap(Colormap):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-        self.cmap_name = cmap_name
-        self.max_index = max_index
-        self.cmap = get_cmap(cmap_name)
-
-    def __len__(self):
-        return self.max_index
-
-    def __call__(self, idx):
-        return self.cmap(np.mod(idx, len(self)) / self.max_index)
-
-    def __getitem__(self, idx):
-        return self(idx)
+    def map_modulo(self, values):
+        return self.map(np.mod(values, self.colors.shape[0]))
 
 
 # state colors:
@@ -69,7 +30,6 @@ STATE_COLORMAP = np.array([[0.5, 0.5, 0.5, 1.0],
                            [1.0, 0.0, 0.0, 1.0],
                            [1.0, 0.65, 0.0, 1.0],
                            [1.0, 0.65, 0.0, 1.0]])
-
 
 # fate colors:
 # Fates.FALSE_POSITIVE = 0      ->
@@ -90,24 +50,37 @@ STATE_COLORMAP = np.array([[0.5, 0.5, 0.5, 1.0],
 # Fates.UNDEFINED = 999
 FATE_COLORMAP = np.array([])
 
-
-
+# Survivor -> cyan
+# Deceased -> red
 SURVIVOR_COLORMAP = np.array([[1.0, 0.0, 0.0, 1.0],
                               [0.0, 1.0, 0.8, 1.0]])
 
 
-# state_cmap = ListedColormap(STATE_COLORMAP)
-# fate_cmap = ListedColormap(FATE_COLORMAP)
-
-state_cmap = IndexedColormap(STATE_COLORMAP, enum=States)
-# fate_cmap = IndexedColormap(FATE_COLORMAP, enum=Fates)
-id_cmap = ModuloColormap('gist_rainbow', max_index=32)
-survivor_cmap = IndexedColormap(SURVIVOR_COLORMAP)
+# steal some colors, mwah ha ha...
+ID_COLORMAP = AVAILABLE_COLORMAPS['turbo'].colors
+ID_COLORMAP = ID_COLORMAP[::4,:]
 
 
 
-colormaps = {'ID': id_cmap,
-             'parent': id_cmap,
-             'root': id_cmap,
-             'states': state_cmap,
-             'survivor': survivor_cmap}
+id_colormap = ModuloColormap(ID_COLORMAP,
+                             controls=colormap_bins(ID_COLORMAP),
+                             interpolation='zero',
+                             name='tracking_id')
+
+state_colormap = Colormap(STATE_COLORMAP,
+                          controls=colormap_bins(STATE_COLORMAP),
+                          interpolation='zero',
+                          name='tracking_state')
+
+survivor_colormap = Colormap(SURVIVOR_COLORMAP,
+                             controls=colormap_bins(SURVIVOR_COLORMAP),
+                             interpolation='zero',
+                             name='tracking_survivors')
+
+
+
+colormaps = {'ID': id_colormap,
+             'parent': id_colormap,
+             'root': id_colormap,
+             'states': state_colormap,
+             'survivor': survivor_colormap}

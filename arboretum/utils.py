@@ -28,7 +28,10 @@ from functools import wraps
 from multiprocessing import Process, SimpleQueue
 
 def process_worker(fn):
-    """ Decorator to run function as a process """
+    """ Decorator to run function as a process
+
+    TODO(arl): would be good to have option for QThread signals
+    """
     @wraps(fn)
     def _process(*args, **kwargs):
 
@@ -80,7 +83,7 @@ class _Stack:
 def _localize_process(data: tuple,
                       is_binary: bool = True,
                       use_labels: bool = False) -> np.ndarray:
-                      
+
     # image: np.ndarray, frame: int) -> np.ndarray:
     """ worker process for localizing and labelling objects
 

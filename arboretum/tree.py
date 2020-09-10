@@ -8,10 +8,6 @@ WHITE = np.array([255, 255, 255, 255], dtype=np.uint8)
 RED = np.array([255, 0, 0, 255], dtype=np.uint8)
 
 
-# def is_leaf(node):
-#     return len(node.children) >= 1
-
-
 def _build_tree_graph(root, nodes):
     """ built the graph of the tree """
 
@@ -35,9 +31,7 @@ def _build_tree_graph(root, nodes):
 
         # TODO(arl): sync this with layer coloring
         depth = float(node.generation) / max_generational_depth
-        edge_color = turbo[depth].RGB.tolist()[0]
-
-
+        edge_color = turbo.map(depth)[0]*255
 
         # draw the root of the tree
         edges.append(([y, y],

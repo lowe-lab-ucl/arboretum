@@ -41,16 +41,17 @@ Features:
 + [ ] PyPi package
 + [x] Use integer labelled segmentation images as input (now guesses segmentation type)
 + [ ] Remove redundant points/localizations storage of data
++ [x] Convert internal colormaps to Napari colormaps
 
 
 ---
 
 ### Installation
 
-We recommend that you first install Napari. Detailed instructions are here: https://github.com/napari/napari.
+We recommend that you first install Napari (v0.3.7). Detailed instructions are here: https://github.com/napari/napari.
 
 ```sh
-pip install napari==0.3.6
+pip install napari[all]
 ```
 
 then install arboretum:

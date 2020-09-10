@@ -45,11 +45,9 @@ from .io import TrackerFrozenState
 from .tree import _build_tree_graph
 from .layers.tracks import Tracks
 
-import matplotlib.pyplot as plt
-
 from typing import Union
 from napari.layers import Labels
-from napari._qt.qt_range_slider import QHRangeSlider
+from napari._qt.widgets.qt_range_slider import QHRangeSlider
 
 
 DEFAULT_PATH = os.getcwd()

@@ -40,7 +40,7 @@ class ArboretumHDFHandler(btrack.dataio.HDF5FileHandler):
 
     Basic format of the HDF file is:
         segmentation/
-            images          - (J x h x w) uint8 images of the segmentation
+            images          - (J x h x w) uint images of the segmentation
         objects/
             obj_type_1/
                 coords      - (I x 5) [t, x, y, z, object_type]

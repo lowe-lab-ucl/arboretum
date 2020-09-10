@@ -1,5 +1,5 @@
 from napari.layers.base.base import Layer
-from napari.utils.event import Event
+from napari.utils.events import Event
 from napari.utils.colormaps import AVAILABLE_COLORMAPS
 
 # from ..base import Layer
@@ -141,10 +141,6 @@ class Tracks(Layer):
             properties=Event,
         )
 
-        # store the currently displayed dims, we can use changes to this to
-        # refactor what is sent to vispy
-        # self._current_dims_displayed = self.dims.displayed
-
         # track manager deals with data slicing, graph building an properties
         self._manager = TrackManager()
         self._track_colors = (
@@ -168,11 +164,22 @@ class Tracks(Layer):
         self._color_by = color_by  # default color by ID
         self.colormap = colormap
 
-        self._update_dims()
+        # self._update_dims()
 
-    def _get_extent(self) -> List[Tuple[int, int, int]]:
-        """Determine ranges for slicing given by (min, max, step)."""
-        return self._manager.extent
+    @property
+    def _extent_data(self) -> np.ndarray:
+        """Extent of layer in data coordinates.
+
+        Returns
+        -------
+        extent_data : array, shape (2, D)
+        """
+        if len(self.data) == 0:
+            extrema = np.full((2, self.ndim), np.nan)
+        else:
+            # Convert from projections to endpoints using the current length
+            extrema = self._manager.extent
+        return extrema
 
     def _get_ndim(self) -> int:
         """Determine number of dimensions of the layer."""
@@ -208,9 +215,11 @@ class Tracks(Layer):
 
         if not ALLOW_ND_SLICING: return
 
+        indices = self._slice_indices
+
         # if none of the dims need slicing, return since this function gets
         # called every time a slider changes
-        if all([isinstance(idx, slice) for idx in self.dims.indices[1:]]):
+        if all([isinstance(idx, slice) for idx in indices[1:]]):
             return
 
         # NOTE(arl): to whoever is reading this. The implementation is a bit
@@ -228,7 +237,7 @@ class Tracks(Layer):
         # NOTE(arl): we could also use a hash bin here
         bin_track_vertices = np.round(self._manager.track_vertices[:,1:]).astype(np.int32)
         bin_graph_vertices = np.round(self._manager.graph_vertices[:,1:]).astype(np.int32)
-        for i, idx in enumerate(self.dims.indices[1:]):
+        for i, idx in enumerate(indices[1:]):
             if isinstance(idx, slice):
                 continue
 
@@ -282,9 +291,10 @@ class Tracks(Layer):
     def current_time(self):
         """ current time according to the first dimension """
         # TODO(arl): get the correct index here
-        if isinstance(self.dims.indices[0], slice):
+        time_step = self._slice_indices[0]
+        if isinstance(time_step, slice):
             return self._manager.max_time
-        return self.dims.indices[0]
+        return time_step
 
     @property
     def use_fade(self) -> bool:
@@ -301,6 +311,8 @@ class Tracks(Layer):
     def data(self, data: list):
         """ set the data and build the vispy arrays for display """
         self._manager.data = data
+        self._update_dims()
+        self.events.data()
 
     @property
     def properties(self) -> list:
@@ -425,7 +437,10 @@ class Tracks(Layer):
             vertex_properties = _norm(vertex_properties)
 
         # actually set the vertex colors
-        self._track_colors = colormap[vertex_properties]
+        if hasattr(colormap, 'map_modulo'):
+            self._track_colors = colormap.map_modulo(vertex_properties)
+        else:
+            self._track_colors = colormap.map(vertex_properties)
 
     @property
     def track_connex(self) -> np.ndarray:

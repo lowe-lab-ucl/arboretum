@@ -38,6 +38,23 @@ from ._colormaps import colormaps
 PLUGIN_NAME = 'arboretum'
 PLUGIN_VERSION = f'{PLUGIN_NAME} (btrack: v{btrack.__version__})'
 
+# def _register_tracks_layer():
+#     """ _register_tracks_layer
+#
+#     This can be used to register the custom arboretum Tracks layers with
+#     Napari.
+#
+#     Notes:
+#         This is HACKTASTIC!
+#
+#     """
+#     from .layers.tracks.vispy_tracks_layer import VispyTracksLayer
+#     from .layers.tracks.qt_tracks_layer import QtTracksControls
+#
+#     # NOTE(arl): use this code to register a vispy function for the tracks layer
+#     napari._vispy.utils.layer_to_visual[Tracks] = VispyTracksLayer
+#     napari._qt.layers.utils.layer_to_controls[Tracks] = QtTracksControls
+
 def _register_tracks_layer():
     """ _register_tracks_layer
 
@@ -53,9 +70,7 @@ def _register_tracks_layer():
 
     # NOTE(arl): use this code to register a vispy function for the tracks layer
     napari._vispy.utils.layer_to_visual[Tracks] = VispyTracksLayer
-    napari._qt.layers.utils.layer_to_controls[Tracks] = QtTracksControls
-
-
+    napari._qt.layer_controls.qt_layer_controls_container.layer_to_controls[Tracks] = QtTracksControls
 
 
 

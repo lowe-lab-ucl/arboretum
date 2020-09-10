@@ -249,11 +249,14 @@ class TrackManager:
     @property
     def extent(self):
         """Determine ranges for slicing given by (min, max, step)."""
-
         def _minmax(x):
-            return (np.floor(np.min(x)), np.ceil(np.max(x)), 1)
+            return (np.floor(np.min(x)), np.ceil(np.max(x)))
 
-        return [_minmax(self._track_vertices[:, i]) for i in range(self.ndim)]
+        extrema = np.zeros((2, self.ndim))
+        for dim in range(self.ndim):
+            extrema[:,dim] = _minmax(self._track_vertices[:, dim])
+        return extrema
+
 
     @property
     def ndim(self):

@@ -1,4 +1,4 @@
-from napari._qt.layers.qt_image_base_layer import QtLayerControls
+from napari._qt.layer_controls.qt_layer_controls_base import QtLayerControls
 from napari.utils.colormaps import AVAILABLE_COLORMAPS
 
 # from .qt_image_base_layer import QtLayerControls
