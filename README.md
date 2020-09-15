@@ -159,3 +159,28 @@ with the segmentation. The plugin uses the following labels for the segmentation
 
 Change the labels on the segmentation using the labels tool, or provide a
 pre-labelled segmentation.
+
+---
+### Citation
+
+More details of how the Arboretum GUI can be applied to your cell tracking approach / to tracking cells 
+with our custom-developed ```bTrack``` [software](https://github.com/quantumjot/BayesianTracker "Bayesian Tracker GitHub page") for time-lapse microscopy data can be found in the following publication:
+
+**Automated deep lineage tree analysis using a Bayesian single cell tracking approach**  
+Ulicna K, Vallardi G, Charras G and Lowe AR.  
+*bioRxiv* (2020)  
+<https://www.biorxiv.org/content/early/2020/09/10/2020.09.10.276980>
+
+```
+@article {Ulicna2020.09.10.276980,
+  author = {Ulicna, Kristina and Vallardi, Giulia and Charras, Guillaume and Lowe, Alan R.},
+  title = {Automated deep lineage tree analysis using a Bayesian single cell tracking approach},
+  elocation-id = {2020.09.10.276980},
+  year = {2020},
+  doi = {10.1101/2020.09.10.276980},
+  publisher = {Cold Spring Harbor Laboratory},
+  URL = {https://www.biorxiv.org/content/early/2020/09/10/2020.09.10.276980},
+  eprint = {https://www.biorxiv.org/content/early/2020/09/10/2020.09.10.276980.full.pdf},
+  journal = {bioRxiv}
+}
+```
