@@ -7,6 +7,10 @@ def colormap_bins(cmap: Colormap):
     return np.linspace(-0.5, cmap.shape[0]-0.5, cmap.shape[0]+1)
 
 
+
+
+
+
 class ModuloColormap(Colormap):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -59,7 +63,6 @@ SURVIVOR_COLORMAP = np.array([[1.0, 0.0, 0.0, 1.0],
 # steal some colors, mwah ha ha...
 ID_COLORMAP = AVAILABLE_COLORMAPS['turbo'].colors
 ID_COLORMAP = ID_COLORMAP[::4,:]
-
 
 
 id_colormap = ModuloColormap(ID_COLORMAP,

@@ -224,9 +224,13 @@ class Tracks(Layer):
 
         # NOTE(arl): to whoever is reading this. The implementation is a bit
         # clunky here - no real need to iterate over the dims, but it works
-        # by building a vertex mask (i.e.) those vertices that should be
+        # by building a vertex mask, i.e. those vertices that should be
         # displayed, give the current slicing. This is only applied to the
         # dims>0 since we always want to project time
+        #
+        # a better way to do this, may be to use a similar trick to the time
+        # slicing in the vertex shader, i.e. provide the current slider
+        # positions and a window, and scale the alpha value accordingly
 
         n_track_vertices = self._manager.track_vertices.shape[0]
         n_graph_vertices = self._manager.graph_vertices.shape[0]
@@ -292,8 +296,12 @@ class Tracks(Layer):
         """ current time according to the first dimension """
         # TODO(arl): get the correct index here
         time_step = self._slice_indices[0]
+
         if isinstance(time_step, slice):
+            # if we are visualizing all time, then just set to the maximum
+            # timestamp of the dataset
             return self._manager.max_time
+
         return time_step
 
     @property
