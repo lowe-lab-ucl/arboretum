@@ -1,12 +1,7 @@
-# import urllib.request
-# import json
-
 import btrack
-import arboretum
 import napari
 
 import numpy as np
-
 
 objects = btrack.dataio.import_JSON('./objects.json')
 config = btrack.utils.load_config('./cell_config.json')
@@ -23,10 +18,9 @@ with btrack.BayesianTracker() as tracker:
     tracker.track_interactive(step_size=100)
     tracker.optimize()
 
-    # get the tracks as a python list
-    tracks = tracker.tracks
-
+    # get the tracks, properties and graph
+    data, properties, graph = tracker.to_napari(ndim=2)
 
 with napari.gui_qt():
     viewer = napari.Viewer()
-    arboretum.build_plugin(viewer, tracks)
+    viewer.add_tracks(data, properties=properties, graph=graph, name='tracks')

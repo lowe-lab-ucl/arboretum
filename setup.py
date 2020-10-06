@@ -15,5 +15,5 @@ setup(name='arboretum',
       url='https://github.com/quantumjot/arboretum',
       packages=find_packages(),
       install_requires=get_install_required(),
-      python_requires='>=3.6'
+      python_requires='>=3.7'
      )
