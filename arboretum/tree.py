@@ -2,7 +2,7 @@ import numpy as np
 from btrack.constants import Fates
 from napari.utils.colormaps import AVAILABLE_COLORMAPS
 
-turbo = AVAILABLE_COLORMAPS['turbo']
+turbo = AVAILABLE_COLORMAPS["turbo"]
 
 WHITE = np.array([255, 255, 255, 255], dtype=np.uint8)
 RED = np.array([255, 0, 0, 255], dtype=np.uint8)
@@ -13,7 +13,7 @@ def _build_tree_graph(root, nodes):
 
     max_generational_depth = max([n.generation for n in nodes])
 
-    #put the start vertex into the queue, and the marked list
+    # put the start vertex into the queue, and the marked list
     queue = [root]
     marked = [root]
     y_pos = [0]
@@ -31,21 +31,19 @@ def _build_tree_graph(root, nodes):
 
         # TODO(arl): sync this with layer coloring
         depth = float(node.generation) / max_generational_depth
-        edge_color = turbo.map(depth)[0]*255
+        edge_color = turbo.map(depth)[0] * 255
 
         # draw the root of the tree
-        edges.append(([y, y],
-                      [node.t[0], node.t[-1]],
-                      edge_color))
-        markers.append((y, node.t[0],'k.'))
+        edges.append(([y, y], [node.t[0], node.t[-1]], edge_color))
+        markers.append((y, node.t[0], "k."))
 
         # mark if this is an apoptotic tree
         if node.is_leaf:
             if node.fate == Fates.APOPTOSIS:
-                markers.append((y, node.t[-1], 'rx'))
+                markers.append((y, node.t[-1], "rx"))
                 annotations.append((y, node.t[-1], str(node.ID), RED))
             else:
-                markers.append((y, node.t[-1], 'ks'))
+                markers.append((y, node.t[-1], "ks"))
                 annotations.append((y, node.t[-1], str(node.ID), WHITE))
 
         if node.is_root:
@@ -61,20 +59,24 @@ def _build_tree_graph(root, nodes):
                 queue.append(child)
 
                 # calculate the depth modifier
-                depth_mod = 2./(2.**(node.generation))
+                depth_mod = 2.0 / (2.0 ** (node.generation))
 
                 if child == children[0]:
-                    y_pos.append(y+depth_mod)
+                    y_pos.append(y + depth_mod)
                 else:
-                    y_pos.append(y-depth_mod)
+                    y_pos.append(y - depth_mod)
 
                 # plot a linking line to the children
-                edges.append(([y, y_pos[-1]], [node.t[-1], child.t[0]], 'w'))
-                markers.append((y, node.t[-1],'go'))
-                annotations.append((y_pos[-1],
-                                    child.t[-1]-(child.t[-1]-child.t[0])/2.,
-                                    str(child.ID), WHITE))
-
+                edges.append(([y, y_pos[-1]], [node.t[-1], child.t[0]], "w"))
+                markers.append((y, node.t[-1], "go"))
+                annotations.append(
+                    (
+                        y_pos[-1],
+                        child.t[-1] - (child.t[-1] - child.t[0]) / 2.0,
+                        str(child.ID),
+                        WHITE,
+                    )
+                )
 
     # now that we have traversed the tree, calculate the span
     tree_span = []
@@ -82,8 +84,8 @@ def _build_tree_graph(root, nodes):
         tree_span.append(edge[0][0])
         tree_span.append(edge[0][1])
 
-    # work out the span of the tree, we can modify positioning here
-    min_x = min(tree_span)
-    max_x = max(tree_span)
+    # # work out the span of the tree, we can modify positioning here
+    # min_x = min(tree_span)
+    # max_x = max(tree_span)
 
     return edges, markers, annotations
