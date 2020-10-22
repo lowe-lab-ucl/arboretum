@@ -13,7 +13,6 @@
 
 EXPORT_PATH = '/media/quantumjot/Data/movie'
 
-
 import os
 import enum
 import heapq
@@ -39,18 +38,19 @@ PLUGIN_NAME = 'arboretum'
 PLUGIN_VERSION = f'{PLUGIN_NAME} (btrack: v{btrack.__version__})'
 
 
-
-
 def build_plugin(viewer,
                  image: np.ndarray = None,
                  segmentation: np.ndarray = None,
                  use_labels: bool = False):
 
-    """ build the plugin
+    """ Build the arboretum plugin.
 
-    Arguments:
-        viewer: an instance of the napari viewer
-        segmentation: optional segmentation to be loaded as as a `labels` layer
+    Parameters
+    ----------
+        viewer : napari.Viewer
+            An instance of the napari viewer.
+        segmentation : array
+            Optional segmentation to be loaded as as a `labels` layer.
 
     """
 
@@ -136,8 +136,6 @@ def build_plugin(viewer,
                 arbor.tracks = tracks
                 arbor.localizations = loc
                 arbor.status_label.setText('')
-
-
 
 
         def add_new_layers():
