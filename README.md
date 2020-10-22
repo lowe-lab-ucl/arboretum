@@ -48,7 +48,7 @@ Features:
 
 ### Installation
 
-We recommend that you first install Napari (v0.3.7). Detailed instructions are here: https://github.com/napari/napari.
+We recommend that you first install Napari. Detailed instructions are here: https://github.com/napari/napari.
 
 ```sh
 pip install napari[all]
@@ -64,9 +64,6 @@ pip install -e .
 
 
 ### Testing the installation
-
-
-
 
 Following installation, you can test the `Track` layer, as well as the btrack
 package by running a built-in test. The test downloads some example data and a
