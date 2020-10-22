@@ -11,3 +11,5 @@ install.sh
 *.ipynb
 *.h5
 *.hdf5
+*.tif
+*.sh
