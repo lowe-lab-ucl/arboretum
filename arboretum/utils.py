@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:     Arboretum
 # Purpose:  Dockable widget, and custom track visualization layers for Napari,
 #           to cell/object track data.
@@ -8,33 +8,29 @@
 # License:  See LICENSE.md
 #
 # Created:  01/05/2020
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import os
 import re
-
-import btrack
-import multiprocessing
-
-import numpy as np
-from scipy.ndimage import measurements
-
-
-from .io import ArboretumHDFHandler, TrackerFrozenState
-from btrack.constants import BayesianUpdates
-
-
 from functools import wraps
 from multiprocessing import Process, SimpleQueue
+
+import btrack
+import numpy as np
+from btrack.constants import BayesianUpdates
+from scipy.ndimage import measurements
+
+from .io import TrackerFrozenState
+
 
 def process_worker(fn):
     """ Decorator to run function as a process
 
     TODO(arl): would be good to have option for QThread signals
     """
+
     @wraps(fn)
     def _process(*args, **kwargs):
-
         def _worker(*args, **kwargs):
             q = args[0]
             r = fn(*args[1:], **kwargs)
@@ -51,9 +47,6 @@ def process_worker(fn):
     return _process
 
 
-
-
-
 class _Stack:
     """ _Stack
 
@@ -61,28 +54,30 @@ class _Stack:
     to function on the stack.
 
     """
+
     def __init__(self, data):
 
         # basic assertions on the data
-        assert(isinstance(data, np.ndarray))
+        assert isinstance(data, np.ndarray)
         # assert(data.dtype == np.uint8)
 
         self._stack = data
         self._idx = 0
 
-    def __iter__(self): return self
+    def __iter__(self):
+        return self
+
     def __next__(self):
         if self._idx >= self._stack.shape[0]:
             raise StopIteration
         current = self._idx
         self._idx += 1
-        return self._stack[current,...], current
+        return self._stack[current, ...], current
 
 
-
-def _localize_process(data: tuple,
-                      is_binary: bool = True,
-                      use_labels: bool = False) -> np.ndarray:
+def _localize_process(
+    data: tuple, is_binary: bool = True, use_labels: bool = False
+) -> np.ndarray:
 
     # image: np.ndarray, frame: int) -> np.ndarray:
     """ worker process for localizing and labelling objects
@@ -94,32 +89,31 @@ def _localize_process(data: tuple,
         z-dimension of uniform zero, if one doesn't exist.
     """
 
-    if use_labels: assert is_binary
+    if use_labels:
+        assert is_binary
 
     image, frame = data
     assert image.dtype in (np.uint8, np.uint16)
 
     if is_binary:
         labeled, n = measurements.label(image.astype(np.bool))
-        idx = list(range(1, n+1))
+        idx = list(range(1, n + 1))
     else:
         labeled = image
-        idx = [p for p in np.unique(labeled) if p>0]
+        idx = [p for p in np.unique(labeled) if p > 0]
 
     # calculate the centroids
 
-    centroids = np.array(measurements.center_of_mass(image,
-                                                     labels=labeled,
-                                                     index=idx))
+    centroids = np.array(measurements.center_of_mass(image, labels=labeled, index=idx))
 
     # if we're dealing with volumetric data, reorder so that z is last
     if image.ndim == 3:
         centroids = np.roll(centroids, -1)
 
     localizations = np.zeros((centroids.shape[0], 5), dtype=np.uint16)
-    localizations[:,0] = frame # time
-    localizations[:,1:centroids.shape[1]+1] = centroids
-    localizations[:,-1] = 0 #labels-1 #-1 because we use a label of zero for states
+    localizations[:, 0] = frame  # time
+    localizations[:, 1 : centroids.shape[1] + 1] = centroids
+    localizations[:, -1] = 0  # labels-1 #-1 because we use a label of zero for states
 
     # if we're not using labels from the segmentation, return here
     if not use_labels:
@@ -127,7 +121,7 @@ def _localize_process(data: tuple,
 
     # get the labels from the image data
     labels = np.array(measurements.maximum(image, labels=labeled, index=idx))
-    localizations[:,-1] = labels-1 #-1 because we use a label of zero for states
+    localizations[:, -1] = labels - 1  # -1 because we use a label of zero for states
 
     return localizations
 
@@ -140,9 +134,7 @@ def _is_binary_segmentation(image):
     return n > len(objects)
 
 
-
-def localize(stack_as_array: np.ndarray,
-             **kwargs):
+def localize(stack_as_array: np.ndarray, **kwargs):
     """ localize
 
     get the centroids of all objects given a segmentaion mask from Napari.
@@ -161,23 +153,20 @@ def localize(stack_as_array: np.ndarray,
         a generator
     """
 
-    if 'binary_segmentation' not in kwargs:
-        is_binary = _is_binary_segmentation(stack_as_array[0,...])
-        print(f'guessing is_binary: {is_binary}')
+    if "binary_segmentation" not in kwargs:
+        is_binary = _is_binary_segmentation(stack_as_array[0, ...])
+        print(f"guessing is_binary: {is_binary}")
     else:
-        is_binary = kwargs['binary_segmentation']
+        is_binary = kwargs["binary_segmentation"]
         assert type(is_binary) == type(bool)
 
-    use_labels = kwargs.get('use_labels', False)
+    use_labels = kwargs.get("use_labels", False)
 
     stack = _Stack(stack_as_array)
-    localizations=[_localize_process(s,
-                                     is_binary=is_binary,
-                                     use_labels=use_labels) for s in stack]
+    localizations = [
+        _localize_process(s, is_binary=is_binary, use_labels=use_labels) for s in stack
+    ]
     return np.concatenate(localizations, axis=0)
-
-
-
 
 
 def _get_btrack_cfg(filename=None):
@@ -191,20 +180,21 @@ def _get_btrack_cfg(filename=None):
 
     if filename is not None:
         config = btrack.utils.load_config(filename)
-        config['Filename'] = filename
+        config["Filename"] = filename
         return config
 
     raise IOError
 
 
-
-def track(localizations: np.ndarray,
-          config: dict,
-          volume: tuple = ((0,1200),(0,1600),(-1e5,1e5)),
-          optimize: bool = True,
-          method: BayesianUpdates = BayesianUpdates.EXACT,
-          search_radius: int = None,
-          min_track_len: int = 2):
+def track(
+    localizations: np.ndarray,
+    config: dict,
+    volume: tuple = ((0, 1200), (0, 1600), (-1e5, 1e5)),
+    optimize: bool = True,
+    method: BayesianUpdates = BayesianUpdates.EXACT,
+    search_radius: int = None,
+    min_track_len: int = 2,
+):
 
     """ track
 
@@ -216,12 +206,12 @@ def track(localizations: np.ndarray,
     idx = range(n_localizations)
 
     # convert the localizations into btrack objects
-    from btrack.dataio import  _PyTrackObjectFactory
-    factory = _PyTrackObjectFactory()
-    objects = [factory.get(localizations[i,:4], label=int(localizations[i,-1])) for i in idx]
+    from btrack.dataio import _PyTrackObjectFactory
 
-    # for obj in objects:
-    #     obj.z = obj.z * 10.
+    factory = _PyTrackObjectFactory()
+    objects = [
+        factory.get(localizations[i, :4], label=int(localizations[i, -1])) for i in idx
+    ]
 
     # initialise a tracker session using a context manager
     with btrack.BayesianTracker() as tracker:
@@ -240,20 +230,17 @@ def track(localizations: np.ndarray,
         tracker.track_interactive(step_size=100)
 
         if optimize:
-            tracker.optimize(options={'tm_lim': int(6e4)})
+            tracker.optimize(options={"tm_lim": int(6e4)})
 
         # dump all of the data into the frozen state
         frozen_tracker = TrackerFrozenState()
         frozen_tracker.set(tracker)
 
-        frozen_tracker.tracks = [t for t in frozen_tracker.tracks if len(t)>=min_track_len]
-
-    # for track in frozen_tracker.tracks:
-    #     for obj in track._data:
-    #         obj.z = obj.z / 10.
+        frozen_tracker.tracks = [
+            t for t in frozen_tracker.tracks if len(t) >= min_track_len
+        ]
 
     return frozen_tracker
-
 
 
 def _color_segmentation_by_state(h, color_segmentation=False):
@@ -262,35 +249,34 @@ def _color_segmentation_by_state(h, color_segmentation=False):
     return h.segmentation
 
 
-
-
-
-def load_hdf(filename: str,
-             filter_by: str = 'area>=100',
-             load_segmentation: bool = True,
-             load_objects: bool = True,
-             color_segmentation: bool = True):
+def load_hdf(
+    filename: str,
+    filter_by: str = "area>=100",
+    load_segmentation: bool = True,
+    load_objects: bool = True,
+    color_segmentation: bool = True,
+):
 
     """ load data from an HDF file """
-    with ArboretumHDFHandler(filename) as h:
+    with btrack.dataio.HDF5FileHandler(filename) as h:
         h._f_expr = filter_by
 
-        if 'segmentation' in h._hdf and load_segmentation:
+        if "segmentation" in h._hdf and load_segmentation:
             seg = _color_segmentation_by_state(h, color_segmentation)
             seg = seg.astype(np.uint8)
         else:
             seg = None
 
         # get the objects and strip out the data
-        if 'objects' in h._hdf and load_objects:
+        if "objects" in h._hdf and load_objects:
             obj = h.filtered_objects(f_expr=filter_by)
             loc = np.stack([[o.t, o.x, o.y, o.z, o.label] for o in obj], axis=0)
             loc = loc.astype(np.uint16)
         else:
-            loc = np.empty((0,3))
+            loc = np.empty((0, 3))
 
         # get the tracks
-        if 'tracks' in h._hdf:
+        if "tracks" in h._hdf:
             tracks = h.tracks
         else:
             tracks = []
@@ -308,35 +294,36 @@ def load_json(filename: str):
     """ load json data """
     filepath, fn = os.path.split(filename)
 
-    pattern = 'tracks_(\w+).json'
+    pattern = r"tracks_(\w+).json"
     match = re.match(pattern, fn)
     if match:
         cell_type = match.group(1)
     else:
-        cell_type = 'None'
+        cell_type = "None"
 
     tracks = btrack.dataio.import_all_tracks_JSON(filepath, cell_type=cell_type)
     return tracks
 
 
-
-def export_hdf(filename: str,
-               segmentation: np.ndarray = None,
-               tracker_state: TrackerFrozenState = None):
+def export_hdf(
+    filename: str,
+    segmentation: np.ndarray = None,
+    tracker_state: TrackerFrozenState = None,
+):
     """ export the tracking data to an hdf file """
 
     if os.path.exists(filename):
-        raise IOError(f'{filename} already exists!')
+        raise IOError(f"{filename} already exists!")
 
-    with ArboretumHDFHandler(filename, 'w') as h:
+    with btrack.dataio.HDF5FileHandler(filename, "w") as h:
         h.write_segmentation(segmentation)
 
         if tracker_state is not None:
             if tracker_state.objects is not None:
-                h.write_objects(tracker_state, obj_type='obj_type_1')
+                h.write_objects(tracker_state, obj_type="obj_type_1")
             if tracker_state.tracks is not None:
-                h.write_tracks(tracker_state, obj_type='obj_type_1')
+                h.write_tracks(tracker_state, obj_type="obj_type_1")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
