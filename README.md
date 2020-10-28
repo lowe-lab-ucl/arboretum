@@ -5,10 +5,8 @@
 A dockable widget for [Napari](https://github.com/napari) for tracking cells using [btrack](https://github.com/quantumjot/BayesianTracker).
 
 Features:
-+ Custom `Track` layer for fast visualization of track data in napari
 + Integration with btrack to enable localization and cell tracking directly from napari
 + Lineage tree plot widget
-+ Track count widget
 
 [![LineageTree](./examples/napari.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
 *Automated cell tracking and lineage tree reconstruction*.
@@ -42,7 +40,7 @@ Features:
 + [x] Use integer labelled segmentation images as input (now guesses segmentation type)
 + [ ] Remove redundant points/localizations storage of data
 + [x] Convert internal colormaps to Napari colormaps
-
++ [ ] Refactor for Napari 0.4.0 (now including `Tracks`!)
 
 ---
 
