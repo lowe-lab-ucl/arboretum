@@ -3,21 +3,21 @@
 
 import btrack
 import napari
-
 import numpy as np
+
+from arboretum import build_plugin
 
 
 def mercator(data):
     """ mercator projection """
-    R = 160.
-    S = 100.
+    R = 160.0
+    S = 100.0
 
-    data[:, 4] = data[:, 4] - 600.
-    data[:, 3] = data[:, 3] - 800.
-    t = data[:, 1]
+    data[:, 4] = data[:, 4] - 600.0
+    data[:, 3] = data[:, 3] - 800.0
 
     longitude = data[:, 4] / R
-    latitude = 2. * np.arctan(np.exp(data[:, 3]/R)) - np.pi/2
+    latitude = 2.0 * np.arctan(np.exp(data[:, 3] / R)) - np.pi / 2
 
     data[:, 4] = S * np.cos(latitude) * np.cos(longitude)
     data[:, 3] = S * np.cos(latitude) * np.sin(longitude)
@@ -25,8 +25,9 @@ def mercator(data):
 
     return data
 
-objects = btrack.dataio.import_JSON('./objects.json')
-config = btrack.utils.load_config('./cell_config.json')
+
+objects = btrack.dataio.import_JSON("./objects.json")
+config = btrack.utils.load_config("./cell_config.json")
 
 # track the objects
 with btrack.BayesianTracker() as tracker:
@@ -34,7 +35,7 @@ with btrack.BayesianTracker() as tracker:
     # configure the tracker using a config file, append objects and set vol
     tracker.configure(config)
     tracker.append(objects)
-    tracker.volume = ((0,1200),(0,1600),(-1e5,1e5))
+    tracker.volume = ((0, 1200), (0, 1600), (-1e5, 1e5))
 
     # track them and (optionally) optimize
     tracker.track_interactive(step_size=100)
@@ -46,4 +47,6 @@ with btrack.BayesianTracker() as tracker:
 
 with napari.gui_qt():
     viewer = napari.Viewer()
-    viewer.add_tracks(data, properties=properties, graph=graph, name='tracks')
+    viewer.add_tracks(data, properties=properties, graph=graph, name="tracks")
+
+    build_plugin(viewer)
