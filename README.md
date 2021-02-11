@@ -1,5 +1,17 @@
 # Arboretum
 
+## NOTE
+
+:construction:  **DEVELOPMENT PAUSED**  :construction:
+
+We have paused development of arboretum, so this may or may not work with the most recent versions of napari. Use with caution!  However, the Tracks visualisation layer is now officially part of napari.
+
+Read about the API here:
+https://napari.org/docs/dev/api/napari.layers.Tracks.html
+
+
+---
+
 ### Overview
 
 A dockable widget for [Napari](https://github.com/napari) for tracking cells using [btrack](https://github.com/quantumjot/BayesianTracker).
@@ -14,10 +26,6 @@ Features:
 *Automated cell tracking and lineage tree reconstruction*.
 
 ---  
-
- :construction:  **WORK IN PROGRESS**  :construction:
-
- This is actively under development. There will be breaking changes on a daily basis until the first stable release. Use with caution!
 
  Read more about the scientific project here:
  http://lowe.cs.ucl.ac.uk/cellx.html
