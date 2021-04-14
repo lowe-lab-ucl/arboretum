@@ -1,6 +1,8 @@
 import btrack
 import napari
 
+from arboretum import build_plugin
+
 objects = btrack.dataio.import_JSON("./objects.json")
 config = btrack.utils.load_config("./cell_config.json")
 
@@ -24,3 +26,6 @@ with napari.gui_qt():
     viewer.add_tracks(
         data, properties=properties, graph=graph, name="tracks", blending="translucent"
     )
+
+    widget = build_plugin(viewer)
+    viewer.window.add_dock_widget(widget, area="right", name="arboretum")

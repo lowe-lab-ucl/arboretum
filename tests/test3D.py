@@ -49,4 +49,5 @@ with napari.gui_qt():
     viewer = napari.Viewer()
     viewer.add_tracks(data, properties=properties, graph=graph, name="tracks")
 
-    build_plugin(viewer)
+    widget = build_plugin(viewer)
+    viewer.window.add_dock_widget(widget, area="right")
