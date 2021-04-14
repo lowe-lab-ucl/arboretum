@@ -1,5 +1,4 @@
 import numpy as np
-from btrack.constants import Fates
 from napari.utils.colormaps import AVAILABLE_COLORMAPS
 
 turbo = AVAILABLE_COLORMAPS["turbo"]
@@ -8,12 +7,15 @@ WHITE = np.array([255, 255, 255, 255], dtype=np.uint8)
 RED = np.array([255, 0, 0, 255], dtype=np.uint8)
 
 
-def _build_tree_graph(root, nodes):
+def _build_tree(nodes):
     """ built the graph of the tree """
 
     max_generational_depth = max([n.generation for n in nodes])
 
     # put the start vertex into the queue, and the marked list
+
+    root = nodes[0]
+
     queue = [root]
     marked = [root]
     y_pos = [0]
@@ -21,10 +23,10 @@ def _build_tree_graph(root, nodes):
     # store the line coordinates that need to be plotted
     edges = []
     annotations = []
-    markers = []
 
     # now step through
     while queue:
+
         # pop the root from the tree
         node = queue.pop(0)
         y = y_pos.pop(0)
@@ -35,16 +37,10 @@ def _build_tree_graph(root, nodes):
 
         # draw the root of the tree
         edges.append(([y, y], [node.t[0], node.t[-1]], edge_color))
-        markers.append((y, node.t[0], "k."))
 
         # mark if this is an apoptotic tree
         if node.is_leaf:
-            if node.fate == Fates.APOPTOSIS:
-                markers.append((y, node.t[-1], "rx"))
-                annotations.append((y, node.t[-1], str(node.ID), RED))
-            else:
-                markers.append((y, node.t[-1], "ks"))
-                annotations.append((y, node.t[-1], str(node.ID), WHITE))
+            annotations.append((y, node.t[-1], str(node.ID), WHITE))
 
         if node.is_root:
             annotations.append((y, node.t[0], str(node.ID), WHITE))
@@ -68,7 +64,6 @@ def _build_tree_graph(root, nodes):
 
                 # plot a linking line to the children
                 edges.append(([y, y_pos[-1]], [node.t[-1], child.t[0]], "w"))
-                markers.append((y, node.t[-1], "go"))
                 annotations.append(
                     (
                         y_pos[-1],
@@ -88,4 +83,4 @@ def _build_tree_graph(root, nodes):
     # min_x = min(tree_span)
     # max_x = max(tree_span)
 
-    return edges, markers, annotations
+    return edges, annotations
