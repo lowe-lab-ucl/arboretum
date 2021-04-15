@@ -10,7 +10,7 @@ class ModuloColormap(Colormap):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def map_modulo(self, values):
+    def map(self, values):
         return self.map(np.mod(values, self.colors.shape[0]))
 
 
@@ -52,6 +52,7 @@ STATE_COLORMAP = np.array(
 # Fates.DEAD = 666
 # Fates.UNDEFINED = 999
 FATE_COLORMAP = np.array([])
+
 
 # Survivor -> cyan
 # Deceased -> red
