@@ -1,5 +1,17 @@
 # Arboretum
 
+## NOTE
+
+:construction:  **DEVELOPMENT PAUSED**  :construction:
+
+We have paused development of arboretum, so this may or may not work with the most recent versions of napari. Use with caution!  However, the Tracks visualisation layer is now officially part of napari.
+
+Read about the API here:
+https://napari.org/docs/dev/api/napari.layers.Tracks.html
+
+
+---
+
 ### Overview
 
 A dockable widget for [Napari](https://github.com/napari) for tracking cells using [btrack](https://github.com/quantumjot/BayesianTracker).
@@ -14,10 +26,6 @@ Features:
 *Automated cell tracking and lineage tree reconstruction*.
 
 ---  
-
- :construction:  **WORK IN PROGRESS**  :construction:
-
- This is actively under development. There will be breaking changes on a daily basis until the first stable release. Use with caution!
 
  Read more about the scientific project here:
  http://lowe.cs.ucl.ac.uk/cellx.html
@@ -159,3 +167,28 @@ with the segmentation. The plugin uses the following labels for the segmentation
 
 Change the labels on the segmentation using the labels tool, or provide a
 pre-labelled segmentation.
+
+---
+### Citation
+
+More details of how the Arboretum GUI can be applied to your cell tracking approach / to tracking cells 
+with our custom-developed ```bTrack``` [software](https://github.com/quantumjot/BayesianTracker "Bayesian Tracker GitHub page") for time-lapse microscopy data can be found in the following publication:
+
+**Automated deep lineage tree analysis using a Bayesian single cell tracking approach**  
+Ulicna K, Vallardi G, Charras G and Lowe AR.  
+*bioRxiv* (2020)  
+<https://www.biorxiv.org/content/early/2020/09/10/2020.09.10.276980>
+
+```
+@article {Ulicna2020.09.10.276980,
+  author = {Ulicna, Kristina and Vallardi, Giulia and Charras, Guillaume and Lowe, Alan R.},
+  title = {Automated deep lineage tree analysis using a Bayesian single cell tracking approach},
+  elocation-id = {2020.09.10.276980},
+  year = {2020},
+  doi = {10.1101/2020.09.10.276980},
+  publisher = {Cold Spring Harbor Laboratory},
+  URL = {https://www.biorxiv.org/content/early/2020/09/10/2020.09.10.276980},
+  eprint = {https://www.biorxiv.org/content/early/2020/09/10/2020.09.10.276980.full.pdf},
+  journal = {bioRxiv}
+}
+```
