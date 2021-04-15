@@ -18,4 +18,5 @@ setup(
     packages=find_packages(),
     install_requires=get_install_required(),
     python_requires=">=3.7",
+    entry_points={"napari.plugin": ["arboretum = arboretum"]},
 )

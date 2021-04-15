@@ -32,8 +32,8 @@ class ArboretumTreeViewer(QWidget):
 
     """
 
-    def __init__(self, viewer):
-        super().__init__()
+    def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
+        super().__init__(parent=parent)
 
         # store a reference to the viewer
         self._viewer = viewer

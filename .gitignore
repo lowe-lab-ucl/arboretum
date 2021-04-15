@@ -13,3 +13,4 @@ install.sh
 *.hdf5
 *.tif
 *.sh
+.DS_Store
