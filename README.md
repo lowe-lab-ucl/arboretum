@@ -1,37 +1,31 @@
 # Arboretum
 
-## NOTE
-
-:construction:  **DEVELOPMENT PAUSED**  :construction:
-
-We have paused development of arboretum, so this may or may not work with the most recent versions of napari. Use with caution!  However, the Tracks visualisation layer is now officially part of napari.
-
-Read about the API here:
-https://napari.org/docs/dev/api/napari.layers.Tracks.html
-
-
----
-
 ### Overview
 
-A dockable widget for [Napari](https://github.com/napari) for tracking cells using [btrack](https://github.com/quantumjot/BayesianTracker).
+A dockable widget for [Napari](https://github.com/napari) for visualizing cell lineage trees.
+
 
 Features:
-+ Integration with btrack to enable localization and cell tracking directly from napari
 + Lineage tree plot widget
++ Integration with [btrack](https://github.com/quantumjot/BayesianTracker)
 
 [![LineageTree](./examples/napari.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
 *Automated cell tracking and lineage tree reconstruction*.
 
 ---  
 
- Read more about the scientific project here:
- http://lowe.cs.ucl.ac.uk/cellx.html
+ :construction:  **WORK IN PROGRESS**  :construction:
+
+ This project has changed considerably. The `Tracks` layer, originally developed for this plugin is not part of Napari. Read the API here:
+ https://napari.org/api/stable/napari.layers.Tracks.html#napari.layers.Tracks
 
 ---
 
 #### TODO:
-+ [ ] Refactor for Napari 0.4.0 (now including `napari.layers.Tracks`!)
++ [x] Refactor for Napari 0.4.0 (now including `napari.layers.Tracks`!)
++ [ ] Highlight cells in the viewer from the lineage tree view
++ [ ] Visualize merges
++ [ ] Color trees by properties
 
 ---
 
@@ -46,7 +40,7 @@ pip install napari[all]
 then install arboretum:
 
 ```sh
-git clone https://github.com/quantumjot/arboretum.git
+git clone -b refactor https://github.com/quantumjot/arboretum.git
 cd arboretum
 pip install -e .
 ```
