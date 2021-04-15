@@ -1,6 +1,4 @@
 import numpy as np
-
-# from btrack.constants import Fates, States
 from napari.utils.colormaps import AVAILABLE_COLORMAPS, Colormap
 
 
@@ -35,7 +33,6 @@ STATE_COLORMAP = np.array(
         [1.0, 0.65, 0.0, 1.0],
     ]
 )
-
 
 # fate colors:
 # Fates.FALSE_POSITIVE = 0      ->
@@ -74,6 +71,7 @@ id_colormap = ModuloColormap(
     name="tracking_id",
 )
 
+
 state_colormap = Colormap(
     STATE_COLORMAP,
     controls=colormap_bins(STATE_COLORMAP),
@@ -81,12 +79,14 @@ state_colormap = Colormap(
     name="tracking_state",
 )
 
+
 survivor_colormap = Colormap(
     SURVIVOR_COLORMAP,
     controls=colormap_bins(SURVIVOR_COLORMAP),
     interpolation="zero",
     name="tracking_survivors",
 )
+
 
 colormaps = {
     "ID": id_colormap,
