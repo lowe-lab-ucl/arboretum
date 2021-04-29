@@ -4,4 +4,4 @@ except ImportError:
     __version__ = "unknown"
 
 from ._hookimpls import napari_experimental_provide_dock_widget
-from .plugin import ArboretumTreeViewer
+from .plugin import Arboretum

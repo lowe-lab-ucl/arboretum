@@ -1,7 +1,7 @@
 __pycache__
 .ipynb_checkpoints
 dist
-arboretum.egg-info
+napari_arboretum.egg-info
 *.spec
 install.sh
 *.ipynb
@@ -11,3 +11,5 @@ install.sh
 *.sh
 .DS_Store
 *.json
+.eggs
+napari_arboretum/_version.py
