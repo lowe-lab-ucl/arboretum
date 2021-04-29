@@ -17,18 +17,23 @@ from qtpy.QtWidgets import QVBoxLayout, QWidget
 
 from .graph import build_subgraph, layout_subgraph
 
-# from .tree import _build_graph
-
-GUI_MAXIMUM_WIDTH = 350
+GUI_MAXIMUM_WIDTH = 450
 
 
-class ArboretumTreeViewer(QWidget):
+class Arboretum(QWidget):
     """Tree viewer widget.
 
     Parameters
     ----------
     viewer : napari.Viewer
         Accepts the napari viewer.
+
+
+    Returns
+    -------
+
+    arboretum : QWidget
+        The arboretum widget.
 
     """
 

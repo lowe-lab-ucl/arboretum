@@ -16,4 +16,4 @@ repos:
     - id: flake8
       pass_filenames: true
       # this seems to need to be here in addition to setup.cfg
-      exclude: __init__.py|examples
+      exclude: __init__.py|examples|napari_arboretum/_tests
