@@ -1,9 +1,5 @@
 __pycache__
 .ipynb_checkpoints
-octopuslite.py
-arboretum/turbo.py
-arboretum/tree_viewer.py
-arboretum/layers/tracks/deprecated
 dist
 arboretum.egg-info
 *.spec
@@ -14,3 +10,4 @@ install.sh
 *.tif
 *.sh
 .DS_Store
+*.json
