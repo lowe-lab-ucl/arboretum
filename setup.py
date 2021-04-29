@@ -30,7 +30,7 @@ setup(
     author="Alan R. Lowe",
     author_email="a.lowe@ucl.ac.uk",
     license="LICENCE.md",
-    url="https://github.com/quantumjot/napari-arboretum",
+    url="https://github.com/quantumjot/arboretum",
     description="Track graph and lineage tree visualization with napari",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
