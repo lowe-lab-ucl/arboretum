@@ -66,6 +66,7 @@ class Arboretum(QWidget):
 
     def _get_tracks_layers(self, event=None):
         """Get the Tracks layers that are present in the viewer."""
+
         layers = [
             layer
             for layer in self._viewer.layers
@@ -95,6 +96,7 @@ class Arboretum(QWidget):
 
     def draw_graph(self, track_id, edges, annotations):
         """Plot graph on the plugin canvas."""
+
         self.plot_view.clear()
         self.plot_view.setTitle(f"Lineage tree: {track_id}")
 
