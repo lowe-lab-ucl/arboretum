@@ -1,3 +1,4 @@
+[![PyPI version](https://img.shields.io/pypi/v/napari-arboretum)](https://pypi.org/project/napari-arboretum)  <!--[![Downloads](https://pepy.tech/badge/napari-arboretum)](https://pepy.tech/project/napari-arboretum)-->
 [![License](https://img.shields.io/pypi/l/napari-arboretum.svg?color=green)](https://github.com/quantumjot/napari-arboretum/raw/master/LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/napari-arboretum.svg?color=green)](https://pypi.org/project/napari-arboretum)
 [![Python Version](https://img.shields.io/pypi/pyversions/napari-arboretum.svg?color=green)](https://python.org)
