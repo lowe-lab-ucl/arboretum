@@ -17,7 +17,7 @@ from qtpy.QtWidgets import QVBoxLayout, QWidget
 
 from .graph import build_subgraph, layout_subgraph
 
-GUI_MAXIMUM_WIDTH = 450
+GUI_MAXIMUM_WIDTH = 600
 
 
 class Arboretum(QWidget):
@@ -25,6 +25,7 @@ class Arboretum(QWidget):
 
     Parameters
     ----------
+
     viewer : napari.Viewer
         Accepts the napari viewer.
 
@@ -103,10 +104,9 @@ class Arboretum(QWidget):
         # labels
         for tx, ty, tstr, tcol in annotations:
 
-            if tstr == str(track_id):
-                tcol[3] = 255
-            else:
-                tcol[3] = 64
+            # change the alpha value according to whether this is the selected
+            # cell or another part of the tree
+            tcol[3] = 255 if tstr == str(track_id) else 64
 
             pt = pg.TextItem(
                 text=tstr,

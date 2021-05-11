@@ -16,6 +16,8 @@ from .tree import _build_tree
 
 
 class TreeNode:
+    """TreeNode. """
+
     def __init__(self):
         self.ID = None
         self.t = ()
@@ -30,7 +32,23 @@ class TreeNode:
 
 
 def build_reverse_graph(graph: dict) -> list:
-    """Take the data from a Tracks layer graph and reverse it."""
+    """Take the data from a Tracks layer graph and reverse it.
+
+    Parameters
+    ----------
+
+    graph : dict
+        A dictionary encoding the graph, taken from the napari.Tracks layer.
+
+
+    Returns
+    -------
+
+    roots : int, None
+        A sorted list of integers represent the root node IDs
+    reverse_graph : dict
+        A reversed graph representing children of each parent node.
+    """
     reverse_graph = {}
     roots = set()
 
@@ -51,9 +69,25 @@ def build_reverse_graph(graph: dict) -> list:
     return roots, reverse_graph
 
 
-def linearise_tree(graph, root):
-    """Linearise a tree, i.e. return a list of track objects in the
-    tree, but lose the heirarchy."""
+def linearise_tree(graph: dict, root: int) -> list:
+    """Linearise a tree, i.e. return a list of track objects in the tree, but
+    discard the heirarchy.
+
+    Parameters
+    ----------
+
+    graph : dict
+        A dictionary encoding the graph, taken from the napari.Tracks layer.
+    root : int
+        The root node to begin the search from.
+
+
+    Returns
+    -------
+
+    linear : list
+        A linearised tree, with only the node ID of each node of the tree.
+    """
     queue = [root]
     linear = []
     while queue:
@@ -68,21 +102,27 @@ def linearise_tree(graph, root):
 def build_subgraph(layer, node):
     """Build a subgraph containing the node.
 
+    The search node may not be the root of a tree, therefore, this function
+    searches the whole graph to find a subgraph (tree) that contains the search
+    node.
+
     Parameters
     ----------
 
     layer : napari.layers.Tracks
-        A tracks layer
-
+        A tracks layer.
     node : int
-        The search node ID
+        The search node ID. Note that this may not be the root of the tree,
+        therefore, we need to search all branches of all trees to find this.
 
 
     Returns
     -------
 
-    root : int, None
-
+    root_id : int, None
+        The root node ID of the tree which contains the node.
+    nodes : list
+        The nodes of the subtree that contain the search node.
     """
     roots, reverse_graph = build_reverse_graph(layer.graph)
     linear_trees = [linearise_tree(reverse_graph, root) for root in roots]

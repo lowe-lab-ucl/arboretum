@@ -1,14 +1,32 @@
 import numpy as np
 from napari.utils.colormaps import AVAILABLE_COLORMAPS
 
+# colormaps
 turbo = AVAILABLE_COLORMAPS["turbo"]
-
 WHITE = np.array([255, 255, 255, 255], dtype=np.uint8)
 RED = np.array([255, 0, 0, 255], dtype=np.uint8)
 
 
 def _build_tree(nodes):
-    """ built the graph of the tree """
+    """Build and layout the edges of a lineage tree, given the graph nodes.
+
+    Parameters
+    ----------
+
+    nodes : list
+        A list of graph.TreeNode objects encoding a single lineage tree.
+
+
+    Returns
+    -------
+
+    edges : list
+        A list of edges to be drawn.
+
+    annotations : list
+        A list of annotations to be added to the graph.
+
+    """
 
     max_generational_depth = max([n.generation for n in nodes])
 
