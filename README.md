@@ -24,7 +24,7 @@ This project has changed considerably. The `Tracks` layer, originally developed 
 To view the legacy version of this plugin, visit the legacy branch:  
 https://github.com/quantumjot/arboretum/tree/v1-legacy
 
-[![LineageTree](./examples/napari.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
+[![LineageTree](./examples/arboretum.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
 *Automated cell tracking and lineage tree reconstruction*.
 
 ---  
@@ -64,8 +64,11 @@ https://github.com/quantumjot/BayesianTracker/blob/master/examples/segmentation_
 
 #### TODO:
 + [x] Refactor for Napari 0.4.0 (now including `napari.layers.Tracks`!)
++ [x] Improve performance for large trees
++ [x] Bug fix for world coordinate / data coordinates
 + [ ] Highlight cells in the viewer from the lineage tree view
 + [ ] Visualize merges
 + [ ] Color trees by properties
+
 
 ---

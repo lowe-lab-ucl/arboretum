@@ -25,14 +25,12 @@ class Arboretum(QWidget):
 
     Parameters
     ----------
-
     viewer : napari.Viewer
         Accepts the napari viewer.
 
 
     Returns
     -------
-
     arboretum : QWidget
         The arboretum widget.
 
@@ -85,10 +83,16 @@ class Arboretum(QWidget):
         @layer.mouse_drag_callbacks.append
         def show_tree(layer, event):
 
-            track_id = layer.get_value(layer.position)
+            # cursor_position = layer.position
+            cursor_position = self._viewer.cursor.position
+
+            # fix to return the track ID using the world coordinates returned
+            # by `viewer.cursor.position`
+            track_id = layer.get_value(cursor_position, world=True)
             root, subgraph_nodes = build_subgraph(layer, track_id)
 
             if not subgraph_nodes:
+                print(track_id, root, subgraph_nodes)
                 return
 
             edges, annotations = layout_subgraph(root, subgraph_nodes)
@@ -99,6 +103,10 @@ class Arboretum(QWidget):
 
         self.plot_view.clear()
         self.plot_view.setTitle(f"Lineage tree: {track_id}")
+
+        # NOTE(arl): disabling the autoranging improves perfomance dramatically
+        # https://stackoverflow.com/questions/17103698/plotting-large-arrays-in-pyqtgraph
+        self.plot_view.disableAutoRange()
 
         for ex, ey, ec in edges:
             self.plot_view.plot(ex, ey, pen=pg.mkPen(color=ec, width=3))
@@ -122,3 +130,5 @@ class Arboretum(QWidget):
             )
             pt.setPos(tx, ty)
             self.plot_view.addItem(pt, ignoreBounds=True)
+
+        self.plot_view.autoRange()
