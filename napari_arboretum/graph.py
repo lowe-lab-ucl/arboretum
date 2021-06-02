@@ -14,6 +14,22 @@ import numpy as np
 
 from .tree import _build_tree
 
+# from functools import wraps
+# from time import time
+#
+#
+# def timing(f):
+#     @wraps(f)
+#     def wrap(*args, **kwargs):
+#         ts = time()
+#         result = f(*args, **kwargs)
+#         te = time()
+#         elapsed = te - ts
+#         print(f"func:{f.__name__} args:[{args}, {kwargs}] took: {elapsed}s")
+#         # print(f"func:{f.__name__} took: {elapsed}s")
+#         return result
+#     return wrap
+
 
 class TreeNode:
     """TreeNode. """
@@ -36,14 +52,12 @@ def build_reverse_graph(graph: dict) -> list:
 
     Parameters
     ----------
-
     graph : dict
         A dictionary encoding the graph, taken from the napari.Tracks layer.
 
 
     Returns
     -------
-
     roots : int, None
         A sorted list of integers represent the root node IDs
     reverse_graph : dict
@@ -75,7 +89,6 @@ def linearise_tree(graph: dict, root: int) -> list:
 
     Parameters
     ----------
-
     graph : dict
         A dictionary encoding the graph, taken from the napari.Tracks layer.
     root : int
@@ -84,7 +97,6 @@ def linearise_tree(graph: dict, root: int) -> list:
 
     Returns
     -------
-
     linear : list
         A linearised tree, with only the node ID of each node of the tree.
     """
@@ -108,7 +120,6 @@ def build_subgraph(layer, node):
 
     Parameters
     ----------
-
     layer : napari.layers.Tracks
         A tracks layer.
     node : int
@@ -118,7 +129,6 @@ def build_subgraph(layer, node):
 
     Returns
     -------
-
     root_id : int, None
         The root node ID of the tree which contains the node.
     nodes : list
