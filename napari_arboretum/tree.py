@@ -12,14 +12,12 @@ def _build_tree(nodes):
 
     Parameters
     ----------
-
     nodes : list
         A list of graph.TreeNode objects encoding a single lineage tree.
 
 
     Returns
     -------
-
     edges : list
         A list of edges to be drawn.
 

@@ -14,22 +14,6 @@ import numpy as np
 
 from .tree import _build_tree
 
-# from functools import wraps
-# from time import time
-#
-#
-# def timing(f):
-#     @wraps(f)
-#     def wrap(*args, **kwargs):
-#         ts = time()
-#         result = f(*args, **kwargs)
-#         te = time()
-#         elapsed = te - ts
-#         print(f"func:{f.__name__} args:[{args}, {kwargs}] took: {elapsed}s")
-#         # print(f"func:{f.__name__} took: {elapsed}s")
-#         return result
-#     return wrap
-
 
 class TreeNode:
     """TreeNode. """
