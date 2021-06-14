@@ -35,3 +35,16 @@ def test_build_subgraph():
 
     assert root == TEST_GRAPH_ROOT
     assert subgraph == TEST_GRAPH_LINEAR
+
+
+def test_node_is_root():
+    """Test the `TreeNode` class."""
+    node = graph.TreeNode()
+    node.generation = 1
+    assert node.is_root()
+
+
+def test_node_is_leaf():
+    """Test the `TreeNode` class."""
+    node = graph.TreeNode()
+    assert node.is_leaf()
