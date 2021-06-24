@@ -24,7 +24,7 @@ This project has changed considerably. The `Tracks` layer, originally developed 
 To view the legacy version of this plugin, visit the legacy branch:  
 https://github.com/quantumjot/arboretum/tree/v1-legacy
 
-[![LineageTree](./examples/arboretum.png)]()  
+[![LineageTree](https://raw.githubusercontent.com/quantumjot/arboretum/master/examples/arboretum.png)]()  
 *Automated cell tracking and lineage tree reconstruction*.
 
 ---  
