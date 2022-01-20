@@ -52,5 +52,10 @@ setup(
         "Operating System :: OS Independent",
         "License :: OSI Approved :: BSD License",
     ],
-    entry_points={"napari.plugin": ["napari-arboretum = napari_arboretum"]},
+    entry_points={
+        "napari.manifest": [
+            "napari-arboretum = napari_arboretum:napari.yaml",
+        ],
+    },
+    package_data={"napari_arboretum": ["napari.yaml"]},
 )
