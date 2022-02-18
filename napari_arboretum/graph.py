@@ -11,12 +11,13 @@
 # ------------------------------------------------------------------------------
 
 import numpy as np
+from tying import Union
 
 from .tree import _build_tree
 
 
 class TreeNode:
-    """TreeNode. """
+    """TreeNode."""
 
     def __init__(self):
         self.ID = None
@@ -31,7 +32,7 @@ class TreeNode:
         return not self.children
 
 
-def build_reverse_graph(graph: dict) -> list:
+def build_reverse_graph(graph: dict) -> tuple[Union[list, set], dict]:
     """Take the data from a Tracks layer graph and reverse it.
 
     Parameters
@@ -48,7 +49,7 @@ def build_reverse_graph(graph: dict) -> list:
         A reversed graph representing children of each parent node.
     """
     reverse_graph = {}
-    roots = set()
+    roots: Union[list, set] = set()
 
     # iterate over the graph, reverse it and find the root nodes
     for node, parents in graph.items():

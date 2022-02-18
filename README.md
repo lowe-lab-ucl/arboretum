@@ -17,17 +17,17 @@ Features:
 + Lineage tree plot widget
 + Integration with [btrack](https://github.com/quantumjot/BayesianTracker)
 
-This project has changed considerably. The `Tracks` layer, originally developed for this plugin, is now an official layer type in napari. Read the napari documentation here:  
+This project has changed considerably. The `Tracks` layer, originally developed for this plugin, is now an official layer type in napari. Read the napari documentation here:
  https://napari.org/api/stable/napari.layers.Tracks.html#napari.layers.Tracks
 
 
-To view the legacy version of this plugin, visit the legacy branch:  
+To view the legacy version of this plugin, visit the legacy branch:
 https://github.com/quantumjot/arboretum/tree/v1-legacy
 
-[![LineageTree](https://raw.githubusercontent.com/quantumjot/arboretum/master/examples/arboretum.png)]()  
+[![LineageTree](https://raw.githubusercontent.com/quantumjot/arboretum/master/examples/arboretum.png)]()
 *Automated cell tracking and lineage tree reconstruction*.
 
----  
+---
 
 
 
@@ -55,7 +55,7 @@ pip install -e .
 
 Once installed, Arboretum will be visible in the `Plugins > Add Dock Widget > napari-arboretum` menu in napari.  To visualize a lineage tree, click on one of the tracks in a napari `Tracks` layer.
 
-You can use *btrack* to generate tracks from your image data. See the example notebook here:  
+You can use *btrack* to generate tracks from your image data. See the example notebook here:
 https://github.com/quantumjot/BayesianTracker/blob/master/examples/segmentation_to_btrack_to_napari.ipynb
 
 
