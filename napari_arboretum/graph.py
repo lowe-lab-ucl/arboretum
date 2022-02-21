@@ -10,8 +10,9 @@
 # Created:  01/05/2020
 # ------------------------------------------------------------------------------
 
-import numpy as np
 from typing import Union
+
+import numpy as np
 
 from .tree import _build_tree
 
