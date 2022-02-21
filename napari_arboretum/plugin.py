@@ -59,7 +59,7 @@ class Arboretum(QWidget):
         self._viewer.layers.events.changed.connect(self._get_tracks_layers)
 
         # store the tracks layers
-        self._tracks_layers: list = []
+        self._tracks_layers: list[napari.layers.Tracks] = []
         self._get_tracks_layers()
 
     def _get_tracks_layers(self, event=None):
