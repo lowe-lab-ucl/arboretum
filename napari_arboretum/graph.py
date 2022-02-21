@@ -10,13 +10,15 @@
 # Created:  01/05/2020
 # ------------------------------------------------------------------------------
 
+from typing import Dict, List, Set, Tuple, Union
+
 import numpy as np
 
 from .tree import _build_tree
 
 
 class TreeNode:
-    """TreeNode. """
+    """TreeNode."""
 
     def __init__(self):
         self.ID = None
@@ -31,7 +33,7 @@ class TreeNode:
         return not self.children
 
 
-def build_reverse_graph(graph: dict) -> list:
+def build_reverse_graph(graph: dict) -> Tuple[Union[list, set], Dict[int, List[int]]]:
     """Take the data from a Tracks layer graph and reverse it.
 
     Parameters
@@ -48,7 +50,7 @@ def build_reverse_graph(graph: dict) -> list:
         A reversed graph representing children of each parent node.
     """
     reverse_graph = {}
-    roots = set()
+    roots: Set[int] = set()
 
     # iterate over the graph, reverse it and find the root nodes
     for node, parents in graph.items():
@@ -62,9 +64,9 @@ def build_reverse_graph(graph: dict) -> list:
                 roots.add(parent)
 
     # sort the roots
-    roots = sorted(list(roots))
+    sorted_roots = sorted(list(roots))
 
-    return roots, reverse_graph
+    return sorted_roots, reverse_graph
 
 
 def linearise_tree(graph: dict, root: int) -> list:
