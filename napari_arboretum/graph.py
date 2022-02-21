@@ -50,7 +50,7 @@ def build_reverse_graph(graph: dict) -> tuple[Union[list, set], dict[int, list[i
         A reversed graph representing children of each parent node.
     """
     reverse_graph = {}
-    roots: Union[list[int], set[int]] = set()
+    roots: set[int] = set()
 
     # iterate over the graph, reverse it and find the root nodes
     for node, parents in graph.items():
@@ -64,9 +64,9 @@ def build_reverse_graph(graph: dict) -> tuple[Union[list, set], dict[int, list[i
                 roots.add(parent)
 
     # sort the roots
-    roots = sorted(list(roots))
+    sorted_roots = sorted(list(roots))
 
-    return roots, reverse_graph
+    return sorted_roots, reverse_graph
 
 
 def linearise_tree(graph: dict, root: int) -> list:
