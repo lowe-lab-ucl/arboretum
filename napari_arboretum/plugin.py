@@ -10,6 +10,8 @@
 # Created:  01/05/2020
 # ------------------------------------------------------------------------------
 
+from typing import List
+
 import napari
 import pyqtgraph as pg
 from qtpy.QtCore import Qt
@@ -59,7 +61,7 @@ class Arboretum(QWidget):
         self._viewer.layers.events.changed.connect(self._get_tracks_layers)
 
         # store the tracks layers
-        self._tracks_layers: list[napari.layers.Tracks] = []
+        self._tracks_layers: List[napari.layers.Tracks] = []
         self._get_tracks_layers()
 
     def _get_tracks_layers(self, event=None):

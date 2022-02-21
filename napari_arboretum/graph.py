@@ -10,7 +10,7 @@
 # Created:  01/05/2020
 # ------------------------------------------------------------------------------
 
-from typing import Union
+from typing import Dict, List, Set, Tuple, Union
 
 import numpy as np
 
@@ -33,7 +33,7 @@ class TreeNode:
         return not self.children
 
 
-def build_reverse_graph(graph: dict) -> tuple[Union[list, set], dict[int, list[int]]]:
+def build_reverse_graph(graph: dict) -> Tuple[Union[list, set], Dict[int, List[int]]]:
     """Take the data from a Tracks layer graph and reverse it.
 
     Parameters
@@ -50,7 +50,7 @@ def build_reverse_graph(graph: dict) -> tuple[Union[list, set], dict[int, list[i
         A reversed graph representing children of each parent node.
     """
     reverse_graph = {}
-    roots: set[int] = set()
+    roots: Set[int] = set()
 
     # iterate over the graph, reverse it and find the root nodes
     for node, parents in graph.items():
