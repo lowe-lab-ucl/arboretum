@@ -11,7 +11,7 @@
 # ------------------------------------------------------------------------------
 
 import numpy as np
-from tying import Union
+from typing import Union
 
 from .tree import _build_tree
 
