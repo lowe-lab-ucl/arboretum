@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Tuple, Union
 
 import numpy as np
 from napari.utils.colormaps import AVAILABLE_COLORMAPS
@@ -15,6 +15,7 @@ class Edge:
     x: Tuple[float, float]
     y: Tuple[float, float]
     color: Tuple[float, float, float, float]
+    id: Union[int, None] = None
 
 
 def _build_tree(nodes):
@@ -62,7 +63,9 @@ def _build_tree(nodes):
         edge_color = turbo.map(depth)[0] * 255
 
         # draw the root of the tree
-        edges.append(Edge(y=[y, y], x=[node.t[0], node.t[-1]], color=edge_color))
+        edges.append(
+            Edge(y=[y, y], x=[node.t[0], node.t[-1]], color=edge_color, id=node.ID)
+        )
 
         # mark if this is an apoptotic tree
         if node.is_leaf:

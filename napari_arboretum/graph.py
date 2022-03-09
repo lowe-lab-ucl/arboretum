@@ -117,7 +117,7 @@ def build_subgraph(layer, node):
     -------
     root_id : int, None
         The root node ID of the tree which contains the node.
-    nodes : list
+    nodes : list[TreeNode]
         The nodes of the subtree that contain the search node.
     """
     roots, reverse_graph = build_reverse_graph(layer.graph)

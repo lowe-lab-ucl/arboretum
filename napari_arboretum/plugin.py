@@ -13,6 +13,7 @@
 from typing import List
 
 import napari
+import numpy as np
 import pyqtgraph as pg
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QVBoxLayout, QWidget
@@ -100,7 +101,22 @@ class Arboretum(QWidget):
                 return
 
             edges, annotations = layout_subgraph(root, subgraph_nodes)
+            self.update_colors(edges, layer)
             self.draw_graph(track_id, edges, annotations)
+
+    @staticmethod
+    def update_colors(edges: list[Edge], track: napari.layers.Tracks):
+        """
+        Update colors on a list of edges from the colors they have in a
+        track layer. Note that this updates the colors in-place on ``edges``.
+        """
+        for e in edges:
+            if e.id is not None:
+                color = track.track_colors[
+                    np.where(track.properties["track_id"] == e.id)
+                ][0]
+                # napari uses [0, 1] RGBA, pygraphqt uses [0, 255] RGBA
+                e.color = color * 256 - 1
 
     def draw_graph(self, track_id, edges: list[Edge], annotations):
         """
