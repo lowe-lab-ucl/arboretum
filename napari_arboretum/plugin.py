@@ -18,6 +18,7 @@ from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QVBoxLayout, QWidget
 
 from .graph import build_subgraph, layout_subgraph
+from .tree import Edge
 
 GUI_MAXIMUM_WIDTH = 600
 
@@ -91,6 +92,7 @@ class Arboretum(QWidget):
             # fix to return the track ID using the world coordinates returned
             # by `viewer.cursor.position`
             track_id = layer.get_value(cursor_position, world=True)
+
             root, subgraph_nodes = build_subgraph(layer, track_id)
 
             if not subgraph_nodes:
@@ -100,8 +102,22 @@ class Arboretum(QWidget):
             edges, annotations = layout_subgraph(root, subgraph_nodes)
             self.draw_graph(track_id, edges, annotations)
 
-    def draw_graph(self, track_id, edges, annotations):
-        """Plot graph on the plugin canvas."""
+    def draw_graph(self, track_id, edges: list[Edge], annotations):
+        """
+        Plot graph on the plugin canvas.
+
+        Parameters
+        ----------
+        track_id : int
+        edges : list[Edge]
+            List containing individual edges.
+        annotations : list[tuple[float, float, str, numpy.ndarray[int]]]
+            Annotations to add. Each list item is a tuple with:
+            - x coordinate
+            - y coordinate
+            - annoation text
+            - color (in rgba form)
+        """
 
         self.plot_view.clear()
         self.plot_view.setTitle(f"Lineage tree: {track_id}")
@@ -110,8 +126,8 @@ class Arboretum(QWidget):
         # https://stackoverflow.com/questions/17103698/plotting-large-arrays-in-pyqtgraph
         self.plot_view.disableAutoRange()
 
-        for ex, ey, ec in edges:
-            self.plot_view.plot(ex, ey, pen=pg.mkPen(color=ec, width=3))
+        for e in edges:
+            self.plot_view.plot(e.y, e.x, pen=pg.mkPen(color=e.color, width=3))
 
         # labels
         for tx, ty, tstr, tcol in annotations:

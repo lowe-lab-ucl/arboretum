@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+from typing import Tuple
+
 import numpy as np
 from napari.utils.colormaps import AVAILABLE_COLORMAPS
 
@@ -5,6 +8,13 @@ from napari.utils.colormaps import AVAILABLE_COLORMAPS
 turbo = AVAILABLE_COLORMAPS["turbo"]
 WHITE = np.array([255, 255, 255, 255], dtype=np.uint8)
 RED = np.array([255, 0, 0, 255], dtype=np.uint8)
+
+
+@dataclass
+class Edge:
+    x: Tuple[float, float]
+    y: Tuple[float, float]
+    color: Tuple[float, float, float, float]
 
 
 def _build_tree(nodes):
@@ -52,7 +62,7 @@ def _build_tree(nodes):
         edge_color = turbo.map(depth)[0] * 255
 
         # draw the root of the tree
-        edges.append(([y, y], [node.t[0], node.t[-1]], edge_color))
+        edges.append(Edge(y=[y, y], x=[node.t[0], node.t[-1]], color=edge_color))
 
         # mark if this is an apoptotic tree
         if node.is_leaf:
@@ -79,7 +89,9 @@ def _build_tree(nodes):
                     y_pos.append(y - depth_mod)
 
                 # plot a linking line to the children
-                edges.append(([y, y_pos[-1]], [node.t[-1], child.t[0]], "w"))
+                edges.append(
+                    Edge(y=[y, y_pos[-1]], x=[node.t[-1], child.t[0]], color=WHITE)
+                )
                 annotations.append(
                     (
                         y_pos[-1],
@@ -92,8 +104,8 @@ def _build_tree(nodes):
     # now that we have traversed the tree, calculate the span
     tree_span = []
     for edge in edges:
-        tree_span.append(edge[0][0])
-        tree_span.append(edge[0][1])
+        tree_span.append(edge.y[0])
+        tree_span.append(edge.y[1])
 
     # # work out the span of the tree, we can modify positioning here
     # min_x = min(tree_span)
