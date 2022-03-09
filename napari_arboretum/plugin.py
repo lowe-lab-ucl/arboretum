@@ -101,7 +101,24 @@ class Arboretum(QWidget):
             self.draw_graph(track_id, edges, annotations)
 
     def draw_graph(self, track_id, edges, annotations):
-        """Plot graph on the plugin canvas."""
+        """
+        Plot graph on the plugin canvas.
+
+        Parameters
+        ----------
+        track_id : int
+        edges : list[list[float], list[float], np.ndarray[float]]]
+            List containing individual edges. Each list item has:
+            - x coordinates
+            - y coordinates
+            - color (in rgba form)
+        annotations : list[tuple[float, float, str, numpy.ndarray[int]]]
+            Annotations to add. Each list item is a tuple with:
+            - x coordinate
+            - y coordinate
+            - annoation text
+            - color (in rgba form)
+        """
 
         self.plot_view.clear()
         self.plot_view.setTitle(f"Lineage tree: {track_id}")
