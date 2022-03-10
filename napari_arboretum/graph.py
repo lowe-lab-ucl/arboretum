@@ -12,6 +12,7 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Set, Tuple, Union
 
+import napari
 import numpy as np
 
 from .tree import _build_tree
@@ -97,7 +98,9 @@ def linearise_tree(graph: dict, root: int) -> list:
     return linear
 
 
-def build_subgraph(layer, node):
+def build_subgraph(
+    layer: napari.layers.Tracks, search_node: int
+) -> Tuple[Union[int, None], List[TreeNode]]:
     """Build a subgraph containing the node.
 
     The search node may not be the root of a tree, therefore, this function
@@ -108,10 +111,9 @@ def build_subgraph(layer, node):
     ----------
     layer : napari.layers.Tracks
         A tracks layer.
-    node : int
+    search_node : int
         The search node ID. Note that this may not be the root of the tree,
         therefore, we need to search all branches of all trees to find this.
-
 
     Returns
     -------
@@ -125,7 +127,7 @@ def build_subgraph(layer, node):
 
     root_id = None
     for root, tree in zip(roots, linear_trees):
-        if node in tree:
+        if search_node in tree:
             root_id = root
 
     # if we did not find a root node, return None
