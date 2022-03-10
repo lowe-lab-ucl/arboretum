@@ -9,7 +9,7 @@
 #
 # Created:  01/05/2020
 # ------------------------------------------------------------------------------
-
+from dataclasses import dataclass, field
 from typing import Dict, List, Set, Tuple, Union
 
 import numpy as np
@@ -17,19 +17,19 @@ import numpy as np
 from .tree import _build_tree
 
 
+@dataclass
 class TreeNode:
     """TreeNode."""
 
-    def __init__(self):
-        self.ID = None
-        self.t = ()
-        self.generation = None
-        self.children = []
+    ID: int
+    t: Tuple[int, int]
+    generation: int
+    children: List["TreeNode"] = field(default_factory=list)
 
-    def is_root(self):
+    def is_root(self) -> bool:
         return self.generation == 1
 
-    def is_leaf(self):
+    def is_leaf(self) -> bool:
         return not self.children
 
 
@@ -134,14 +134,12 @@ def build_subgraph(layer, node):
 
     def _node_from_graph(_id):
 
-        node = TreeNode()
-        node.ID = _id
-
         idx = np.where(layer.data[:, 0] == _id)[0]
-        node.t = (np.min(layer.data[idx, 1]), np.max(layer.data[idx, 1]))
+        t = (np.min(layer.data[idx, 1]), np.max(layer.data[idx, 1]))
+        node = TreeNode(ID=_id, t=t, generation=1)
+
         if _id in reverse_graph:
             node.children = reverse_graph[_id]
-        node.generation = 1
 
         return node
 
