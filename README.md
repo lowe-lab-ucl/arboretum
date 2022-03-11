@@ -3,7 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/napari-arboretum.svg?color=green)](https://pypi.org/project/napari-arboretum)
 [![Python Version](https://img.shields.io/pypi/pyversions/napari-arboretum.svg?color=green)](https://python.org)
 [![tests](https://github.com/quantumjot/arboretum/workflows/tests/badge.svg)](https://github.com/quantumjot/arboretum/actions)
-[![codecov](https://codecov.io/gh/quantumjot/arboretum/branch/master/graph/badge.svg)](https://codecov.io/gh/quantumjot/arboretum)
+[![codecov](https://codecov.io/gh/lowe-lab-ucl/arboretum/branch/master/graph/badge.svg?token=2M2HhM60op)](https://codecov.io/gh/lowe-lab-ucl/arboretum)
 
 # Arboretum
 
