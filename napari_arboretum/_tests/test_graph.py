@@ -39,12 +39,16 @@ def test_build_subgraph():
 
 def test_node_is_root():
     """Test the `TreeNode` class."""
-    node = graph.TreeNode()
-    node.generation = 1
+    node = graph.TreeNode(generation=1, ID=1, t=(1, 2))
     assert node.is_root()
+
+    node = graph.TreeNode(generation=2, ID=1, t=(1, 2))
+    assert not node.is_root()
 
 
 def test_node_is_leaf():
     """Test the `TreeNode` class."""
-    node = graph.TreeNode()
-    assert node.is_leaf()
+    node2 = graph.TreeNode(generation=2, ID=2, t=(2, 3))
+    node1 = graph.TreeNode(generation=1, ID=1, t=(1, 2), children=[node2])
+    assert not node1.is_leaf()
+    assert node2.is_leaf()
