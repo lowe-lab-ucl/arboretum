@@ -116,7 +116,7 @@ class Arboretum(QWidget):
                     np.where(self.layer.properties["track_id"] == e.id)
                 ][-1]
                 # napari uses [0, 1] RGBA, pygraphqt uses [0, 255] RGBA
-                e.color = color * 256 - 1
+                e.color = color * 255
 
     def draw_graph(self):
         """
