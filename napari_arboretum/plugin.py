@@ -147,15 +147,15 @@ class Arboretum(QWidget):
             self.plot_view.plot(e.y, e.x, pen=pg.mkPen(color=e.color, width=3))
 
         # labels
-        for tx, ty, tstr, tcol in self.annotations:
+        for a in self.annotations:
 
             # change the alpha value according to whether this is the selected
             # cell or another part of the tree
-            tcol[3] = 255 if tstr == str(self.track_id) else 64
+            a.color[3] = 255 if a.label == str(self.track_id) else 64
 
             pt = pg.TextItem(
-                text=tstr,
-                color=tcol,
+                text=a.label,
+                color=a.color,
                 html=None,
                 anchor=(0, 0),
                 border=None,
@@ -163,7 +163,7 @@ class Arboretum(QWidget):
                 angle=0,
                 rotateAxis=None,
             )
-            pt.setPos(tx, ty)
+            pt.setPos(a.x, a.y)
             self.plot_view.addItem(pt, ignoreBounds=True)
 
         self.plot_view.autoRange()

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 from napari.utils.colormaps import AVAILABLE_COLORMAPS
@@ -9,23 +9,33 @@ turbo = AVAILABLE_COLORMAPS["turbo"]
 WHITE = np.array([255, 255, 255, 255], dtype=np.uint8)
 RED = np.array([255, 0, 0, 255], dtype=np.uint8)
 
+# RGBA in range [0, 255]
+ColorType = Tuple[float, float, float, float]
+
+
+@dataclass
+class Annotation:
+    x: float
+    y: float
+    label: str
+    color: ColorType
+
 
 @dataclass
 class Edge:
     x: Tuple[float, float]
     y: Tuple[float, float]
-    color: Tuple[float, float, float, float]
+    color: ColorType
     id: Optional[int] = None
 
 
-def _build_tree(nodes):
+def _build_tree(nodes) -> Tuple[List[Edge], List[Annotation]]:
     """Build and layout the edges of a lineage tree, given the graph nodes.
 
     Parameters
     ----------
     nodes : list
         A list of graph.TreeNode objects encoding a single lineage tree.
-
 
     Returns
     -------
@@ -34,7 +44,6 @@ def _build_tree(nodes):
 
     annotations : list
         A list of annotations to be added to the graph.
-
     """
 
     max_generational_depth = max([n.generation for n in nodes])
@@ -64,15 +73,19 @@ def _build_tree(nodes):
 
         # draw the root of the tree
         edges.append(
-            Edge(y=[y, y], x=[node.t[0], node.t[-1]], color=edge_color, id=node.ID)
+            Edge(y=(y, y), x=(node.t[0], node.t[-1]), color=edge_color, id=node.ID)
         )
 
         # mark if this is an apoptotic tree
         if node.is_leaf:
-            annotations.append((y, node.t[-1], str(node.ID), WHITE))
+            annotations.append(
+                Annotation(y=y, x=node.t[-1], label=str(node.ID), color=WHITE)
+            )
 
         if node.is_root:
-            annotations.append((y, node.t[0], str(node.ID), WHITE))
+            annotations.append(
+                Annotation(y=y, x=node.t[0], label=str(node.ID), color=WHITE)
+            )
 
         children = [t for t in nodes if t.ID in node.children]
 
@@ -93,14 +106,14 @@ def _build_tree(nodes):
 
                 # plot a linking line to the children
                 edges.append(
-                    Edge(y=[y, y_pos[-1]], x=[node.t[-1], child.t[0]], color=WHITE)
+                    Edge(y=(y, y_pos[-1]), x=(node.t[-1], child.t[0]), color=WHITE)
                 )
                 annotations.append(
-                    (
-                        y_pos[-1],
-                        child.t[-1] - (child.t[-1] - child.t[0]) / 2.0,
-                        str(child.ID),
-                        WHITE,
+                    Annotation(
+                        y=y_pos[-1],
+                        x=child.t[-1] - (child.t[-1] - child.t[0]) / 2.0,
+                        label=str(child.ID),
+                        color=WHITE,
                     )
                 )
 
