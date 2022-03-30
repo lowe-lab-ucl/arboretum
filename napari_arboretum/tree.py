@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple, Union
+from typing import Optional, Tuple
 
 import numpy as np
 from napari.utils.colormaps import AVAILABLE_COLORMAPS
@@ -15,7 +15,7 @@ class Edge:
     x: Tuple[float, float]
     y: Tuple[float, float]
     color: Tuple[float, float, float, float]
-    id: Union[int, None] = None
+    id: Optional[int] = None
 
 
 def _build_tree(nodes):

@@ -10,7 +10,7 @@
 # Created:  01/05/2020
 # ------------------------------------------------------------------------------
 from dataclasses import dataclass, field
-from typing import Dict, List, Set, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union
 
 import napari
 import numpy as np
@@ -100,7 +100,7 @@ def linearise_tree(graph: dict, root: int) -> list:
 
 def build_subgraph(
     layer: napari.layers.Tracks, search_node: int
-) -> Tuple[Union[int, None], List[TreeNode]]:
+) -> Tuple[Optional[int], List[TreeNode]]:
     """Build a subgraph containing the node.
 
     The search node may not be the root of a tree, therefore, this function
