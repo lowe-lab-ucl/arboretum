@@ -130,10 +130,6 @@ def build_subgraph(
         if search_node in tree:
             root_id = root
 
-    # if we did not find a root node, return None
-    if root_id is None:
-        return None, []
-
     def _node_from_graph(_id):
 
         idx = np.where(layer.data[:, 0] == _id)[0]
@@ -144,6 +140,10 @@ def build_subgraph(
             node.children = reverse_graph[_id]
 
         return node
+
+    # if we did not find a root node there is only a single branch
+    if root_id is None:
+        return search_node, [_node_from_graph(search_node)]
 
     # now build the treenode objects
     nodes = [_node_from_graph(root_id)]

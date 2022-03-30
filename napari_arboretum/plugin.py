@@ -94,13 +94,13 @@ class Arboretum(QWidget):
 
             # fix to return the track ID using the world coordinates returned
             # by `viewer.cursor.position`
-            self.track_id = layer.get_value(cursor_position, world=True)
+            track_id = layer.get_value(cursor_position, world=True)
+
+            if not track_id:
+                return
+            self.track_id = track_id
 
             root, subgraph_nodes = build_subgraph(layer, self.track_id)
-
-            if not subgraph_nodes:
-                print(self.track_id, root, subgraph_nodes)
-                return
 
             self.edges, self.annotations = layout_subgraph(root, subgraph_nodes)
             self.draw_graph()
