@@ -23,7 +23,7 @@ repos:
             # this seems to need to be here in addition to setup.cfg
             exclude: __init__.py|examples|napari_arboretum/_tests
     - repo: https://github.com/psf/black
-      rev: 22.1.0
+      rev: 22.3.0
       hooks:
           - id: black
             exclude: examples

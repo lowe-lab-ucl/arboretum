@@ -13,6 +13,7 @@
 from typing import List
 
 import napari
+import numpy as np
 import pyqtgraph as pg
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QVBoxLayout, QWidget
@@ -23,7 +24,8 @@ GUI_MAXIMUM_WIDTH = 600
 
 
 class Arboretum(QWidget):
-    """Tree viewer widget.
+    """
+    Tree viewer widget.
 
     Parameters
     ----------
@@ -76,6 +78,7 @@ class Arboretum(QWidget):
         for layer in layers:
             if layer not in self._tracks_layers:
                 self._append_mouse_callback(layer)
+                layer.events.color_by.connect(self.draw_graph)
 
         self._tracks_layers = layers
 
@@ -84,41 +87,71 @@ class Arboretum(QWidget):
 
         @layer.mouse_drag_callbacks.append
         def show_tree(layer, event):
+            self.layer = layer
 
             # cursor_position = layer.position
             cursor_position = self._viewer.cursor.position
 
             # fix to return the track ID using the world coordinates returned
             # by `viewer.cursor.position`
-            track_id = layer.get_value(cursor_position, world=True)
-            root, subgraph_nodes = build_subgraph(layer, track_id)
+            self.track_id = layer.get_value(cursor_position, world=True)
+
+            root, subgraph_nodes = build_subgraph(layer, self.track_id)
 
             if not subgraph_nodes:
-                print(track_id, root, subgraph_nodes)
+                print(self.track_id, root, subgraph_nodes)
                 return
 
-            edges, annotations = layout_subgraph(root, subgraph_nodes)
-            self.draw_graph(track_id, edges, annotations)
+            self.edges, self.annotations = layout_subgraph(root, subgraph_nodes)
+            self.draw_graph()
 
-    def draw_graph(self, track_id, edges, annotations):
-        """Plot graph on the plugin canvas."""
+    def update_colors(self):
+        """
+        Update colors on a list of edges from the colors they have in a
+        track layer. Note that this updates the colors in-place on ``edges``.
+        """
+        for e in self.edges:
+            if e.id is not None:
+                color = self.layer.track_colors[
+                    np.where(self.layer.properties["track_id"] == e.id)
+                ][-1]
+                # napari uses [0, 1] RGBA, pygraphqt uses [0, 255] RGBA
+                e.color = color * 255
+
+    def draw_graph(self):
+        """
+        Plot graph on the plugin canvas.
+
+        Parameters
+        ----------
+        track_id : int
+        edges : list[Edge]
+            List containing individual edges.
+        annotations : list[tuple[float, float, str, numpy.ndarray[int]]]
+            Annotations to add. Each list item is a tuple with:
+            - x coordinate
+            - y coordinate
+            - annoation text
+            - color (in rgba form)
+        """
+        self.update_colors()
 
         self.plot_view.clear()
-        self.plot_view.setTitle(f"Lineage tree: {track_id}")
+        self.plot_view.setTitle(f"Lineage tree: {self.track_id}")
 
         # NOTE(arl): disabling the autoranging improves perfomance dramatically
         # https://stackoverflow.com/questions/17103698/plotting-large-arrays-in-pyqtgraph
         self.plot_view.disableAutoRange()
 
-        for ex, ey, ec in edges:
-            self.plot_view.plot(ex, ey, pen=pg.mkPen(color=ec, width=3))
+        for e in self.edges:
+            self.plot_view.plot(e.y, e.x, pen=pg.mkPen(color=e.color, width=3))
 
         # labels
-        for tx, ty, tstr, tcol in annotations:
+        for tx, ty, tstr, tcol in self.annotations:
 
             # change the alpha value according to whether this is the selected
             # cell or another part of the tree
-            tcol[3] = 255 if tstr == str(track_id) else 64
+            tcol[3] = 255 if tstr == str(self.track_id) else 64
 
             pt = pg.TextItem(
                 text=tstr,
