@@ -95,7 +95,7 @@ class Arboretum(QWidget):
             track_id = layer.get_value(cursor_position)
             if not track_id:
                 return
-            self.draw_graph(layer, track_id)
+            self.draw_graph(layer, track_id=track_id)
 
     def update_colors(self):
         """
@@ -110,7 +110,7 @@ class Arboretum(QWidget):
                 # napari uses [0, 1] RGBA, pygraphqt uses [0, 255] RGBA
                 e.color = color * 255
 
-    def draw_graph(self, layer: napari.layers.Tracks, track_id: int) -> None:
+    def draw_graph(self, layer: napari.layers.Tracks, *, track_id: int) -> None:
         """
         Plot graph on the plugin canvas.
         """

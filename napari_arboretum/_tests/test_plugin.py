@@ -12,4 +12,4 @@ def test_plugin(make_napari_viewer):
     tracks, segmentation = load_sample_data()
 
     plugin = Arboretum(viewer)
-    plugin.draw_graph(tracks, 140)
+    plugin.draw_graph(tracks, track_id=140)
