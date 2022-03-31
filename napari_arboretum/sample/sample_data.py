@@ -1,3 +1,10 @@
+"""
+Functions to load sample data.
+
+The sample data fetching/caching is handled by the `pooch` library. A registry
+of files and their expected hashes is stored in :file:``registry.txt``.
+"""
+
 import json
 import pathlib
 from typing import Tuple
