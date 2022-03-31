@@ -22,5 +22,5 @@ viewer.window.add_plugin_dock_widget(
 
 if __name__ == '__main__':
     # The napari event loop needs to be run under here to allow the window
-    # to be spawned from a Python script 
+    # to be spawned from a Python script
     napari.run()
