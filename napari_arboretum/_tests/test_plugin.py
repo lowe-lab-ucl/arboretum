@@ -12,4 +12,6 @@ def test_plugin(make_napari_viewer):
     tracks, segmentation = load_sample_data()
 
     plugin = Arboretum(viewer)
-    plugin.draw_graph(tracks, track_id=140)
+    # Mock setting the tracks through mouse click
+    plugin.plotter.tracks = tracks
+    plugin.plotter.draw_tree(track_id=140)

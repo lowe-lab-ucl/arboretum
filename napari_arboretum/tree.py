@@ -6,10 +6,11 @@ from napari.utils.colormaps import AVAILABLE_COLORMAPS
 
 # colormaps
 turbo = AVAILABLE_COLORMAPS["turbo"]
-WHITE = np.array([255, 255, 255, 255], dtype=np.uint8)
-RED = np.array([255, 0, 0, 255], dtype=np.uint8)
+WHITE = np.array([1, 1, 1, 1], dtype=float)
+RED = np.array([1, 0, 0, 1], dtype=float)
 
-# RGBA in range [0, 255]
+# napari specifies colours as a RGBA tuple in the range [0, 1], so mirror
+# that convention throughout arboretum.
 ColorType = Tuple[float, float, float, float]
 
 
@@ -69,7 +70,7 @@ def _build_tree(nodes) -> Tuple[List[Edge], List[Annotation]]:
 
         # TODO(arl): sync this with layer coloring
         depth = float(node.generation) / max_generational_depth
-        edge_color = turbo.map(depth)[0] * 255
+        edge_color = turbo.map(depth)[0]
 
         # draw the root of the tree
         edges.append(
