@@ -1,8 +1,7 @@
-from typing import Sequence
-
 import pyqtgraph as pg
 from qtpy.QtWidgets import QWidget
 
+from ..tree import Annotation, Edge
 from .base_plotter import TreePlotterQWidgetBase
 
 __all__ = ["PyQtGraphPlotter"]
@@ -31,22 +30,22 @@ class PyQtGraphPlotter(TreePlotterQWidgetBase):
     def get_qwidget(self) -> QWidget:
         return self.plot_widget
 
-    def add_branch(self, x: Sequence[float], y: Sequence[float], color) -> None:
+    def add_branch(self, e: Edge) -> None:
         """
         Add a single branch to the tree.
         """
         # napari uses [0, 1] RGBA, pygraphqt uses [0, 255] RGBA
-        color = color * 255
-        self.plot_view.plot(y, x, pen=pg.mkPen(color=color, width=3))
+        color = e.color * 255
+        self.plot_view.plot(e.y, e.x, pen=pg.mkPen(color=color, width=3))
 
-    def add_annotation(self, x: float, y: float, label: str, color) -> None:
+    def add_annotation(self, a: Annotation) -> None:
         """
         Add a single label to the tree.
         """
         # napari uses [0, 1] RGBA, pygraphqt uses [0, 255] RGBA
-        color = color * 255
+        color = a.color * 255
         pt = pg.TextItem(
-            text=label,
+            text=a.label,
             color=color,
             html=None,
             anchor=(0, 0),
@@ -55,7 +54,7 @@ class PyQtGraphPlotter(TreePlotterQWidgetBase):
             angle=0,
             rotateAxis=None,
         )
-        pt.setPos(y, x)
+        pt.setPos(a.y, a.x)
         self.plot_view.addItem(pt, ignoreBounds=True)
 
     def set_title(self, title: str) -> None:

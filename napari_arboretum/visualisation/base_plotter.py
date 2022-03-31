@@ -1,12 +1,11 @@
 import abc
-from typing import Sequence
 
 import napari
 import numpy as np
 from qtpy.QtWidgets import QWidget
 
 from ..graph import build_subgraph, layout_subgraph
-from ..tree import ColorType
+from ..tree import Annotation, Edge
 
 GUI_MAXIMUM_WIDTH = 600
 
@@ -53,9 +52,8 @@ class TreePlotterBase(abc.ABC):
         for a in self.annotations:
             # change the alpha value according to whether this is the selected
             # cell or another part of the tree
-            color = a.color
-            color[3] = 1 if a.label == str(track_id) else 0.25
-            self.add_annotation(a.x, a.y, a.label, a.color)
+            a.color[3] = 1 if a.label == str(track_id) else 0.25
+            self.add_annotation(a)
 
     def plot_branches(self) -> None:
         """
@@ -71,40 +69,20 @@ class TreePlotterBase(abc.ABC):
                 ]
                 # For a track that has colour varying along it, just select the
                 # first colour for now
-                color = color[-1, :]
-            else:
-                color = e.color
-            self.add_branch(e.x, e.y, color)
+                e.color = color[-1, :]
+            self.add_branch(e)
 
     @abc.abstractmethod
-    def add_branch(
-        self, x: Sequence[float], y: Sequence[float], color: ColorType
-    ) -> None:
+    def add_branch(self, e: Edge) -> None:
         """
         Add a single branch to the tree.
-
-        Parameters
-        ----------
-        x, y : Sequence[float]
-            x/y coordinates of the branch.
-        color : ColorType
-            Color in a RGBA tuple with values in the range [0, 1].
         """
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def add_annotation(self, x: float, y: float, label: str, color: ColorType) -> None:
+    def add_annotation(self, a: Annotation) -> None:
         """
         Add a single label to the tree.
-
-        Parameters
-        ----------
-        x, y : float
-            x/y coordinate of the annotation.
-        label : str
-            Annotation text.
-        color : ColorType
-            Color in a RGBA tuple with values in the range [0, 1].
         """
         raise NotImplementedError()
 
