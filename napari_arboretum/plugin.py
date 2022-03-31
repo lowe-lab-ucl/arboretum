@@ -82,28 +82,20 @@ class Arboretum(QWidget):
 
         self._tracks_layers = layers
 
-    def _append_mouse_callback(self, layer: napari.layers.Tracks):
-        """Append a mouse callback to each Tracks layer."""
+    def _append_mouse_callback(self, track_layer: napari.layers.Tracks) -> None:
+        """
+        Append a mouse callback to *track_layer* that:
+        - sets self.layer and self.track_id
+        - draws the graph
+        """
 
-        @layer.mouse_drag_callbacks.append
-        def show_tree(layer, event):
-            self.layer = layer
-
-            # cursor_position = layer.position
-            cursor_position = self._viewer.cursor.position
-
-            # fix to return the track ID using the world coordinates returned
-            # by `viewer.cursor.position`
-            track_id = layer.get_value(cursor_position, world=True)
-
+        @track_layer.mouse_drag_callbacks.append
+        def show_tree(layer, event) -> None:
+            cursor_position = event.position
+            track_id = layer.get_value(cursor_position)
             if not track_id:
                 return
-            self.track_id = track_id
-
-            root, subgraph_nodes = build_subgraph(layer, self.track_id)
-
-            self.edges, self.annotations = layout_subgraph(root, subgraph_nodes)
-            self.draw_graph()
+            self.draw_graph(layer, track_id=track_id)
 
     def update_colors(self):
         """
@@ -118,22 +110,15 @@ class Arboretum(QWidget):
                 # napari uses [0, 1] RGBA, pygraphqt uses [0, 255] RGBA
                 e.color = color * 255
 
-    def draw_graph(self):
+    def draw_graph(self, layer: napari.layers.Tracks, *, track_id: int) -> None:
         """
         Plot graph on the plugin canvas.
-
-        Parameters
-        ----------
-        track_id : int
-        edges : list[Edge]
-            List containing individual edges.
-        annotations : list[tuple[float, float, str, numpy.ndarray[int]]]
-            Annotations to add. Each list item is a tuple with:
-            - x coordinate
-            - y coordinate
-            - annoation text
-            - color (in rgba form)
         """
+        self.layer = layer
+        self.track_id = track_id
+        root, subgraph_nodes = build_subgraph(layer, track_id)
+        self.edges, self.annotations = layout_subgraph(root, subgraph_nodes)
+
         self.update_colors()
 
         self.plot_view.clear()
