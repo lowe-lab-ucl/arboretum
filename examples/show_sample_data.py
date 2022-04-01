@@ -14,8 +14,8 @@ from napari_arboretum import load_sample_data
 track, segmentation = load_sample_data()
 
 viewer = napari.Viewer()
-viewer.add_layer(track)
 viewer.add_layer(segmentation)
+viewer.add_layer(track)
 viewer.window.add_plugin_dock_widget(
     plugin_name="napari-arboretum", widget_name="Arboretum"
 )

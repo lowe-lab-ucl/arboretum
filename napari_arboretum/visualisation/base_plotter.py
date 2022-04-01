@@ -22,6 +22,11 @@ class TreePlotterBase(abc.ABC):
 
     This is not designed to actually render the plotting objects objects.
     Sub-classes should do that by impelmenting the abstract methods defined below.
+
+    Attributes
+    ----------
+    edges : List[Edge]
+    annotations : List[Annotation]
     """
 
     @property
@@ -41,12 +46,16 @@ class TreePlotterBase(abc.ABC):
         """
         Plot the tree containing ``track_id``.
         """
+        self.clear()
         root, subgraph_nodes = build_subgraph(self.tracks, track_id)
         self.edges, self.annotations = layout_subgraph(root, subgraph_nodes)
 
         self.set_title(f"Lineage tree: {track_id}")
 
-        self.plot_branches()
+        for e in self.edges:
+            self.add_branch(e)
+
+        self.update_egde_colors()
 
         # labels
         for a in self.annotations:
@@ -55,12 +64,9 @@ class TreePlotterBase(abc.ABC):
             a.color[3] = 1 if a.label == str(track_id) else 0.25
             self.add_annotation(a)
 
-    def plot_branches(self) -> None:
+    def update_egde_colors(self) -> None:
         """
-        Plot the branches.
-
-        This is separated from `draw_tree` so it can be used in callbacks when
-        the track colours are changed, but the track_id is not.
+        Update tree edge colours from the track properties.
         """
         for e in self.edges:
             if e.id is not None:
@@ -70,7 +76,20 @@ class TreePlotterBase(abc.ABC):
                 # For a track that has colour varying along it, just select the
                 # first colour for now
                 e.color = color[-1, :]
-            self.add_branch(e)
+
+        self.update_colors()
+
+    @abc.abstractmethod
+    def update_colors(self) -> None:
+        """
+        Use the colors stored in self.edges to update the colors in a live
+        plot.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def clear(self) -> None:
+        raise NotImplementedError()
 
     @abc.abstractmethod
     def add_branch(self, e: Edge) -> None:

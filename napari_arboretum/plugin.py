@@ -4,9 +4,9 @@ import napari
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QVBoxLayout, QWidget
 
-from .visualisation import PyQtGraphPlotter, TreePlotterQWidgetBase
+from .visualisation import TreePlotterQWidgetBase, VisPyPlotter
 
-GUI_MAXIMUM_WIDTH = 600
+GUI_MAXIMUM_WIDTH = 400
 
 
 class Arboretum(QWidget):
@@ -17,7 +17,7 @@ class Arboretum(QWidget):
     def __init__(self, viewer: napari.Viewer, parent=None):
         super().__init__(parent=parent)
         self.viewer = viewer
-        self.plotter: TreePlotterQWidgetBase = PyQtGraphPlotter()
+        self.plotter: TreePlotterQWidgetBase = VisPyPlotter()
 
         # build the canvas to display the trees
         layout = QVBoxLayout()
@@ -48,7 +48,7 @@ class Arboretum(QWidget):
                 # Add callback to draw graph when layer clicked
                 self.append_mouse_callback(layer)
                 # Add callback to change tree colours when layer colours changed
-                layer.events.color_by.connect(self.plotter.plot_branches)
+                layer.events.color_by.connect(self.plotter.update_egde_colors)
 
         self.tracks_layers = layers
 
