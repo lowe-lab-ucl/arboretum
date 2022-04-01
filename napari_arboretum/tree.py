@@ -19,14 +19,14 @@ class Annotation:
     x: float
     y: float
     label: str
-    color: ColorType
+    color: ColorType = WHITE
 
 
 @dataclass
 class Edge:
     x: Tuple[float, float]
     y: Tuple[float, float]
-    color: ColorType
+    color: np.ndarray = WHITE
     id: Optional[int] = None
 
 
@@ -46,11 +46,7 @@ def _build_tree(nodes) -> Tuple[List[Edge], List[Annotation]]:
     annotations : list
         A list of annotations to be added to the graph.
     """
-
-    max_generational_depth = max([n.generation for n in nodes])
-
     # put the start vertex into the queue, and the marked list
-
     root = nodes[0]
 
     queue = [root]
@@ -68,25 +64,15 @@ def _build_tree(nodes) -> Tuple[List[Edge], List[Annotation]]:
         node = queue.pop(0)
         y = y_pos.pop(0)
 
-        # TODO(arl): sync this with layer coloring
-        depth = float(node.generation) / max_generational_depth
-        edge_color = turbo.map(depth)[0]
-
         # draw the root of the tree
-        edges.append(
-            Edge(y=(y, y), x=(node.t[0], node.t[-1]), color=edge_color, id=node.ID)
-        )
+        edges.append(Edge(y=(y, y), x=(node.t[0], node.t[-1]), id=node.ID))
 
         # mark if this is an apoptotic tree
         if node.is_leaf:
-            annotations.append(
-                Annotation(y=y, x=node.t[-1], label=str(node.ID), color=WHITE)
-            )
+            annotations.append(Annotation(y=y, x=node.t[-1], label=str(node.ID)))
 
         if node.is_root:
-            annotations.append(
-                Annotation(y=y, x=node.t[0], label=str(node.ID), color=WHITE)
-            )
+            annotations.append(Annotation(y=y, x=node.t[0], label=str(node.ID)))
 
         children = [t for t in nodes if t.ID in node.children]
 
@@ -106,15 +92,12 @@ def _build_tree(nodes) -> Tuple[List[Edge], List[Annotation]]:
                     y_pos.append(y - depth_mod)
 
                 # plot a linking line to the children
-                edges.append(
-                    Edge(y=(y, y_pos[-1]), x=(node.t[-1], child.t[0]), color=WHITE)
-                )
+                edges.append(Edge(y=(y, y_pos[-1]), x=(node.t[-1], child.t[0])))
                 annotations.append(
                     Annotation(
                         y=y_pos[-1],
                         x=child.t[-1] - (child.t[-1] - child.t[0]) / 2.0,
                         label=str(child.ID),
-                        color=WHITE,
                     )
                 )
 

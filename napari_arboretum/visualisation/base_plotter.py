@@ -52,10 +52,9 @@ class TreePlotterBase(abc.ABC):
 
         self.set_title(f"Lineage tree: {track_id}")
 
+        self.update_egde_colors(update_live=False)
         for e in self.edges:
             self.add_branch(e)
-
-        self.update_egde_colors()
 
         # labels
         for a in self.annotations:
@@ -64,20 +63,24 @@ class TreePlotterBase(abc.ABC):
             a.color[3] = 1 if a.label == str(track_id) else 0.25
             self.add_annotation(a)
 
-    def update_egde_colors(self) -> None:
+    def update_egde_colors(self, update_live: bool = True) -> None:
         """
         Update tree edge colours from the track properties.
+
+        Parameters
+        ----------
+        update_live : bool
+            If `True`, also call `update_colors()` on the plotting backend
+            to update the colors in a live plot.
         """
         for e in self.edges:
             if e.id is not None:
-                color = self.tracks.track_colors[
+                e.color = self.tracks.track_colors[
                     np.where(self.tracks.properties["track_id"] == e.id)
                 ]
-                # For a track that has colour varying along it, just select the
-                # first colour for now
-                e.color = color[-1, :]
 
-        self.update_colors()
+        if update_live:
+            self.update_colors()
 
     @abc.abstractmethod
     def update_colors(self) -> None:

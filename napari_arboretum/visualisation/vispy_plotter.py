@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 from qtpy.QtWidgets import QWidget
 from vispy import scene
@@ -84,18 +86,31 @@ class TreeVisual(scene.visuals.Compound):
         self.tracks = {}
         self.subvisuals = []
 
-    def add_track(self, id: int, pos: np.ndarray, color: np.ndarray) -> None:
+    def add_track(self, id: Optional[int], pos: np.ndarray, color: np.ndarray) -> None:
         """
         Parameters
         ----------
+        id :
+            Track ID.
         pos :
-            Array of shape (n, 2) specifying vertex coordinates.
+            Array of shape (2, 2) specifying vertex coordinates.
         color :
-            Array of shape (n, 4) specifying RGBA values in range [0, 1].
+            Array of shape (n, 4) specifying RGBA values in range [0, 1] along
+            the track.
         """
-        visual = scene.visuals.Line(pos=pos, color=color, width=3)
-        scene.visuals.Compound.add_subvisual(self, visual)
-        self.tracks[id] = visual
+        if id is None:
+            visual = scene.visuals.Line(pos=pos, color=color, width=3)
+        else:
+            # Split up line into individual time steps so color can vary
+            # along the line
+            ys = np.arange(pos[0, 1], pos[1, 1] + 1)
+            xs = np.ones(ys.size) * pos[0, 0]
+            visual = scene.visuals.Line(
+                pos=np.column_stack((xs, ys)), color=color, width=3
+            )
+            self.tracks[id] = visual
+
+        self.add_subvisual(visual)
         self.subvisuals.append(visual)
 
     def add_annotation(self, x: float, y: float, label: str, color):
