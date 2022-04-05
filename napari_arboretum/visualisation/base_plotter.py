@@ -93,7 +93,7 @@ class TreePlotterBase(abc.ABC):
 
         Parameters
         ----------
-        title : str
+        title :
             Plot title.
         """
         raise NotImplementedError()

@@ -109,17 +109,17 @@ def build_subgraph(
 
     Parameters
     ----------
-    layer : napari.layers.Tracks
+    layer :
         A tracks layer.
-    search_node : int
+    search_node :
         The search node ID. Note that this may not be the root of the tree,
         therefore, we need to search all branches of all trees to find this.
 
     Returns
     -------
-    root_id : int, None
+    root_id :
         The root node ID of the tree which contains the node.
-    nodes : list[TreeNode]
+    nodes :
         The nodes of the subtree that contain the search node.
     """
     roots, reverse_graph = build_reverse_graph(layer.graph)

@@ -12,18 +12,6 @@ GUI_MAXIMUM_WIDTH = 600
 class Arboretum(QWidget):
     """
     Tree viewer widget.
-
-    Parameters
-    ----------
-    viewer : napari.Viewer
-        Accepts the napari viewer.
-
-
-    Returns
-    -------
-    arboretum : QWidget
-        The arboretum widget.
-
     """
 
     def __init__(self, viewer: napari.Viewer, parent=None):
@@ -46,7 +34,9 @@ class Arboretum(QWidget):
         self.update_tracks_layers()
 
     def update_tracks_layers(self, event=None) -> None:
-        """Get the Tracks layers that are present in the viewer."""
+        """
+        Get the Tracks layers that are present in the viewer.
+        """
         layers = [
             layer
             for layer in self.viewer.layers
