@@ -8,6 +8,9 @@
 # Arboretum
 
 
+![](./examples/arboretum.webm)
+
+
 ### Overview
 
 A dockable widget for [Napari](https://github.com/napari) for visualizing cell lineage trees.
