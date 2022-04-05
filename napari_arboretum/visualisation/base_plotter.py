@@ -34,7 +34,7 @@ class TreePlotterBase(abc.ABC):
         return self._tracks
 
     @tracks.setter
-    def tracks(self, track_layer: napari.layers.Tracks):
+    def tracks(self, track_layer: napari.layers.Tracks) -> None:
         self._tracks = track_layer
 
     def draw_tree(self, track_id: int) -> None:

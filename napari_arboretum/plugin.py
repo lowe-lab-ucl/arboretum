@@ -45,7 +45,7 @@ class Arboretum(QWidget):
         self.tracks_layers: List[napari.layers.Tracks] = []
         self.update_tracks_layers()
 
-    def update_tracks_layers(self, event=None):
+    def update_tracks_layers(self, event=None) -> None:
         """Get the Tracks layers that are present in the viewer."""
         layers = [
             layer
@@ -62,7 +62,7 @@ class Arboretum(QWidget):
 
         self.tracks_layers = layers
 
-    def append_mouse_callback(self, track_layer: napari.layers.Tracks):
+    def append_mouse_callback(self, track_layer: napari.layers.Tracks) -> None:
         """
         Add a mouse callback to ``track_layer`` to draw the tree
         when the layer is clicked.
