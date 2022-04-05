@@ -8,7 +8,7 @@
 # Arboretum
 
 
-![](./examples/arboretum.webm)
+![](./examples/arboretum.gif)
 
 
 ### Overview
