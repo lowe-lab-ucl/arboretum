@@ -1,7 +1,6 @@
 import abc
 
 import napari
-import numpy as np
 from qtpy.QtWidgets import QWidget
 
 from ..graph import build_subgraph, layout_subgraph
@@ -76,7 +75,7 @@ class TreePlotterBase(abc.ABC):
         for e in self.edges:
             if e.id is not None:
                 e.color = self.tracks.track_colors[
-                    np.where(self.tracks.properties["track_id"] == e.id)
+                    self.tracks.properties["track_id"] == e.id
                 ]
 
         if update_live:
