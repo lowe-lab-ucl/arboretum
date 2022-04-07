@@ -92,6 +92,10 @@ class TreePlotterBase(abc.ABC):
 
     @abc.abstractmethod
     def clear(self) -> None:
+        """
+        Clear the plotting canvas. Called to remove the previous tree when
+        a new tree is drawn.
+        """
         raise NotImplementedError()
 
     @abc.abstractmethod
@@ -112,11 +116,6 @@ class TreePlotterBase(abc.ABC):
     def set_title(self, title: str) -> None:
         """
         Set the title of the plot.
-
-        Parameters
-        ----------
-        title :
-            Plot title.
         """
         raise NotImplementedError()
 
