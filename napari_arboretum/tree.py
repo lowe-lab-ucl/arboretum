@@ -2,18 +2,18 @@
 Classes and functions for laying out graphs for visualisation.
 """
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import List, MutableSequence, Optional, Tuple
 
 import numpy as np
 
 from .graph import TreeNode
 
 # colormaps
-WHITE = [1.0, 1.0, 1.0, 1.0]
+WHITE = np.array([1.0, 1.0, 1.0, 1.0])
 
 # napari specifies colours as a RGBA tuple in the range [0, 1], so mirror
 # that convention throughout arboretum.
-ColorType = List[float]
+ColorType = MutableSequence[float]
 
 
 @dataclass
