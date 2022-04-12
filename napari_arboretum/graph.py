@@ -18,7 +18,7 @@ class TreeNode:
     ID: int
     t: Tuple[int, int]
     generation: int
-    children: List["TreeNode"] = field(default_factory=list)
+    children: List[int] = field(default_factory=list)
 
     def is_root(self) -> bool:
         return self.generation == 1
