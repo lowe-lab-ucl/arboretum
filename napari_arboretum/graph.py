@@ -20,9 +20,11 @@ class TreeNode:
     generation: int
     children: List[int] = field(default_factory=list)
 
+    @property
     def is_root(self) -> bool:
         return self.generation == 1
 
+    @property
     def is_leaf(self) -> bool:
         return not self.children
 
