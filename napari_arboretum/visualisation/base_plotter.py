@@ -1,7 +1,6 @@
 import abc
 
 import napari
-import numpy as np
 from qtpy.QtWidgets import QWidget
 
 from ..graph import build_subgraph, layout_subgraph
@@ -22,6 +21,11 @@ class TreePlotterBase(abc.ABC):
 
     This is not designed to actually render the plotting objects objects.
     Sub-classes should do that by impelmenting the abstract methods defined below.
+
+    Attributes
+    ----------
+    edges : List[Edge]
+    annotations : List[Annotation]
     """
 
     @property
@@ -41,12 +45,13 @@ class TreePlotterBase(abc.ABC):
         """
         Plot the tree containing ``track_id``.
         """
+        self.clear()
         root, subgraph_nodes = build_subgraph(self.tracks, track_id)
         self.edges, self.annotations = layout_subgraph(root, subgraph_nodes)
 
-        self.set_title(f"Lineage tree: {track_id}")
-
-        self.plot_branches()
+        self.update_egde_colors(update_live=False)
+        for e in self.edges:
+            self.add_branch(e)
 
         # labels
         for a in self.annotations:
@@ -55,22 +60,40 @@ class TreePlotterBase(abc.ABC):
             a.color[3] = 1 if a.label == str(track_id) else 0.25
             self.add_annotation(a)
 
-    def plot_branches(self) -> None:
+    def update_egde_colors(self, update_live: bool = True) -> None:
         """
-        Plot the branches.
+        Update tree edge colours from the track properties.
 
-        This is separated from `draw_tree` so it can be used in callbacks when
-        the track colours are changed, but the track_id is not.
+        Parameters
+        ----------
+        update_live : bool
+            If `True`, also call `update_colors()` on the plotting backend
+            to update the colors in a live plot.
         """
         for e in self.edges:
             if e.id is not None:
-                color = self.tracks.track_colors[
-                    np.where(self.tracks.properties["track_id"] == e.id)
+                e.color = self.tracks.track_colors[
+                    self.tracks.properties["track_id"] == e.id
                 ]
-                # For a track that has colour varying along it, just select the
-                # first colour for now
-                e.color = color[-1, :]
-            self.add_branch(e)
+
+        if update_live:
+            self.update_colors()
+
+    @abc.abstractmethod
+    def update_colors(self) -> None:
+        """
+        Use the colors stored in self.edges to update the colors in a live
+        plot.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def clear(self) -> None:
+        """
+        Clear the plotting canvas. Called to remove the previous tree when
+        a new tree is drawn.
+        """
+        raise NotImplementedError()
 
     @abc.abstractmethod
     def add_branch(self, e: Edge) -> None:
@@ -83,18 +106,6 @@ class TreePlotterBase(abc.ABC):
     def add_annotation(self, a: Annotation) -> None:
         """
         Add a single label to the tree.
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    def set_title(self, title: str) -> None:
-        """
-        Set the title of the plot.
-
-        Parameters
-        ----------
-        title :
-            Plot title.
         """
         raise NotImplementedError()
 
