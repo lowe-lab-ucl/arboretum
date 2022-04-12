@@ -49,8 +49,6 @@ class TreePlotterBase(abc.ABC):
         root, subgraph_nodes = build_subgraph(self.tracks, track_id)
         self.edges, self.annotations = layout_subgraph(root, subgraph_nodes)
 
-        self.set_title(f"Lineage tree: {track_id}")
-
         self.update_egde_colors(update_live=False)
         for e in self.edges:
             self.add_branch(e)
@@ -108,13 +106,6 @@ class TreePlotterBase(abc.ABC):
     def add_annotation(self, a: Annotation) -> None:
         """
         Add a single label to the tree.
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    def set_title(self, title: str) -> None:
-        """
-        Set the title of the plot.
         """
         raise NotImplementedError()
 

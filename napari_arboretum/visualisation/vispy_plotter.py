@@ -66,12 +66,6 @@ class VisPyPlotter(TreePlotterQWidgetBase):
         """
         self.tree.add_annotation(a.x, a.y, a.label, a.color)
 
-    def set_title(self, title: str) -> None:
-        """
-        Set the title of the plot.
-        """
-        pass
-
 
 class TreeVisual(scene.visuals.Compound):
     """
