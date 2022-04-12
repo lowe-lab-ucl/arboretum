@@ -3,8 +3,8 @@ import abc
 import napari
 from qtpy.QtWidgets import QWidget
 
-from ..graph import build_subgraph, layout_subgraph
-from ..tree import Annotation, Edge
+from ..graph import build_subgraph
+from ..tree import Annotation, Edge, layout_tree
 
 GUI_MAXIMUM_WIDTH = 600
 
@@ -47,7 +47,7 @@ class TreePlotterBase(abc.ABC):
         """
         self.clear()
         root, subgraph_nodes = build_subgraph(self.tracks, track_id)
-        self.edges, self.annotations = layout_subgraph(root, subgraph_nodes)
+        self.edges, self.annotations = layout_tree(subgraph_nodes)
 
         self.update_egde_colors(update_live=False)
         for e in self.edges:

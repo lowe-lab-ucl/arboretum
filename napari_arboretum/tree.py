@@ -1,17 +1,19 @@
+"""
+Classes and functions for laying out graphs for visualisation.
+"""
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
 import numpy as np
-from napari.utils.colormaps import AVAILABLE_COLORMAPS
+
+from .graph import TreeNode
 
 # colormaps
-turbo = AVAILABLE_COLORMAPS["turbo"]
-WHITE = np.array([1, 1, 1, 1], dtype=float)
-RED = np.array([1, 0, 0, 1], dtype=float)
+WHITE = [1.0, 1.0, 1.0, 1.0]
 
 # napari specifies colours as a RGBA tuple in the range [0, 1], so mirror
 # that convention throughout arboretum.
-ColorType = Tuple[float, float, float, float]
+ColorType = List[float]
 
 
 @dataclass
@@ -30,20 +32,19 @@ class Edge:
     id: Optional[int] = None
 
 
-def _build_tree(nodes) -> Tuple[List[Edge], List[Annotation]]:
+def layout_tree(nodes: List[TreeNode]) -> Tuple[List[Edge], List[Annotation]]:
     """Build and layout the edges of a lineage tree, given the graph nodes.
 
     Parameters
     ----------
-    nodes : list
+    nodes :
         A list of graph.TreeNode objects encoding a single lineage tree.
 
     Returns
     -------
-    edges : list
+    edges :
         A list of edges to be drawn.
-
-    annotations : list
+    annotations :
         A list of annotations to be added to the graph.
     """
     # put the start vertex into the queue, and the marked list
@@ -51,7 +52,7 @@ def _build_tree(nodes) -> Tuple[List[Edge], List[Annotation]]:
 
     queue = [root]
     marked = [root]
-    y_pos = [0]
+    y_pos = [0.0]
 
     # store the line coordinates that need to be plotted
     edges = []
