@@ -1,9 +1,10 @@
 import abc
+from typing import List
 
 import napari
 from qtpy.QtWidgets import QWidget
 
-from ..graph import build_subgraph
+from ..graph import TreeNode, build_subgraph
 from ..tree import Annotation, Edge, layout_tree
 
 GUI_MAXIMUM_WIDTH = 600
@@ -33,7 +34,7 @@ class TreePlotterBase(abc.ABC):
         """
         The napari tracks layer associated with this plotter.
         """
-        if not hasattr(self, "_tracks"):
+        if not self.has_tracks:
             raise AttributeError("No tracks set on this plotter.")
         return self._tracks
 
@@ -41,15 +42,24 @@ class TreePlotterBase(abc.ABC):
     def tracks(self, track_layer: napari.layers.Tracks) -> None:
         self._tracks = track_layer
 
+    @property
+    def has_tracks(self) -> bool:
+        return hasattr(self, "_tracks")
+
     def draw_tree(self, track_id: int) -> None:
         """
         Plot the tree containing ``track_id``.
         """
         self.clear()
         root, subgraph_nodes = build_subgraph(self.tracks, track_id)
-        self.edges, self.annotations = layout_tree(subgraph_nodes)
+        self.draw_from_nodes(subgraph_nodes, track_id)
 
-        self.update_egde_colors(update_live=False)
+    def draw_from_nodes(self, tree_nodes: List[TreeNode], track_id=None):
+        self.edges, self.annotations = layout_tree(tree_nodes)
+
+        if self.has_tracks:
+            self.update_egde_colors(update_live=False)
+
         for e in self.edges:
             self.add_branch(e)
 
