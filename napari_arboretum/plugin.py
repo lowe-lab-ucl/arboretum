@@ -48,7 +48,7 @@ class Arboretum(QWidget):
                 # Add callback to draw graph when layer clicked
                 self.append_mouse_callback(layer)
                 # Add callback to change tree colours when layer colours changed
-                layer.events.color_by.connect(self.plotter.update_egde_colors)
+                layer.events.color_by.connect(self.plotter.update_edge_colors)
 
         self.tracks_layers = layers
 

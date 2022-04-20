@@ -1,21 +1,14 @@
-# ------------------------------------------------------------------------------
-# Name:     Arboretum
-# Purpose:  Dockable widget, and custom track visualization layers for Napari,
-#           to cell/object track data.
-#
-# Authors:  Alan R. Lowe (arl) a.lowe@ucl.ac.uk
-#
-# License:  See LICENSE.md
-#
-# Created:  01/05/2020
-# ------------------------------------------------------------------------------
+"""
+Classes and functions for working with graphs.
+
+Note that this file should *not* contain code for laying out the graphs for
+visualisation. Code for this is kept in `tree.py`.
+"""
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set, Tuple, Union
 
 import napari
 import numpy as np
-
-from .tree import _build_tree
 
 
 @dataclass
@@ -25,11 +18,13 @@ class TreeNode:
     ID: int
     t: Tuple[int, int]
     generation: int
-    children: List["TreeNode"] = field(default_factory=list)
+    children: List[int] = field(default_factory=list)
 
+    @property
     def is_root(self) -> bool:
         return self.generation == 1
 
+    @property
     def is_leaf(self) -> bool:
         return not self.children
 
@@ -163,7 +158,3 @@ def build_subgraph(
                 nodes.append(child_node)
 
     return root_id, nodes
-
-
-def layout_subgraph(root_id, subgraph_nodes):
-    return _build_tree(subgraph_nodes)
