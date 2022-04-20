@@ -60,7 +60,7 @@ class TreePlotterBase(abc.ABC):
         self.edges, self.annotations = layout_tree(tree_nodes)
 
         if self.has_tracks:
-            self.update_egde_colors(update_live=False)
+            self.update_edge_colors(update_live=False)
 
         for e in self.edges:
             self.add_branch(e)
@@ -72,7 +72,7 @@ class TreePlotterBase(abc.ABC):
             a.color[3] = 1 if a.label == str(track_id) else 0.25
             self.add_annotation(a)
 
-    def update_egde_colors(self, update_live: bool = True) -> None:
+    def update_edge_colors(self, update_live: bool = True) -> None:
         """
         Update tree edge colours from the track properties.
 
