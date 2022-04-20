@@ -1,5 +1,5 @@
 import abc
-from typing import List
+from typing import List, Optional
 
 import napari
 from qtpy.QtWidgets import QWidget
@@ -54,7 +54,9 @@ class TreePlotterBase(abc.ABC):
         root, subgraph_nodes = build_subgraph(self.tracks, track_id)
         self.draw_from_nodes(subgraph_nodes, track_id)
 
-    def draw_from_nodes(self, tree_nodes: List[TreeNode], track_id=None):
+    def draw_from_nodes(
+        self, tree_nodes: List[TreeNode], track_id: Optional[int] = None
+    ):
         self.edges, self.annotations = layout_tree(tree_nodes)
 
         if self.has_tracks:
