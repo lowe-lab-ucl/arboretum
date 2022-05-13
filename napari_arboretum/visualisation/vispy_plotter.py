@@ -80,6 +80,9 @@ class TreeVisual(scene.visuals.Compound):
         self.tracks = {}
         self.subvisuals = []
 
+    def get_branch_color(self, branch_id: int) -> np.ndarray:
+        return self.tracks[branch_id].color
+
     def set_branch_color(self, branch_id: int, color: np.ndarray) -> None:
         """
         Set the color of an individual branch.
