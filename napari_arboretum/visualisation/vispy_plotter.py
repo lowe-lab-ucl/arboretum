@@ -51,7 +51,7 @@ class VisPyPlotter(TreePlotterQWidgetBase):
         """
         for e in self.edges:
             if e.id is not None:
-                self.tree.tracks[e.id].set_data(color=e.color)
+                self.tree.set_branch_color(e.id, e.color)
 
     def add_branch(self, e: Edge) -> None:
         """
@@ -79,6 +79,12 @@ class TreeVisual(scene.visuals.Compound):
         # Keep a reference to tracks we add so their colour can be changed later
         self.tracks = {}
         self.subvisuals = []
+
+    def set_branch_color(self, branch_id: int, color: np.ndarray) -> None:
+        """
+        Set the color of an individual branch.
+        """
+        self.tracks[branch_id].set_data(color=color)
 
     def add_track(self, id: Optional[int], pos: np.ndarray, color: np.ndarray) -> None:
         """
