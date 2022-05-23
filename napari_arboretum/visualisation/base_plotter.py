@@ -150,33 +150,22 @@ class PropertyPlotterBase(abc.ABC):
     Base class for plotting a 1D graph of track property against time.
     """
 
-    @property
-    def tracks(self) -> napari.layers.Tracks:
+    def __init__(self):
+        self.tracks = None
+        self.track_id = None
+
+    def plot_property(self) -> None:
         """
-        The napari tracks layer associated with this plotter.
+        Plot a property. The property is taken from the currently selected
+        layer, currently selected track_id, and the property used to 'color_by'
+        in the napari viewer.
         """
-        if not self.has_tracks:
-            raise AttributeError("No tracks set on this plotter.")
-        return self._tracks
-
-    @tracks.setter
-    def tracks(self, track_layer: napari.layers.Tracks) -> None:
-        self._tracks = track_layer
-
-    @property
-    def has_tracks(self) -> bool:
-        return hasattr(self, "_tracks")
-
-    def plot_property(self, track_id: int) -> None:
-        t, prop = self.get_track_property(self.tracks, track_id)
+        t, prop = self.get_track_properties()
         self.plot(t, prop)
         self.set_xlabel("Time")
         self.set_ylabel(self.tracks.color_by)
 
-    @staticmethod
-    def get_track_property(
-        layer: napari.layers.Tracks, track_id: int
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    def get_track_properties(self) -> Tuple[np.ndarray, np.ndarray]:
         """
         For a given layer and track_id, get time values and property that
         the track is currently coloured by.
@@ -188,9 +177,9 @@ class PropertyPlotterBase(abc.ABC):
         prop :
             Property values.
         """
-        all_props = pd.DataFrame(layer.properties)
-        all_props = all_props.loc[all_props["track_id"] == track_id]
-        return all_props["t"].values, all_props[layer.color_by].values
+        all_props = pd.DataFrame(self.tracks.properties)
+        all_props = all_props.loc[all_props["track_id"] == self.track_id]
+        return all_props["t"].values, all_props[self.tracks.color_by].values
 
     @abc.abstractmethod
     def get_qwidget(self) -> QWidget:

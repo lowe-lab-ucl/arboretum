@@ -1,8 +1,6 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 import napari
-import numpy as np
-import pandas as pd
 from napari.utils.events import Event
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QVBoxLayout, QWidget
@@ -66,6 +64,7 @@ class Arboretum(QWidget):
                 # Add callback to change tree colours when layer colours changed
                 layer.events.color_by.connect(self.plotter.update_edge_colors)
                 layer.events.colormap.connect(self.plotter.update_edge_colors)
+                layer.events.color_by.connect(self.property_plotter.plot_property)
 
         self.tracks_layers = layers
 
@@ -87,18 +86,11 @@ class Arboretum(QWidget):
 
             self.plotter.draw_tree(track_id)
             self.track_id = track_id
-            self.property_plotter.plot_property(track_id)
+            self.property_plotter.track_id = track_id
+            self.property_plotter.plot_property()
 
     def draw_current_time_line(self, event: Optional[Event] = None) -> None:
         if not self.plotter.has_tracks:
             return
         z_value = self.viewer.dims.current_step[0]
         self.plotter.draw_current_time_line(z_value)
-
-
-def get_property(
-    layer: napari.layers.Tracks, track_id: int
-) -> Tuple[np.ndarray, np.ndarray]:
-    all_props = pd.DataFrame(layer.properties)
-    all_props = all_props.loc[all_props["track_id"] == track_id]
-    return all_props["t"].values, all_props[layer.color_by].values
