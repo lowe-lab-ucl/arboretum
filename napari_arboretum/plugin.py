@@ -30,6 +30,7 @@ class Arboretum(QWidget):
         # hook up an event to update the list of tracks layers if the layer
         # list changes
         self.viewer.layers.events.changed.connect(self.update_tracks_layers)
+        self.viewer.dims.events.current_step.connect(self.draw_current_time_line)
         self.tracks_layers: List[napari.layers.Tracks] = []
         self.update_tracks_layers()
 
@@ -69,3 +70,9 @@ class Arboretum(QWidget):
                 return
 
             self.plotter.draw_tree(track_id)
+
+    def draw_current_time_line(self, event) -> None:
+        if not self.plotter.has_tracks:
+            return
+        z_value = event.value[0]
+        self.plotter.draw_current_time_line(z_value)
