@@ -3,7 +3,7 @@ from typing import List, Optional
 import napari
 from napari.utils.events import Event
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QVBoxLayout, QWidget
+from qtpy.QtWidgets import QGridLayout, QWidget
 
 from .visualisation import (
     MPLPropertyPlotter,
@@ -27,16 +27,18 @@ class Arboretum(QWidget):
         self.property_plotter: PropertyPlotterBase = MPLPropertyPlotter(viewer)
 
         # Set plugin layout
-        layout = QVBoxLayout()
-        layout.setAlignment(Qt.AlignTop)
-        layout.setSpacing(4)
-        self.setMaximumWidth(GUI_MAXIMUM_WIDTH)
+        layout = QGridLayout()
+        # Make the tree plot a bigger than the property plot
+        for row, stretch in zip([0, 1], [2, 1]):
+            layout.setRowStretch(row, stretch)
         self.setLayout(layout)
 
         # Add tree plotter
-        layout.addWidget(self.plotter.get_qwidget())
+        row, col = 0, 0
+        layout.addWidget(self.plotter.get_qwidget(), row, col)
         # Add property plotter
-        layout.addWidget(self.property_plotter.get_qwidget())
+        row = 1
+        layout.addWidget(self.property_plotter.get_qwidget(), row, col)
 
         # Update the list of tracks layers stored in this object if the layer
         # list changes
