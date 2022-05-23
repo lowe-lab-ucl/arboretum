@@ -34,6 +34,10 @@ def test_plugin(viewer_plugin):
 
 
 def test_colormap_change(viewer_plugin):
+    """
+    Check that arboretum widget colours change when the track colourmap
+    is changed.
+    """
     viewer, plugin = viewer_plugin
     id = 140
     plugin.plotter.draw_tree(track_id=id)
@@ -52,6 +56,10 @@ def test_colormap_change(viewer_plugin):
 
 
 def test_colorby_change(viewer_plugin):
+    """
+    Check that arboretum widget colours change when the attribute that the
+    track is coloured by changes.
+    """
     viewer, plugin = viewer_plugin
     id = 140
     plugin.plotter.draw_tree(track_id=id)
