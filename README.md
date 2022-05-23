@@ -43,7 +43,7 @@ https://github.com/quantumjot/BayesianTracker/blob/master/examples
 ### History
 
 This project has changed considerably. The `Tracks` layer, originally developed for this plugin, is now an official layer type in napari. Read the napari documentation here:
- https://napari.org/api/stable/napari.layers.Tracks.html#napari.layers.Tracks
+ https://napari.org/api/napari.layers.Tracks.html
 
 
 To view the legacy version of this plugin, visit the legacy branch:
