@@ -33,7 +33,7 @@ def test_plugin(viewer_plugin):
     plugin.plotter.draw_tree(track_id=140)
 
 
-def test_color_changes(viewer_plugin):
+def test_colormap_change(viewer_plugin):
     viewer, plugin = viewer_plugin
     id = 140
     plugin.plotter.draw_tree(track_id=id)
@@ -50,7 +50,15 @@ def test_color_changes(viewer_plugin):
     # Slice to remove alpha, which is 1 both before and after
     assert np.all(new_color[:, :3] != old_color[:, :3])
 
-    old_color = new_color
+
+def test_colorby_change(viewer_plugin):
+    viewer, plugin = viewer_plugin
+    id = 140
+    plugin.plotter.draw_tree(track_id=id)
+
+    tree = plugin.plotter.tree
+    old_color = tree.get_branch_color(branch_id=id)
+
     # Change the color by attribute
     assert viewer.layers[0].color_by != "generation"
     viewer.layers[0].color_by = "generation"
