@@ -164,6 +164,7 @@ class PropertyPlotterBase(abc.ABC):
         self.plot(t, prop)
         self.set_xlabel("Time")
         self.set_ylabel(self.tracks.color_by)
+        self.draw_track_id(self.track_id)
 
     def get_track_properties(self) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -203,4 +204,11 @@ class PropertyPlotterBase(abc.ABC):
     def set_ylabel(self, label: str) -> None:
         """
         Set y-label.
+        """
+
+    @abc.abstractmethod
+    def draw_track_id(self, track_id: int) -> None:
+        """
+        Draw track ID. Where this is drawn is up to the implmenation, and could
+        e.g. be the plot title or plot legend.
         """
