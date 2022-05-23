@@ -42,7 +42,14 @@ class VisPyPlotter(TreePlotterQWidgetBase):
         """Scale the canvas so all branches are in view."""
         xs = np.concatenate([track.pos[:, 0] for id, track in self.tree.tracks.items()])
         ys = np.concatenate([track.pos[:, 1] for id, track in self.tree.tracks.items()])
-        rect = np.min(xs), np.min(ys), np.ptp(xs), np.ptp(ys)
+        padding = 0.1
+        width, height = np.ptp(xs), np.ptp(ys)
+        rect = (
+            np.min(xs) - padding * width,
+            np.min(ys) - padding * height,
+            width * (1 + 2 * padding),
+            height * (1 + 2 * padding),
+        )
         self.view.camera.rect = rect
 
     def update_colors(self) -> None:
