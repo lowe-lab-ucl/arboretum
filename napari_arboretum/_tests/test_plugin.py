@@ -7,9 +7,16 @@ from napari_arboretum import Arboretum, load_sample_data
 
 @pytest.fixture
 def viewer_plugin(make_napari_viewer):
+    """
+    - Create a a napari viewer
+    - Add sample tracks and segmentation
+    - Add an Arboretum widget
+    - Return the viewer and plugin
+    """
     viewer = make_napari_viewer()
     tracks, segmentation = load_sample_data()
     viewer.add_layer(tracks)
+    viewer.add_layer(segmentation)
 
     plugin = Arboretum(viewer)
     plugin.plotter.tracks = tracks
