@@ -2,6 +2,7 @@ import abc
 from typing import List, Optional
 
 import napari
+import numpy as np
 from qtpy.QtWidgets import QWidget
 
 from ..graph import TreeNode, build_subgraph
@@ -141,3 +142,32 @@ class TreePlotterQWidgetBase(TreePlotterBase):
         Return the native QWidget for embedding.
         """
         raise NotImplementedError()
+
+
+class PropertyPlotterBase(abc.ABC):
+    """
+    Base class for plotting a 1D graph of track property against time.
+    """
+
+    @abc.abstractmethod
+    def get_qwidget(self) -> QWidget:
+        """
+        Return the native QWidget for embedding.
+        """
+
+    @abc.abstractmethod
+    def plot(self, x: np.ndarray, y: np.ndarray) -> None:
+        """
+        Plot x, y values.
+        """
+
+    @abc.abstractmethod
+    def set_xlabel(self, label: str) -> None:
+        """
+        Set x-label.
+        """
+
+    def set_ylabel(self, label: str) -> None:
+        """
+        Set y-label.
+        """
