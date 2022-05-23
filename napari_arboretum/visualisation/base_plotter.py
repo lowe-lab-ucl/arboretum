@@ -1,8 +1,9 @@
 import abc
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import napari
 import numpy as np
+import pandas as pd
 from qtpy.QtWidgets import QWidget
 
 from ..graph import TreeNode, build_subgraph
@@ -149,6 +150,48 @@ class PropertyPlotterBase(abc.ABC):
     Base class for plotting a 1D graph of track property against time.
     """
 
+    @property
+    def tracks(self) -> napari.layers.Tracks:
+        """
+        The napari tracks layer associated with this plotter.
+        """
+        if not self.has_tracks:
+            raise AttributeError("No tracks set on this plotter.")
+        return self._tracks
+
+    @tracks.setter
+    def tracks(self, track_layer: napari.layers.Tracks) -> None:
+        self._tracks = track_layer
+
+    @property
+    def has_tracks(self) -> bool:
+        return hasattr(self, "_tracks")
+
+    def plot_property(self, track_id: int) -> None:
+        t, prop = self.get_track_property(self.tracks, track_id)
+        self.plot(t, prop)
+        self.set_xlabel("Time")
+        self.set_ylabel(self.tracks.color_by)
+
+    @staticmethod
+    def get_track_property(
+        layer: napari.layers.Tracks, track_id: int
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        For a given layer and track_id, get time values and property that
+        the track is currently coloured by.
+
+        Returns
+        -------
+        t :
+            Time values.
+        prop :
+            Property values.
+        """
+        all_props = pd.DataFrame(layer.properties)
+        all_props = all_props.loc[all_props["track_id"] == track_id]
+        return all_props["t"].values, all_props[layer.color_by].values
+
     @abc.abstractmethod
     def get_qwidget(self) -> QWidget:
         """
@@ -167,6 +210,7 @@ class PropertyPlotterBase(abc.ABC):
         Set x-label.
         """
 
+    @abc.abstractmethod
     def set_ylabel(self, label: str) -> None:
         """
         Set y-label.

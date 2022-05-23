@@ -1,11 +1,8 @@
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import napari
 import numpy as np
 import pandas as pd
-from typing import List, Optional
-
-import napari
 from napari.utils.events import Event
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QVBoxLayout, QWidget
@@ -90,12 +87,7 @@ class Arboretum(QWidget):
 
             self.plotter.draw_tree(track_id)
             self.track_id = track_id
-
-            t, prop = get_property(layer, track_id)
-            self.property_plotter.plot(t, prop)
-            self.property_plotter.set_xlabel("Time")
-            self.property_plotter.set_ylabel(layer.color_by)
-            self.draw_current_time_line()
+            self.property_plotter.plot_property(track_id)
 
     def draw_current_time_line(self, event: Optional[Event] = None) -> None:
         if not self.plotter.has_tracks:
