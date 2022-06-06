@@ -17,16 +17,18 @@ class MPLPropertyPlotter(PropertyPlotterBase):
     def plot(self, x: np.ndarray, y: np.ndarray) -> None:
         self.axes.cla()
         self.axes.plot(x, y, label=f"id={self.track_id}")
-        self.mpl_widget.canvas.draw()
 
     def set_xlabel(self, label: str) -> None:
         self.axes.set_xlabel(label)
-        self.mpl_widget.canvas.draw()
 
     def set_ylabel(self, label: str) -> None:
         self.axes.set_ylabel(label)
-        self.mpl_widget.canvas.draw()
+
+    def set_title(self, title: str) -> None:
+        self.axes.set_title(title)
 
     def draw_track_id(self, title: int) -> None:
         self.axes.legend()
+
+    def redraw(self) -> None:
         self.mpl_widget.canvas.draw()

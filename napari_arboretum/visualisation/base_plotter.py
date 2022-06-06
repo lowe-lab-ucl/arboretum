@@ -163,8 +163,10 @@ class PropertyPlotterBase(abc.ABC):
         t, prop = self.get_track_properties()
         self.plot(t, prop)
         self.set_xlabel("Time")
-        self.set_ylabel(self.tracks.color_by)
+        self.set_ylabel("Property value")
+        self.set_title(self.tracks.color_by)
         self.draw_track_id(self.track_id)
+        self.redraw()
 
     def get_track_properties(self) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -207,8 +209,20 @@ class PropertyPlotterBase(abc.ABC):
         """
 
     @abc.abstractmethod
+    def set_title(self, title: str) -> None:
+        """
+        Set plot title.
+        """
+
+    @abc.abstractmethod
     def draw_track_id(self, track_id: int) -> None:
         """
         Draw track ID. Where this is drawn is up to the implmenation, and could
         e.g. be the plot title or plot legend.
+        """
+
+    def redraw(self) -> None:
+        """
+        Optional method that can be implemented by sub-classes to re-draw
+        a figure after the plot and labels have been set.
         """
