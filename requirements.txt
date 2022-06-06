@@ -1,5 +1,5 @@
 napari>=0.4.0
-napari_matplotlib
+napari-matplotlib
 numpy>=1.17.3
 pooch>=1
 pyqtgraph>=0.10.0
