@@ -1,6 +1,7 @@
-from typing import List
+from typing import List, Optional
 
 import napari
+from napari.utils.events import Event
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QVBoxLayout, QWidget
 
@@ -27,10 +28,12 @@ class Arboretum(QWidget):
         self.setMaximumWidth(GUI_MAXIMUM_WIDTH)
         self.setLayout(layout)
 
-        # hook up an event to update the list of tracks layers if the layer
+        # Update the list of tracks layers stored in this object if the layer
         # list changes
         self.viewer.layers.events.changed.connect(self.update_tracks_layers)
+        # Update the horizontal time line if the current z-step changes
         self.viewer.dims.events.current_step.connect(self.draw_current_time_line)
+
         self.tracks_layers: List[napari.layers.Tracks] = []
         self.update_tracks_layers()
 
@@ -70,9 +73,10 @@ class Arboretum(QWidget):
                 return
 
             self.plotter.draw_tree(track_id)
+            self.draw_current_time_line()
 
-    def draw_current_time_line(self, event) -> None:
+    def draw_current_time_line(self, event: Optional[Event] = None) -> None:
         if not self.plotter.has_tracks:
             return
-        z_value = event.value[0]
+        z_value = self.viewer.dims.current_step[0]
         self.plotter.draw_current_time_line(z_value)
