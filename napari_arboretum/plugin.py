@@ -3,8 +3,6 @@ from typing import List, Optional
 import napari
 from napari.layers import Tracks
 from napari.utils.events import Event
-from napari.utils.events import Event
-from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QGridLayout, QWidget
 
 from .util import TrackPropertyMixin
