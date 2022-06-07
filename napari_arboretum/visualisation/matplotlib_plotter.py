@@ -1,4 +1,5 @@
 import numpy as np
+from matplotlib.lines import Line2D
 from napari_matplotlib.base import NapariMPLWidget
 from qtpy.QtWidgets import QWidget
 
@@ -17,6 +18,15 @@ class MPLPropertyPlotter(PropertyPlotterBase):
     def plot(self, x: np.ndarray, y: np.ndarray) -> None:
         self.axes.cla()
         self.axes.plot(x, y, label=f"id={self.track_id}")
+
+    def draw_current_time_line(self, time: int) -> None:
+        if not hasattr(self, "_mpl_time_line"):
+            self._mpl_time_line: Line2D = self.axes.axvline(time, color="white")
+        else:
+            # TODO: fix this
+            print(time)
+            self._mpl_time_line.set_xdata([time])
+        self.mpl_widget.canvas.draw()
 
     def set_xlabel(self, label: str) -> None:
         self.axes.set_xlabel(label)

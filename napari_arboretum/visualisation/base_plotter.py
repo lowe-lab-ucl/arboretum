@@ -186,6 +186,12 @@ class PropertyPlotterBase(abc.ABC, TrackPropertyMixin):
         """
 
     @abc.abstractmethod
+    def draw_current_time_line(self, time: int) -> None:
+        """
+        Indicate the current time (ie. napari viewer z-step) on the plot.
+        """
+
+    @abc.abstractmethod
     def set_xlabel(self, label: str) -> None:
         """
         Set x-label.

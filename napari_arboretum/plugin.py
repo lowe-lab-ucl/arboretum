@@ -97,3 +97,4 @@ class Arboretum(QWidget, TrackPropertyMixin):
             return
         z_value = self.viewer.dims.current_step[0]
         self.plotter.draw_current_time_line(z_value)
+        self.property_plotter.draw_current_time_line(z_value)
