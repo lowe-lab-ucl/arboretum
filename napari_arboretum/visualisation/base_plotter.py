@@ -45,16 +45,28 @@ class TreePlotterBase(abc.ABC):
         self._tracks = track_layer
 
     @property
+    def track_id(self) -> int:
+        """
+        Track ID of the currently selected track.
+        """
+        return self._track_id
+
+    @track_id.setter
+    def track_id(self, track_id: int) -> None:
+        self._track_id = track_id
+        self.draw_tree()
+
+    @property
     def has_tracks(self) -> bool:
         return hasattr(self, "_tracks")
 
-    def draw_tree(self, track_id: int) -> None:
+    def draw_tree(self) -> None:
         """
-        Plot the tree containing ``track_id``.
+        Plot the tree.
         """
         self.clear()
-        root, subgraph_nodes = build_subgraph(self.tracks, track_id)
-        self.draw_from_nodes(subgraph_nodes, track_id)
+        root, subgraph_nodes = build_subgraph(self.tracks, self.track_id)
+        self.draw_from_nodes(subgraph_nodes, self.track_id)
 
     def draw_from_nodes(
         self, tree_nodes: List[TreeNode], track_id: Optional[int] = None
@@ -150,9 +162,28 @@ class PropertyPlotterBase(abc.ABC):
     Base class for plotting a 1D graph of track property against time.
     """
 
-    def __init__(self):
-        self.tracks = None
-        self.track_id = None
+    @property
+    def tracks(self) -> napari.layers.Tracks:
+        """
+        The napari tracks layer associated with this plotter.
+        """
+        return self._tracks
+
+    @tracks.setter
+    def tracks(self, track_layer: napari.layers.Tracks) -> None:
+        self._tracks = track_layer
+
+    @property
+    def track_id(self) -> int:
+        """
+        Track ID of the currently selected track.
+        """
+        return self._track_id
+
+    @track_id.setter
+    def track_id(self, track_id: int) -> None:
+        self._track_id = track_id
+        self.plot_property()
 
     def plot_property(self) -> None:
         """
