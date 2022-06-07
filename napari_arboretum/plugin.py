@@ -77,7 +77,7 @@ class Arboretum(QWidget):
         """
 
         @track_layer.mouse_drag_callbacks.append
-        def show_tree(layer, event):
+        def show_tree(layer: napari.layers.Tracks, event: Event) -> None:
             self.plotter.tracks = layer
             self.property_plotter.tracks = layer
 
