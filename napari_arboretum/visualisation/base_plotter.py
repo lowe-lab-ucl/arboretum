@@ -1,20 +1,20 @@
 import abc
 from typing import List, Optional, Tuple
 
-import napari
 import numpy as np
 import pandas as pd
 from qtpy.QtWidgets import QWidget
 
 from ..graph import TreeNode, build_subgraph
 from ..tree import Annotation, Edge, layout_tree
+from ..util import TrackPropertyMixin
 
 GUI_MAXIMUM_WIDTH = 600
 
 __all__ = ["TreePlotterBase", "TreePlotterQWidgetBase"]
 
 
-class TreePlotterBase(abc.ABC):
+class TreePlotterBase(abc.ABC, TrackPropertyMixin):
     """
     Base class for a `napari.layers.Tracks` plotter.
 
@@ -31,29 +31,7 @@ class TreePlotterBase(abc.ABC):
     annotations : List[Annotation]
     """
 
-    @property
-    def tracks(self) -> napari.layers.Tracks:
-        """
-        The napari tracks layer associated with this plotter.
-        """
-        if not self.has_tracks:
-            raise AttributeError("No tracks set on this plotter.")
-        return self._tracks
-
-    @tracks.setter
-    def tracks(self, track_layer: napari.layers.Tracks) -> None:
-        self._tracks = track_layer
-
-    @property
-    def track_id(self) -> int:
-        """
-        Track ID of the currently selected track.
-        """
-        return self._track_id
-
-    @track_id.setter
-    def track_id(self, track_id: int) -> None:
-        self._track_id = track_id
+    def on_track_id_change(self) -> None:
         self.draw_tree()
 
     @property
@@ -157,32 +135,12 @@ class TreePlotterQWidgetBase(TreePlotterBase):
         raise NotImplementedError()
 
 
-class PropertyPlotterBase(abc.ABC):
+class PropertyPlotterBase(abc.ABC, TrackPropertyMixin):
     """
     Base class for plotting a 1D graph of track property against time.
     """
 
-    @property
-    def tracks(self) -> napari.layers.Tracks:
-        """
-        The napari tracks layer associated with this plotter.
-        """
-        return self._tracks
-
-    @tracks.setter
-    def tracks(self, track_layer: napari.layers.Tracks) -> None:
-        self._tracks = track_layer
-
-    @property
-    def track_id(self) -> int:
-        """
-        Track ID of the currently selected track.
-        """
-        return self._track_id
-
-    @track_id.setter
-    def track_id(self, track_id: int) -> None:
-        self._track_id = track_id
+    def on_track_id_change(self) -> None:
         self.plot_property()
 
     def plot_property(self) -> None:

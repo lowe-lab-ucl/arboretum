@@ -7,6 +7,7 @@ from napari.utils.events import Event
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QGridLayout, QWidget
 
+from .util import TrackPropertyMixin
 from .visualisation import (
     MPLPropertyPlotter,
     PropertyPlotterBase,
@@ -17,7 +18,7 @@ from .visualisation import (
 GUI_MAXIMUM_WIDTH = 400
 
 
-class Arboretum(QWidget):
+class Arboretum(QWidget, TrackPropertyMixin):
     """
     Tree viewer widget.
     """
@@ -51,31 +52,13 @@ class Arboretum(QWidget):
         self.tracks_layers: List[Tracks] = []
         self.update_tracks_layers()
 
-    @property
-    def tracks(self) -> Tracks:
-        """
-        Tracks layer being plotted in the widget.
-        """
-        return self._tracks
+    def on_tracks_change(self):
+        self.plotter.tracks = self.tracks
+        self.property_plotter.tracks = self.tracks
 
-    @tracks.setter
-    def tracks(self, tracks: Tracks) -> None:
-        self._tracks = tracks
-        self.plotter.tracks = tracks
-        self.property_plotter.tracks = tracks
-
-    @property
-    def track_id(self) -> int:
-        """
-        ID of the specific track being plotted in the widget.
-        """
-        return self._track_id
-
-    @track_id.setter
-    def track_id(self, track_id: int) -> None:
-        self._track_id = track_id
-        self.plotter.track_id = track_id
-        self.property_plotter.track_id = track_id
+    def on_track_id_change(self):
+        self.plotter.track_id = self.track_id
+        self.property_plotter.track_id = self.track_id
 
     def update_tracks_layers(self, event: Optional[Event] = None) -> None:
         """
