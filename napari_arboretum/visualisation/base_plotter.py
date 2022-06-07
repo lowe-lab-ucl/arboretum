@@ -122,11 +122,11 @@ class TreePlotterBase(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def draw_current_time_line(self, t: int) -> None:
+    def draw_current_time_line(self, time: int) -> None:
         """
         Draw a horizontal line at the current timestep to the tree.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class TreePlotterQWidgetBase(TreePlotterBase):

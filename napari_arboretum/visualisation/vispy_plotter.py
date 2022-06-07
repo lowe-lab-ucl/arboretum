@@ -1,4 +1,5 @@
-from typing import Optional, Tuple
+from dataclasses import dataclass
+from typing import Optional
 
 import numpy as np
 from qtpy.QtWidgets import QWidget
@@ -8,6 +9,14 @@ from ..tree import Annotation, Edge
 from .base_plotter import TreePlotterQWidgetBase
 
 __all__ = ["VisPyPlotter"]
+
+
+@dataclass
+class Bounds:
+    xmin: float
+    xmax: float
+    ymin: float
+    ymax: float
 
 
 class VisPyPlotter(TreePlotterQWidgetBase):
@@ -39,14 +48,16 @@ class VisPyPlotter(TreePlotterQWidgetBase):
         self.tree.clear()
 
     @property
-    def bounds(self) -> Tuple[int, int, int, int]:
+    def bounds(self) -> Bounds:
         """
         Return (xmin, ymin, xmax, ymax) bounds of the drawn tree. This does
         not include any annoatations.
         """
         xs = np.concatenate([track.pos[:, 0] for id, track in self.tree.tracks.items()])
         ys = np.concatenate([track.pos[:, 1] for id, track in self.tree.tracks.items()])
-        return np.min(xs), np.min(ys), np.max(xs), np.max(ys)
+        return Bounds(
+            xmin=np.min(xs), ymin=np.min(ys), xmax=np.max(xs), ymax=np.max(ys)
+        )
 
     def autoscale_view(self) -> None:
         """Scale the canvas so all branches are in view."""
@@ -83,14 +94,14 @@ class VisPyPlotter(TreePlotterQWidgetBase):
         """
         self.tree.add_annotation(a.x, a.y, a.label, a.color)
 
-    def draw_current_time_line(self, t: int) -> None:
+    def draw_current_time_line(self, time: int) -> None:
         if not hasattr(self, "_time_line"):
             self._time_line = scene.visuals.Line()
             self.view.add(self._time_line)
-        xmin, _, xmax, _ = self.bounds
-        padding = (xmax - xmin) * 0.1
+        bounds = self.bounds
+        padding = (bounds.xmax - bounds.xmin) * 0.1
         self._time_line.set_data(
-            pos=np.array([[xmin - padding, t], [xmax + padding, t]])
+            pos=np.array([[bounds.xmin - padding, time], [bounds.xmax + padding, time]])
         )
 
 
