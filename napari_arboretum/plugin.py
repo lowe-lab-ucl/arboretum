@@ -71,6 +71,7 @@ class Arboretum(QWidget, TrackPropertyMixin):
                 # Add callback to change tree colours when layer colours changed
                 layer.events.color_by.connect(self.plotter.update_edge_colors)
                 layer.events.colormap.connect(self.plotter.update_edge_colors)
+                # Add callback to change 1D plotter plot when layer property changed
                 layer.events.color_by.connect(self.property_plotter.plot_property)
 
         self.tracks_layers = layers
@@ -91,6 +92,7 @@ class Arboretum(QWidget, TrackPropertyMixin):
                 # Setting this property automatically triggers re-drawing of the
                 # tree and property graph
                 self.track_id = track_id
+                self.draw_current_time_line()
 
     def draw_current_time_line(self, event: Optional[Event] = None) -> None:
         if not self.plotter.has_tracks:
