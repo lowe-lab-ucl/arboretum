@@ -1,16 +1,22 @@
 from typing import List, Optional
 
 import napari
+from napari.layers import Tracks
 from napari.utils.events import Event
-from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QVBoxLayout, QWidget
+from qtpy.QtWidgets import QGridLayout, QWidget
 
-from .visualisation import TreePlotterQWidgetBase, VisPyPlotter
+from .util import TrackPropertyMixin
+from .visualisation import (
+    MPLPropertyPlotter,
+    PropertyPlotterBase,
+    TreePlotterQWidgetBase,
+    VisPyPlotter,
+)
 
 GUI_MAXIMUM_WIDTH = 400
 
 
-class Arboretum(QWidget):
+class Arboretum(QWidget, TrackPropertyMixin):
     """
     Tree viewer widget.
     """
@@ -19,14 +25,21 @@ class Arboretum(QWidget):
         super().__init__(parent=parent)
         self.viewer = viewer
         self.plotter: TreePlotterQWidgetBase = VisPyPlotter()
+        self.property_plotter: PropertyPlotterBase = MPLPropertyPlotter(viewer)
 
-        # build the canvas to display the trees
-        layout = QVBoxLayout()
-        layout.addWidget(self.plotter.get_qwidget())
-        layout.setAlignment(Qt.AlignTop)
-        layout.setSpacing(4)
-        self.setMaximumWidth(GUI_MAXIMUM_WIDTH)
+        # Set plugin layout
+        layout = QGridLayout()
+        # Make the tree plot a bigger than the property plot
+        for row, stretch in zip([0, 1], [2, 1]):
+            layout.setRowStretch(row, stretch)
         self.setLayout(layout)
+
+        # Add tree plotter
+        row, col = 0, 0
+        layout.addWidget(self.plotter.get_qwidget(), row, col)
+        # Add property plotter
+        row = 1
+        layout.addWidget(self.property_plotter.get_qwidget(), row, col)
 
         # Update the list of tracks layers stored in this object if the layer
         # list changes
@@ -34,18 +47,22 @@ class Arboretum(QWidget):
         # Update the horizontal time line if the current z-step changes
         self.viewer.dims.events.current_step.connect(self.draw_current_time_line)
 
-        self.tracks_layers: List[napari.layers.Tracks] = []
+        self.tracks_layers: List[Tracks] = []
         self.update_tracks_layers()
 
-    def update_tracks_layers(self, event=None) -> None:
+    def on_tracks_change(self):
+        self.plotter.tracks = self.tracks
+        self.property_plotter.tracks = self.tracks
+
+    def on_track_id_change(self):
+        self.plotter.track_id = self.track_id
+        self.property_plotter.track_id = self.track_id
+
+    def update_tracks_layers(self, event: Optional[Event] = None) -> None:
         """
-        Get the Tracks layers that are present in the viewer.
+        Save a copy of all the tracks layers that are present in the viewer.
         """
-        layers = [
-            layer
-            for layer in self.viewer.layers
-            if isinstance(layer, napari.layers.Tracks)
-        ]
+        layers = [layer for layer in self.viewer.layers if isinstance(layer, Tracks)]
 
         for layer in layers:
             if layer not in self.tracks_layers:
@@ -54,29 +71,30 @@ class Arboretum(QWidget):
                 # Add callback to change tree colours when layer colours changed
                 layer.events.color_by.connect(self.plotter.update_edge_colors)
                 layer.events.colormap.connect(self.plotter.update_edge_colors)
+                layer.events.color_by.connect(self.property_plotter.plot_property)
 
         self.tracks_layers = layers
 
-    def append_mouse_callback(self, track_layer: napari.layers.Tracks) -> None:
+    def append_mouse_callback(self, track_layer: Tracks) -> None:
         """
         Add a mouse callback to ``track_layer`` to draw the tree
         when the layer is clicked.
         """
 
         @track_layer.mouse_drag_callbacks.append
-        def show_tree(layer, event):
-            self.plotter.tracks = layer
+        def show_tree(tracks: Tracks, event: Event) -> None:
+            self.tracks = tracks
 
             cursor_position = event.position
-            track_id = layer.get_value(cursor_position, world=True)
-            if not track_id:
-                return
-
-            self.plotter.draw_tree(track_id)
-            self.draw_current_time_line()
+            track_id = tracks.get_value(cursor_position, world=True)
+            if track_id is not None:
+                # Setting this property automatically triggers re-drawing of the
+                # tree and property graph
+                self.track_id = track_id
 
     def draw_current_time_line(self, event: Optional[Event] = None) -> None:
         if not self.plotter.has_tracks:
             return
         z_value = self.viewer.dims.current_step[0]
         self.plotter.draw_current_time_line(z_value)
+        self.property_plotter.draw_current_time_line(z_value)

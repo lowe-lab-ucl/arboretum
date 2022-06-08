@@ -19,7 +19,7 @@ def viewer_plugin(make_napari_viewer):
     viewer.add_layer(segmentation)
 
     plugin = Arboretum(viewer)
-    plugin.plotter.tracks = tracks
+    plugin.tracks = tracks
 
     return viewer, plugin
 
@@ -30,7 +30,8 @@ def test_plugin(viewer_plugin):
     works, not that the correct graph is drawn!
     """
     viewer, plugin = viewer_plugin
-    plugin.plotter.draw_tree(track_id=140)
+    # Setting this property automatically triggers graph drawing
+    plugin.track_id = 140
 
 
 def test_colormap_change(viewer_plugin):
@@ -40,7 +41,7 @@ def test_colormap_change(viewer_plugin):
     """
     viewer, plugin = viewer_plugin
     id = 140
-    plugin.plotter.draw_tree(track_id=id)
+    plugin.track_id = id
 
     tree = plugin.plotter.tree
     old_color = tree.get_branch_color(branch_id=id)
@@ -62,7 +63,7 @@ def test_colorby_change(viewer_plugin):
     """
     viewer, plugin = viewer_plugin
     id = 140
-    plugin.plotter.draw_tree(track_id=id)
+    plugin.track_id = id
 
     tree = plugin.plotter.tree
     old_color = tree.get_branch_color(branch_id=id)

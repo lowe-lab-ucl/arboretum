@@ -11,4 +11,5 @@ that must be implemented.
 """
 
 from .base_plotter import *
+from .matplotlib_plotter import *
 from .vispy_plotter import *

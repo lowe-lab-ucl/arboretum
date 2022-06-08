@@ -1,18 +1,20 @@
 import abc
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
-import napari
+import numpy as np
+import pandas as pd
 from qtpy.QtWidgets import QWidget
 
 from ..graph import TreeNode, build_subgraph
 from ..tree import Annotation, Edge, layout_tree
+from ..util import TrackPropertyMixin
 
 GUI_MAXIMUM_WIDTH = 600
 
 __all__ = ["TreePlotterBase", "TreePlotterQWidgetBase"]
 
 
-class TreePlotterBase(abc.ABC):
+class TreePlotterBase(abc.ABC, TrackPropertyMixin):
     """
     Base class for a `napari.layers.Tracks` plotter.
 
@@ -29,30 +31,20 @@ class TreePlotterBase(abc.ABC):
     annotations : List[Annotation]
     """
 
-    @property
-    def tracks(self) -> napari.layers.Tracks:
-        """
-        The napari tracks layer associated with this plotter.
-        """
-        if not self.has_tracks:
-            raise AttributeError("No tracks set on this plotter.")
-        return self._tracks
-
-    @tracks.setter
-    def tracks(self, track_layer: napari.layers.Tracks) -> None:
-        self._tracks = track_layer
+    def on_track_id_change(self) -> None:
+        self.draw_tree()
 
     @property
     def has_tracks(self) -> bool:
         return hasattr(self, "_tracks")
 
-    def draw_tree(self, track_id: int) -> None:
+    def draw_tree(self) -> None:
         """
-        Plot the tree containing ``track_id``.
+        Plot the tree.
         """
         self.clear()
-        root, subgraph_nodes = build_subgraph(self.tracks, track_id)
-        self.draw_from_nodes(subgraph_nodes, track_id)
+        root, subgraph_nodes = build_subgraph(self.tracks, self.track_id)
+        self.draw_from_nodes(subgraph_nodes, self.track_id)
 
     def draw_from_nodes(
         self, tree_nodes: List[TreeNode], track_id: Optional[int] = None
@@ -141,3 +133,91 @@ class TreePlotterQWidgetBase(TreePlotterBase):
         Return the native QWidget for embedding.
         """
         raise NotImplementedError()
+
+
+class PropertyPlotterBase(abc.ABC, TrackPropertyMixin):
+    """
+    Base class for plotting a 1D graph of track property against time.
+    """
+
+    def on_track_id_change(self) -> None:
+        self.plot_property()
+
+    def plot_property(self) -> None:
+        """
+        Plot a property. The property is taken from the currently selected
+        layer, currently selected track_id, and the property used to 'color_by'
+        in the napari viewer.
+        """
+        t, prop = self.get_track_properties()
+        self.plot(t, prop)
+        self.set_xlabel("Time")
+        self.set_ylabel("Property value")
+        self.set_title(self.tracks.color_by)
+        self.draw_track_id(self.track_id)
+        self.redraw()
+
+    def get_track_properties(self) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        For a given layer and track_id, get time values and property that
+        the track is currently coloured by.
+
+        Returns
+        -------
+        t :
+            Time values.
+        prop :
+            Property values.
+        """
+        all_props = pd.DataFrame(self.tracks.properties)
+        all_props = all_props.loc[all_props["track_id"] == self.track_id]
+        return all_props["t"].values, all_props[self.tracks.color_by].values
+
+    @abc.abstractmethod
+    def get_qwidget(self) -> QWidget:
+        """
+        Return the native QWidget for embedding.
+        """
+
+    @abc.abstractmethod
+    def plot(self, x: np.ndarray, y: np.ndarray) -> None:
+        """
+        Plot x, y values.
+        """
+
+    @abc.abstractmethod
+    def draw_current_time_line(self, time: int) -> None:
+        """
+        Indicate the current time (ie. napari viewer z-step) on the plot.
+        """
+
+    @abc.abstractmethod
+    def set_xlabel(self, label: str) -> None:
+        """
+        Set x-label.
+        """
+
+    @abc.abstractmethod
+    def set_ylabel(self, label: str) -> None:
+        """
+        Set y-label.
+        """
+
+    @abc.abstractmethod
+    def set_title(self, title: str) -> None:
+        """
+        Set plot title.
+        """
+
+    @abc.abstractmethod
+    def draw_track_id(self, track_id: int) -> None:
+        """
+        Draw track ID. Where this is drawn is up to the implmenation, and could
+        e.g. be the plot title or plot legend.
+        """
+
+    def redraw(self) -> None:
+        """
+        Optional method that can be implemented by sub-classes to re-draw
+        a figure after the plot and labels have been set.
+        """
