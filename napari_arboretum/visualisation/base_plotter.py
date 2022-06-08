@@ -59,9 +59,6 @@ class TreePlotterBase(abc.ABC, TrackPropertyMixin):
 
         # labels
         for a in self.annotations:
-            # change the alpha value according to whether this is the selected
-            # cell or another part of the tree
-            a.color[3] = 1 if a.label == str(track_id) else 0.25
             self.add_annotation(a)
 
     def update_edge_colors(self, update_live: bool = True) -> None:
