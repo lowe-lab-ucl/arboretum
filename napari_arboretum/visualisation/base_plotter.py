@@ -151,7 +151,6 @@ class PropertyPlotterBase(abc.ABC, TrackPropertyMixin):
         self.set_xlabel("Time")
         self.set_ylabel("Property value")
         self.set_title(self.tracks.color_by)
-        self.draw_track_id(self.track_id)
         self.redraw()
 
     def get_track_properties(self) -> Tuple[np.ndarray, np.ndarray]:
@@ -204,13 +203,6 @@ class PropertyPlotterBase(abc.ABC, TrackPropertyMixin):
     def set_title(self, title: str) -> None:
         """
         Set plot title.
-        """
-
-    @abc.abstractmethod
-    def draw_track_id(self, track_id: int) -> None:
-        """
-        Draw track ID. Where this is drawn is up to the implmenation, and could
-        e.g. be the plot title or plot legend.
         """
 
     def redraw(self) -> None:

@@ -37,8 +37,5 @@ class MPLPropertyPlotter(PropertyPlotterBase):
     def set_title(self, title: str) -> None:
         self.axes.set_title(title)
 
-    def draw_track_id(self, title: int) -> None:
-        self.axes.legend()
-
     def redraw(self) -> None:
         self.mpl_widget.canvas.draw()
