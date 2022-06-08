@@ -3,7 +3,8 @@ from typing import List, Optional
 import napari
 from napari.layers import Tracks
 from napari.utils.events import Event
-from qtpy.QtWidgets import QGridLayout, QWidget
+from PyQt5.QtCore import Qt
+from qtpy.QtWidgets import QGridLayout, QLabel, QWidget
 
 from .util import TrackPropertyMixin
 from .visualisation import (
@@ -24,22 +25,28 @@ class Arboretum(QWidget, TrackPropertyMixin):
     def __init__(self, viewer: napari.Viewer, parent=None):
         super().__init__(parent=parent)
         self.viewer = viewer
+        self.title = QLabel()
         self.plotter: TreePlotterQWidgetBase = VisPyPlotter()
         self.property_plotter: PropertyPlotterBase = MPLPropertyPlotter(viewer)
 
         # Set plugin layout
         layout = QGridLayout()
-        # Make the tree plot a bigger than the property plot
-        for row, stretch in zip([0, 1], [2, 1]):
-            layout.setRowStretch(row, stretch)
-        self.setLayout(layout)
+
+        row, col = 0, 0
+        # Add title
+        layout.addWidget(self.title, row, col, Qt.AlignHCenter)
+        self.title.setText("Arboretum")
 
         # Add tree plotter
-        row, col = 0, 0
+        row = 1
         layout.addWidget(self.plotter.get_qwidget(), row, col)
         # Add property plotter
-        row = 1
+        row = 2
         layout.addWidget(self.property_plotter.get_qwidget(), row, col)
+        # Make the tree plot a bigger than the property plot
+        for row, stretch in zip([1, 2], [2, 1]):
+            layout.setRowStretch(row, stretch)
+        self.setLayout(layout)
 
         # Update the list of tracks layers stored in this object if the layer
         # list changes
@@ -55,6 +62,7 @@ class Arboretum(QWidget, TrackPropertyMixin):
         self.property_plotter.tracks = self.tracks
 
     def on_track_id_change(self):
+        self.title.setText(f"Lineage Tree #{self.track_id}")
         self.plotter.track_id = self.track_id
         self.property_plotter.track_id = self.track_id
 
