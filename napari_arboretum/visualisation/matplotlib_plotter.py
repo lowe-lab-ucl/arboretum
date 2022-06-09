@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 from matplotlib.lines import Line2D
 from napari_matplotlib.base import NapariMPLWidget
@@ -11,20 +13,20 @@ class MPLPropertyPlotter(PropertyPlotterBase):
         self.mpl_widget = NapariMPLWidget(viewer)
         self.figure = self.mpl_widget.canvas.figure
         self.axes = self.mpl_widget.canvas.figure.add_subplot(111)
+        self.mpl_time_line: Optional[Line2D] = None
 
     def get_qwidget(self) -> QWidget:
         return self.mpl_widget
 
     def plot(self, x: np.ndarray, y: np.ndarray) -> None:
-        self.axes.cla()
         self.axes.plot(x, y, label=f"id={self.track_id}")
 
     def draw_current_time_line(self, time: int) -> None:
-        if not hasattr(self, "_mpl_time_line"):
-            self._mpl_time_line: Line2D = self.axes.axvline(time, color="white")
+        if self.mpl_time_line is None:
+            self.mpl_time_line = self.axes.axvline(time, color="white")
         else:
-            self._mpl_time_line.set_xdata([time])
-        self.mpl_widget.canvas.draw()
+            self.mpl_time_line.set_xdata([time])
+        self.redraw()
 
     def set_xlabel(self, label: str) -> None:
         self.axes.set_xlabel(label)
@@ -34,6 +36,10 @@ class MPLPropertyPlotter(PropertyPlotterBase):
 
     def set_title(self, title: str) -> None:
         self.axes.set_title(title)
+
+    def clear(self) -> None:
+        self.axes.cla()
+        self.mpl_time_line = None
 
     def redraw(self) -> None:
         self.mpl_widget.canvas.draw()

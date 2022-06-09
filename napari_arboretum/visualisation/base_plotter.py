@@ -147,6 +147,8 @@ class PropertyPlotterBase(abc.ABC, TrackPropertyMixin):
         in the napari viewer.
         """
         t, prop = self.get_track_properties()
+
+        self.clear()
         self.plot(t, prop)
         self.set_xlabel("Time")
         self.set_ylabel("Property value")
@@ -203,6 +205,12 @@ class PropertyPlotterBase(abc.ABC, TrackPropertyMixin):
     def set_title(self, title: str) -> None:
         """
         Set plot title.
+        """
+
+    def clear(self) -> None:
+        """
+        Optional method that can be implemented by sub-classes to clear
+        a figure before updating with new data.
         """
 
     def redraw(self) -> None:
