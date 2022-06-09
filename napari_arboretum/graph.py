@@ -28,6 +28,14 @@ class TreeNode:
     def is_leaf(self) -> bool:
         return not self.children
 
+    def add_child(self, id: int, *, t_end: int):
+        """
+        Add a child to this node, and return the child.
+        """
+        child = TreeNode(id, (self.t[-1], t_end), self.generation + 1)
+        self.children.append(id)
+        return child
+
 
 def build_reverse_graph(graph: dict) -> Tuple[Union[list, set], Dict[int, List[int]]]:
     """Take the data from a Tracks layer graph and reverse it.

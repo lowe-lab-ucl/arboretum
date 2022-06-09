@@ -52,3 +52,15 @@ def test_node_is_leaf():
     node1 = graph.TreeNode(generation=1, ID=1, t=(1, 2), children=[node2])
     assert not node1.is_leaf
     assert node2.is_leaf
+
+
+def test_add_child():
+    node = graph.TreeNode(generation=1, ID=1, t=(1, 2))
+    assert node.is_leaf
+    child = node.add_child(2, t_end=4)
+
+    assert not node.is_leaf
+    assert len(node.children) == 1
+
+    assert child.is_leaf
+    assert child.t == (2, 4)
