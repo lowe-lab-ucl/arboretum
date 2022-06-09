@@ -15,7 +15,7 @@ jobs:
   linting:
       runs-on: ubuntu-latest
       steps:
-        - uses: UCL/composite-actions/pre-commit@main
+        - uses: UCL/composite-actions/pre-commit@v1
   test:
     name: ${{ matrix.platform }} py${{ matrix.python-version }}
     runs-on: ${{ matrix.platform }}
@@ -35,7 +35,7 @@ jobs:
       # Setup pyqt libraries
       - uses: tlambert03/setup-qt-libs@v1
       # Run tests
-      - uses: UCL/composite-actions/python/tox@main
+      - uses: UCL/composite-actions/python/tox@v1
         with:
           python-version: ${{ matrix.python-version }}
       # Upload code coverage
