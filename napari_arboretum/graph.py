@@ -5,7 +5,7 @@ Note that this file should *not* contain code for laying out the graphs for
 visualisation. Code for this is kept in `tree.py`.
 """
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, List, Set, Tuple, Union
 
 import napari
 import numpy as np
@@ -93,9 +93,34 @@ def linearise_tree(graph: dict, root: int) -> list:
     return linear
 
 
-def build_subgraph(
-    layer: napari.layers.Tracks, search_node: int
-) -> Tuple[Optional[int], List[TreeNode]]:
+def get_root_id(layer: napari.layers.Tracks, search_node: int) -> int:
+    """
+    Get the root node of a given track ID.
+
+    Parameters
+    ----------
+    layer :
+        A napari tracks layer.
+    search_node :
+        The search node ID.
+
+    Returns
+    -------
+    root_id :
+        The root node ID of the tree which contains the node.
+    """
+    roots, reverse_graph = build_reverse_graph(layer.graph)
+    linear_trees = [linearise_tree(reverse_graph, root) for root in roots]
+
+    root_id = search_node
+    for root, tree in zip(roots, linear_trees):
+        if search_node in tree:
+            root_id = root
+
+    return root_id
+
+
+def build_subgraph(layer: napari.layers.Tracks, search_node: int) -> List[TreeNode]:
     """Build a subgraph containing the node.
 
     The search node may not be the root of a tree, therefore, this function
@@ -112,18 +137,11 @@ def build_subgraph(
 
     Returns
     -------
-    root_id :
-        The root node ID of the tree which contains the node.
     nodes :
         The nodes of the subtree that contain the search node.
     """
-    roots, reverse_graph = build_reverse_graph(layer.graph)
-    linear_trees = [linearise_tree(reverse_graph, root) for root in roots]
-
-    root_id = None
-    for root, tree in zip(roots, linear_trees):
-        if search_node in tree:
-            root_id = root
+    _, reverse_graph = build_reverse_graph(layer.graph)
+    root_id = get_root_id(layer, search_node)
 
     def _node_from_graph(_id):
 
@@ -135,10 +153,6 @@ def build_subgraph(
             node.children = reverse_graph[_id]
 
         return node
-
-    # if we did not find a root node there is only a single branch
-    if root_id is None:
-        return search_node, [_node_from_graph(search_node)]
 
     # now build the treenode objects
     nodes = [_node_from_graph(root_id)]
@@ -157,4 +171,4 @@ def build_subgraph(
                 queue.append(child_node)
                 nodes.append(child_node)
 
-    return root_id, nodes
+    return nodes

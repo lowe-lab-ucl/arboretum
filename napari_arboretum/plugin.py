@@ -6,6 +6,8 @@ from napari.utils.events import Event
 from PyQt5.QtCore import Qt
 from qtpy.QtWidgets import QGridLayout, QLabel, QWidget
 
+from napari_arboretum.graph import get_root_id
+
 from .util import TrackPropertyMixin
 from .visualisation import (
     MPLPropertyPlotter,
@@ -62,9 +64,10 @@ class Arboretum(QWidget, TrackPropertyMixin):
         self.property_plotter.tracks = self.tracks
 
     def on_track_id_change(self):
-        self.title.setText(f"Lineage Tree #{self.track_id}")
         self.plotter.track_id = self.track_id
         self.property_plotter.track_id = self.track_id
+        root_id = get_root_id(self.tracks, self.track_id)
+        self.title.setText(f"Lineage Tree #{root_id}")
 
     def update_tracks_layers(self, event: Optional[Event] = None) -> None:
         """

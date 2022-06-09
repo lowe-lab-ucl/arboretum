@@ -43,7 +43,7 @@ class TreePlotterBase(abc.ABC, TrackPropertyMixin):
         Plot the tree.
         """
         self.clear()
-        root, subgraph_nodes = build_subgraph(self.tracks, self.track_id)
+        subgraph_nodes = build_subgraph(self.tracks, self.track_id)
         self.draw_from_nodes(subgraph_nodes, self.track_id)
 
     def draw_from_nodes(
