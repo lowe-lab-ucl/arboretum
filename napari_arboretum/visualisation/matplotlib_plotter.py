@@ -23,8 +23,6 @@ class MPLPropertyPlotter(PropertyPlotterBase):
         if not hasattr(self, "_mpl_time_line"):
             self._mpl_time_line: Line2D = self.axes.axvline(time, color="white")
         else:
-            # TODO: fix this
-            print(time)
             self._mpl_time_line.set_xdata([time])
         self.mpl_widget.canvas.draw()
 
@@ -36,9 +34,6 @@ class MPLPropertyPlotter(PropertyPlotterBase):
 
     def set_title(self, title: str) -> None:
         self.axes.set_title(title)
-
-    def draw_track_id(self, title: int) -> None:
-        self.axes.legend()
 
     def redraw(self) -> None:
         self.mpl_widget.canvas.draw()

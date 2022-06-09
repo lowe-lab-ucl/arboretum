@@ -43,7 +43,7 @@ class TreePlotterBase(abc.ABC, TrackPropertyMixin):
         Plot the tree.
         """
         self.clear()
-        root, subgraph_nodes = build_subgraph(self.tracks, self.track_id)
+        subgraph_nodes = build_subgraph(self.tracks, self.track_id)
         self.draw_from_nodes(subgraph_nodes, self.track_id)
 
     def draw_from_nodes(
@@ -59,9 +59,6 @@ class TreePlotterBase(abc.ABC, TrackPropertyMixin):
 
         # labels
         for a in self.annotations:
-            # change the alpha value according to whether this is the selected
-            # cell or another part of the tree
-            a.color[3] = 1 if a.label == str(track_id) else 0.25
             self.add_annotation(a)
 
     def update_edge_colors(self, update_live: bool = True) -> None:
@@ -153,8 +150,7 @@ class PropertyPlotterBase(abc.ABC, TrackPropertyMixin):
         self.plot(t, prop)
         self.set_xlabel("Time")
         self.set_ylabel("Property value")
-        self.set_title(self.tracks.color_by)
-        self.draw_track_id(self.track_id)
+        self.set_title(f"{self.tracks.color_by}, cell #{self.track_id}")
         self.redraw()
 
     def get_track_properties(self) -> Tuple[np.ndarray, np.ndarray]:
@@ -207,13 +203,6 @@ class PropertyPlotterBase(abc.ABC, TrackPropertyMixin):
     def set_title(self, title: str) -> None:
         """
         Set plot title.
-        """
-
-    @abc.abstractmethod
-    def draw_track_id(self, track_id: int) -> None:
-        """
-        Draw track ID. Where this is drawn is up to the implmenation, and could
-        e.g. be the plot title or plot legend.
         """
 
     def redraw(self) -> None:

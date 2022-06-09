@@ -30,11 +30,21 @@ def test_build_subgraph():
     data[:, 1] = np.arange(data.shape[0])
 
     tracks = Tracks(data, graph=TEST_GRAPH)
-    root, nodes = graph.build_subgraph(tracks, TEST_GRAPH_ROOT)
+    nodes = graph.build_subgraph(tracks, TEST_GRAPH_ROOT)
     subgraph = [node.ID for node in nodes]
 
-    assert root == TEST_GRAPH_ROOT
     assert subgraph == TEST_GRAPH_LINEAR
+
+
+def test_get_root():
+    """Test getting the graph root."""
+    data = np.random.random(size=(max(TEST_GRAPH_LINEAR) + 1, 4))
+    data[:, 0] = np.arange(data.shape[0])
+    data[:, 1] = np.arange(data.shape[0])
+
+    tracks = Tracks(data, graph=TEST_GRAPH)
+    root_id = graph.get_root_id(tracks, TEST_GRAPH_ROOT)
+    assert root_id == TEST_GRAPH_ROOT
 
 
 def test_node_is_root():
