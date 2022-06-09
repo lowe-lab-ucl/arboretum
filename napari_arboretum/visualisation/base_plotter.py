@@ -150,7 +150,7 @@ class PropertyPlotterBase(abc.ABC, TrackPropertyMixin):
         self.plot(t, prop)
         self.set_xlabel("Time")
         self.set_ylabel("Property value")
-        self.set_title(self.tracks.color_by)
+        self.set_title(f"{self.tracks.color_by}, cell #{self.track_id}")
         self.redraw()
 
     def get_track_properties(self) -> Tuple[np.ndarray, np.ndarray]:
