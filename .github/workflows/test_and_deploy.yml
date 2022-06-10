@@ -1,22 +1,21 @@
-# This workflows will upload a Python Package using Twine when a release is created
-# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
-
 name: tests
 
 on:
   push:
     branches:
-      - master
       - main
     tags:
       - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
   pull_request:
     branches:
-      - master
       - main
   workflow_dispatch:
 
 jobs:
+  linting:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: UCL/composite-actions/pre-commit@v1
   test:
     name: ${{ matrix.platform }} py${{ matrix.python-version }}
     runs-on: ${{ matrix.platform }}
@@ -33,31 +32,13 @@ jobs:
           python-version: "3.9"
 
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+      # Setup pyqt libraries
+      - uses: tlambert03/setup-qt-libs@v1
+      # Run tests
+      - uses: UCL/composite-actions/python/tox@v1
         with:
           python-version: ${{ matrix.python-version }}
-
-      # these libraries enable testing on Qt on linux
-      - uses: tlambert03/setup-qt-libs@v1
-
-      # note: if you need dependencies from conda, considering using
-      # setup-miniconda: https://github.com/conda-incubator/setup-miniconda
-      # and
-      # tox-conda: https://github.com/tox-dev/tox-conda
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools tox tox-gh-actions
-
-      # this runs the platform-specific tests declared in tox.ini
-      - name: Test with tox
-        run: tox
-        env:
-          PLATFORM: ${{ matrix.platform }}
-
+      # Upload code coverage
       - name: Coverage
         uses: codecov/codecov-action@v2
 
@@ -77,12 +58,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -U setuptools setuptools_scm wheel twine
+          python -m pip install build
       - name: Build and publish
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
         run: |
           git tag
-          python setup.py sdist bdist_wheel
+          python -m build
           twine upload dist/*
