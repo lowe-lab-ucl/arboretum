@@ -93,7 +93,7 @@ class Arboretum(QWidget, TrackPropertyMixin):
         when the layer is clicked.
         """
 
-        @track_layer.mouse_drag_callbacks.append
+        @track_layer.mouse_double_click_callbacks.append
         def show_tree(tracks: Tracks, event: Event) -> None:
             self.tracks = tracks
 
