@@ -26,7 +26,6 @@ class Bounds:
 @dataclass
 class TrackSubvisualProxy:
     pos: np.ndarray
-    width: int = 3
     color: np.ndarray = np.array([1.0, 1.0, 1.0, 1.0])
 
     @property
@@ -273,7 +272,6 @@ class TreeVisualFast(scene.visuals.Compound):
             subvisual_proxy = TrackSubvisualProxy(
                 pos=pos,
                 color=np.array([1.0, 1.0, 1.0, 1.0]),
-                width=3,
             )
         else:
             # Split up line into individual time steps so color can vary
