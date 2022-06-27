@@ -9,6 +9,8 @@ from ..graph import TreeNode, build_subgraph
 from ..tree import Annotation, Edge, layout_tree
 from ..util import TrackPropertyMixin
 
+# from ..profiler import profiler
+
 GUI_MAXIMUM_WIDTH = 600
 
 __all__ = ["TreePlotterBase", "TreePlotterQWidgetBase"]
@@ -46,6 +48,7 @@ class TreePlotterBase(abc.ABC, TrackPropertyMixin):
         subgraph_nodes = build_subgraph(self.tracks, self.track_id)
         self.draw_from_nodes(subgraph_nodes, self.track_id)
 
+    # @profiler("draw_from_nodes")
     def draw_from_nodes(
         self, tree_nodes: List[TreeNode], track_id: Optional[int] = None
     ):
@@ -60,6 +63,8 @@ class TreePlotterBase(abc.ABC, TrackPropertyMixin):
         # labels
         for a in self.annotations:
             self.add_annotation(a)
+
+        self.draw_tree_visual()
 
     def update_edge_colors(self, update_live: bool = True) -> None:
         """
@@ -114,6 +119,13 @@ class TreePlotterBase(abc.ABC, TrackPropertyMixin):
     def draw_current_time_line(self, time: int) -> None:
         """
         Draw a horizontal line at the current timestep to the tree.
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def draw_tree_visual(self) -> None:
+        """
+        Function to draw the visual after construction.
         """
         raise NotImplementedError
 
