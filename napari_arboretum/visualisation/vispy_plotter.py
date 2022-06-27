@@ -194,7 +194,8 @@ class TreeVisual(scene.visuals.Compound):
             pos=[y, x, 0],
             anchor_x="left",
             anchor_y="top",
-            font_size=10,
+            font_size=6,
+            rotation=90,
         )
         self.add_subvisual(visual)
         self.subvisuals.append(visual)
