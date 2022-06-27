@@ -11,6 +11,10 @@ from .base_plotter import TreePlotterQWidgetBase
 __all__ = ["VisPyPlotter"]
 
 
+DEFAULT_TEXT_SIZE = 8
+DEFAULT_BRANCH_WIDTH = 3
+
+
 @dataclass
 class Bounds:
     xmin: float
@@ -173,14 +177,16 @@ class TreeVisual(scene.visuals.Compound):
         """
 
         if id is None:
-            visual = scene.visuals.Line(pos=pos, color=color, width=3)
+            visual = scene.visuals.Line(
+                pos=pos, color=color, width=DEFAULT_BRANCH_WIDTH
+            )
         else:
             # Split up line into individual time steps so color can vary
             # along the line
             ys = np.arange(pos[0, 1], pos[1, 1] + 1)
             xs = np.ones(ys.size) * pos[0, 0]
             visual = scene.visuals.Line(
-                pos=np.column_stack((xs, ys)), color=color, width=3
+                pos=np.column_stack((xs, ys)), color=color, width=DEFAULT_BRANCH_WIDTH
             )
             self.tracks[id] = visual
 
@@ -194,7 +200,7 @@ class TreeVisual(scene.visuals.Compound):
             pos=[y, x, 0],
             anchor_x="left",
             anchor_y="top",
-            font_size=6,
+            font_size=DEFAULT_TEXT_SIZE,
             rotation=90,
         )
         self.add_subvisual(visual)
@@ -225,12 +231,12 @@ class TreeVisualFast(scene.visuals.Compound):
         self.annotations = []
 
         subvisuals = [
-            scene.visuals.Line(color="white", width=3),
+            scene.visuals.Line(color="white", width=DEFAULT_BRANCH_WIDTH),
             scene.visuals.Text(
                 anchor_x="left",
                 anchor_y="top",
                 rotation=90,
-                font_size=8,
+                font_size=DEFAULT_TEXT_SIZE,
                 color="white",
             ),
         ]
