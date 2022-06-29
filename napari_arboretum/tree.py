@@ -68,12 +68,13 @@ def layout_tree(nodes: List[TreeNode]) -> Tuple[List[Edge], List[Annotation]]:
         # draw the root of the tree
         edges.append(Edge(y=(y, y), x=(node.t[0], node.t[-1]), id=node.ID))
 
+        if node.is_root:
+            annotations.append(Annotation(y=y, x=node.t[0], label=str(node.ID)))
+
         # mark if this is an apoptotic tree
         if node.is_leaf:
             annotations.append(Annotation(y=y, x=node.t[-1], label=str(node.ID)))
-
-        if node.is_root:
-            annotations.append(Annotation(y=y, x=node.t[0], label=str(node.ID)))
+            continue
 
         children = [t for t in nodes if t.ID in node.children]
 
@@ -94,6 +95,11 @@ def layout_tree(nodes: List[TreeNode]) -> Tuple[List[Edge], List[Annotation]]:
 
                 # plot a linking line to the children
                 edges.append(Edge(y=(y, y_pos[-1]), x=(node.t[-1], child.t[0])))
+
+                # if it's a leaf don't plot the annotation
+                if child.is_leaf:
+                    continue
+
                 annotations.append(
                     Annotation(
                         y=y_pos[-1],
