@@ -100,6 +100,14 @@ class VisPyPlotter(TreePlotterQWidgetBase):
             width * (1 + 2 * padding),
             height * (1 + 2 * padding),
         )
+
+        # change the aspect ratio of the camera if we have just a single branch
+        # this will centre the camera on the single branch, otherwise, set the
+        # aspect ratio to match the data
+        if width == 0:
+            self.view.camera.aspect = 1.0
+        else:
+            self.view.camera.aspect = None
         self.view.camera.rect = rect
 
     def update_colors(self) -> None:
