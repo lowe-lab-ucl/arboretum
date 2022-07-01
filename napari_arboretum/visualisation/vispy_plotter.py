@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 from qtpy.QtWidgets import QWidget
@@ -67,7 +66,7 @@ class VisPyPlotter(TreePlotterQWidgetBase):
         self.canvas = scene.SceneCanvas(keys=None, size=(300, 1200))
         self.view = self.canvas.central_widget.add_view()
         self.view.camera = scene.PanZoomCamera()
-        self.tree = TreeVisualFast(parent=None)
+        self.tree = TreeVisual(parent=None)
         self.view.add(self.tree)
 
     def get_qwidget(self) -> QWidget:
@@ -122,7 +121,8 @@ class VisPyPlotter(TreePlotterQWidgetBase):
         """
         Add a single branch to the tree.
         """
-        self.tree.add_track(e.id, np.column_stack((e.y, e.x)), e.color)
+        # self.tree.add_track(e.id, np.column_stack((e.y, e.x)), e.color)
+        self.tree.add_track(e)
         self.autoscale_view()
 
     def add_annotation(self, a: Annotation) -> None:
@@ -149,81 +149,6 @@ class VisPyPlotter(TreePlotterQWidgetBase):
 
 
 class TreeVisual(scene.visuals.Compound):
-    """
-    Tree visual that stores branches as sub-visuals.
-    """
-
-    def __init__(self, parent):
-        super().__init__([])
-        self.parent = parent
-        self.unfreeze()
-        # Keep a reference to tracks we add so their colour can be changed later
-        self.tracks = {}
-        self.subvisuals = []
-
-    def get_branch_color(self, branch_id: int) -> np.ndarray:
-        return self.tracks[branch_id].color
-
-    def set_branch_color(self, branch_id: int, color: np.ndarray) -> None:
-        """
-        Set the color of an individual branch.
-        """
-        self.tracks[branch_id].set_data(color=color)
-
-    def add_track(self, id: Optional[int], pos: np.ndarray, color: np.ndarray) -> None:
-        """
-        Parameters
-        ----------
-        id :
-            Track ID.
-        pos :
-            Array of shape (2, 2) specifying vertex coordinates.
-        color :
-            Array of shape (n, 4) specifying RGBA values in range [0, 1] along
-            the track.
-        """
-
-        if id is None:
-            visual = scene.visuals.Line(
-                pos=pos, color=color, width=DEFAULT_BRANCH_WIDTH
-            )
-        else:
-            # Split up line into individual time steps so color can vary
-            # along the line
-            ys = np.arange(pos[0, 1], pos[1, 1] + 1)
-            xs = np.ones(ys.size) * pos[0, 0]
-            visual = scene.visuals.Line(
-                pos=np.column_stack((xs, ys)), color=color, width=DEFAULT_BRANCH_WIDTH
-            )
-            self.tracks[id] = visual
-
-        self.add_subvisual(visual)
-        self.subvisuals.append(visual)
-
-    def add_annotation(self, x: float, y: float, label: str, color):
-        visual = scene.visuals.Text(
-            text=label,
-            color=color,
-            pos=[y, x, 0],
-            anchor_x="left",
-            anchor_y="top",
-            font_size=DEFAULT_TEXT_SIZE,
-            rotation=90,
-        )
-        self.add_subvisual(visual)
-        self.subvisuals.append(visual)
-
-    def clear(self) -> None:
-        """Remove all tracks."""
-        while self.subvisuals:
-            subvisual = self.subvisuals.pop()
-            self.remove_subvisual(subvisual)
-
-    def draw_tree(self) -> None:
-        pass
-
-
-class TreeVisualFast(scene.visuals.Compound):
     """
     Tree visual that stores branches as sub-visuals.
     """
@@ -263,7 +188,7 @@ class TreeVisualFast(scene.visuals.Compound):
             color=np.row_stack([e.safe_color for e in self.edges]),
         )
 
-    def add_track(self, id: Optional[int], pos: np.ndarray, color: np.ndarray) -> None:
+    def add_track(self, e: Edge) -> None:
         """
         Parameters
         ----------
@@ -275,8 +200,10 @@ class TreeVisualFast(scene.visuals.Compound):
             Array of shape (n, 4) specifying RGBA values in range [0, 1] along
             the track.
         """
+        color = e.color
+        pos = np.column_stack((e.y, e.x))
 
-        if id is None:
+        if e.node is None:
             subvisual_proxy = TrackSubvisualProxy(
                 pos=pos,
                 color=np.array([1.0, 1.0, 1.0, 1.0]),
@@ -284,14 +211,14 @@ class TreeVisualFast(scene.visuals.Compound):
         else:
             # Split up line into individual time steps so color can vary
             # along the line
-            ys = np.arange(pos[0, 1], pos[1, 1] + 1)
+            ys = np.asarray(e.node.t)  # np.arange(pos[0, 1], pos[1, 1] + 1)
             xs = np.ones(ys.size) * pos[0, 0]
             subvisual_proxy = TrackSubvisualProxy(
                 pos=np.column_stack((xs, ys)),
                 color=color,
             )
             # store a reference to this subvisual proxy
-            self.tracks[id] = subvisual_proxy
+            self.tracks[e.id] = subvisual_proxy
 
         self.edges.append(subvisual_proxy)
 
