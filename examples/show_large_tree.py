@@ -24,7 +24,7 @@ def generate_binary_tree(max_depth: int):
     return nodes
 
 
-nodes = generate_binary_tree(6)
+nodes = generate_binary_tree(8)
 print(f"{len(nodes)} total nodes")
 
 

@@ -16,7 +16,7 @@ class TreeNode:
     """TreeNode."""
 
     ID: int
-    t: Tuple[int, int]
+    t: np.ndarray
     generation: int
     children: List[int] = field(default_factory=list)
 
@@ -154,7 +154,8 @@ def build_subgraph(layer: napari.layers.Tracks, search_node: int) -> List[TreeNo
     def _node_from_graph(_id):
 
         idx = np.where(layer.data[:, 0] == _id)[0]
-        t = (np.min(layer.data[idx, 1]), np.max(layer.data[idx, 1]))
+        # t = (np.min(layer.data[idx, 1]), np.max(layer.data[idx, 1]))
+        t = layer.data[idx, 1]
         node = TreeNode(ID=_id, t=t, generation=1)
 
         if _id in reverse_graph:

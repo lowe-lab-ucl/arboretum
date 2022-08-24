@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 from qtpy.QtWidgets import QWidget
@@ -11,12 +10,41 @@ from .base_plotter import TreePlotterQWidgetBase
 __all__ = ["VisPyPlotter"]
 
 
+DEFAULT_TEXT_SIZE = 8
+DEFAULT_BRANCH_WIDTH = 3
+
+
 @dataclass
 class Bounds:
     xmin: float
     xmax: float
     ymin: float
     ymax: float
+
+
+@dataclass
+class TrackSubvisualProxy:
+    pos: np.ndarray
+    color: np.ndarray = np.array([1.0, 1.0, 1.0, 1.0])
+
+    @property
+    def connex(self):
+        connex = [True] * (self.pos.shape[0] - 1) + [False]
+        return connex
+
+    @property
+    def safe_color(self) -> np.ndarray:
+        if self.color.ndim != 2:
+            safe_color = np.repeat([self.color], self.pos.shape[0], axis=0)
+            return safe_color
+        return self.color
+
+
+@dataclass
+class AnnotationSubvisualProxy:
+    pos: np.ndarray
+    text: str
+    color: str = "white"
 
 
 class VisPyPlotter(TreePlotterQWidgetBase):
@@ -71,6 +99,14 @@ class VisPyPlotter(TreePlotterQWidgetBase):
             width * (1 + 2 * padding),
             height * (1 + 2 * padding),
         )
+
+        # change the aspect ratio of the camera if we have just a single branch
+        # this will centre the camera on the single branch, otherwise, set the
+        # aspect ratio to match the data
+        if width == 0:
+            self.view.camera.aspect = 1.0
+        else:
+            self.view.camera.aspect = None
         self.view.camera.rect = rect
 
     def update_colors(self) -> None:
@@ -85,7 +121,8 @@ class VisPyPlotter(TreePlotterQWidgetBase):
         """
         Add a single branch to the tree.
         """
-        self.tree.add_track(e.id, np.column_stack((e.y, e.x)), e.color)
+        # self.tree.add_track(e.id, np.column_stack((e.y, e.x)), e.color)
+        self.tree.add_track(e)
         self.autoscale_view()
 
     def add_annotation(self, a: Annotation) -> None:
@@ -104,6 +141,12 @@ class VisPyPlotter(TreePlotterQWidgetBase):
             pos=np.array([[bounds.xmin - padding, time], [bounds.xmax + padding, time]])
         )
 
+    def draw_tree_visual(self) -> None:
+        """
+        Draw the whole tree.
+        """
+        self.tree.draw_tree()
+
 
 class TreeVisual(scene.visuals.Compound):
     """
@@ -116,7 +159,22 @@ class TreeVisual(scene.visuals.Compound):
         self.unfreeze()
         # Keep a reference to tracks we add so their colour can be changed later
         self.tracks = {}
-        self.subvisuals = []
+        self.edges = []
+        self.annotations = []
+
+        subvisuals = [
+            scene.visuals.Line(color="white", width=DEFAULT_BRANCH_WIDTH),
+            scene.visuals.Text(
+                anchor_x="left",
+                anchor_y="top",
+                rotation=90,
+                font_size=DEFAULT_TEXT_SIZE,
+                color="white",
+            ),
+        ]
+
+        for visual in subvisuals:
+            self.add_subvisual(visual)
 
     def get_branch_color(self, branch_id: int) -> np.ndarray:
         return self.tracks[branch_id].color
@@ -125,9 +183,12 @@ class TreeVisual(scene.visuals.Compound):
         """
         Set the color of an individual branch.
         """
-        self.tracks[branch_id].set_data(color=color)
+        self.tracks[branch_id].color = color
+        self._subvisuals[0].set_data(
+            color=np.row_stack([e.safe_color for e in self.edges]),
+        )
 
-    def add_track(self, id: Optional[int], pos: np.ndarray, color: np.ndarray) -> None:
+    def add_track(self, e: Edge) -> None:
         """
         Parameters
         ----------
@@ -139,36 +200,58 @@ class TreeVisual(scene.visuals.Compound):
             Array of shape (n, 4) specifying RGBA values in range [0, 1] along
             the track.
         """
-        if id is None:
-            visual = scene.visuals.Line(pos=pos, color=color, width=3)
+        color = e.color
+        pos = np.column_stack((e.y, e.x))
+
+        if e.node is None:
+            subvisual_proxy = TrackSubvisualProxy(
+                pos=pos,
+                color=np.array([1.0, 1.0, 1.0, 1.0]),
+            )
         else:
             # Split up line into individual time steps so color can vary
             # along the line
-            ys = np.arange(pos[0, 1], pos[1, 1] + 1)
+            ys = np.asarray(e.node.t)  # np.arange(pos[0, 1], pos[1, 1] + 1)
             xs = np.ones(ys.size) * pos[0, 0]
-            visual = scene.visuals.Line(
-                pos=np.column_stack((xs, ys)), color=color, width=3
+            subvisual_proxy = TrackSubvisualProxy(
+                pos=np.column_stack((xs, ys)),
+                color=color,
             )
-            self.tracks[id] = visual
+            # store a reference to this subvisual proxy
+            self.tracks[e.id] = subvisual_proxy
 
-        self.add_subvisual(visual)
-        self.subvisuals.append(visual)
+        self.edges.append(subvisual_proxy)
 
     def add_annotation(self, x: float, y: float, label: str, color):
-        visual = scene.visuals.Text(
+
+        subvisual_proxy = AnnotationSubvisualProxy(
             text=label,
-            color=color,
             pos=[y, x, 0],
-            anchor_x="left",
-            anchor_y="top",
-            font_size=6,
-            rotation=90,
         )
-        self.add_subvisual(visual)
-        self.subvisuals.append(visual)
+
+        self.annotations.append(subvisual_proxy)
 
     def clear(self) -> None:
         """Remove all tracks."""
-        while self.subvisuals:
-            subvisual = self.subvisuals.pop()
-            self.remove_subvisual(subvisual)
+        self.tracks = {}
+        self.edges = []
+        self.annotations = []
+
+        for visual in self._subvisuals:
+            visual._pos = None
+
+            if hasattr(visual, "_text"):
+                visual._text = None
+
+    def draw_tree(self) -> None:
+        """Once the data is added, draw the tree."""
+
+        self._subvisuals[0].set_data(
+            pos=np.row_stack([e.pos for e in self.edges]),
+            color=np.row_stack([e.safe_color for e in self.edges]),
+            connect=np.concatenate([e.connex for e in self.edges]),
+        )
+
+        # TextVisual does not have a ``set_data`` method
+        self._subvisuals[1].pos = np.asarray([a.pos for a in self.annotations])
+        self._subvisuals[1].text = [a.text for a in self.annotations]

@@ -30,6 +30,7 @@ class Edge:
     y: Tuple[float, float]
     color: np.ndarray = WHITE
     id: Optional[int] = None
+    node: Optional[TreeNode] = None
 
 
 def layout_tree(nodes: List[TreeNode]) -> Tuple[List[Edge], List[Annotation]]:
@@ -66,7 +67,7 @@ def layout_tree(nodes: List[TreeNode]) -> Tuple[List[Edge], List[Annotation]]:
         y = y_pos.pop(0)
 
         # draw the root of the tree
-        edges.append(Edge(y=(y, y), x=(node.t[0], node.t[-1]), id=node.ID))
+        edges.append(Edge(y=(y, y), x=(node.t[0], node.t[-1]), id=node.ID, node=node))
 
         if node.is_root:
             annotations.append(Annotation(y=y, x=node.t[0], label=str(node.ID)))
@@ -107,15 +108,5 @@ def layout_tree(nodes: List[TreeNode]) -> Tuple[List[Edge], List[Annotation]]:
                         label=str(child.ID),
                     )
                 )
-
-    # now that we have traversed the tree, calculate the span
-    tree_span = []
-    for edge in edges:
-        tree_span.append(edge.y[0])
-        tree_span.append(edge.y[1])
-
-    # # work out the span of the tree, we can modify positioning here
-    # min_x = min(tree_span)
-    # max_x = max(tree_span)
 
     return edges, annotations
