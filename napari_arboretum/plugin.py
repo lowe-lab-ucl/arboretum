@@ -3,7 +3,7 @@ from typing import List, Optional
 import napari
 from napari.layers import Tracks
 from napari.utils.events import Event
-from PyQt5.QtCore import Qt
+from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QGridLayout, QLabel, QWidget
 
 from napari_arboretum.graph import get_root_id
