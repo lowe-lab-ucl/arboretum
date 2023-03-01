@@ -14,3 +14,4 @@ napari_arboretum/_version.py
 .DS_Store
 *.json
 *.coverage
+.envrc
