@@ -7,7 +7,6 @@ of files and their expected hashes is stored in :file:``registry.txt``.
 
 import json
 import pathlib
-from typing import Tuple
 
 import napari.layers
 import pandas as pd
@@ -23,7 +22,7 @@ registry_file = pathlib.Path(__file__).parent / "registry.txt"
 POOCH.load_registry(registry_file)
 
 
-def load_sample_data() -> Tuple[napari.layers.Tracks, napari.layers.Labels]:
+def load_sample_data() -> tuple[napari.layers.Tracks, napari.layers.Labels]:
     """
     Load some sample data.
 

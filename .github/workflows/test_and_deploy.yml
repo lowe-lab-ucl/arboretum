@@ -13,9 +13,9 @@ on:
 
 jobs:
   linting:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: UCL/composite-actions/pre-commit@v1
+    runs-on: ubuntu-latest
+    steps:
+      - uses: UCL/composite-actions/pre-commit@v1
   test:
     name: ${{ matrix.platform }} py${{ matrix.python-version }}
     runs-on: ${{ matrix.platform }}
@@ -26,10 +26,10 @@ jobs:
         platform: [ubuntu-latest]
         # Include one windows and macos run
         include:
-        - platform: macos-latest
-          python-version: "3.9"
-        - platform: windows-latest
-          python-version: "3.9"
+          - platform: macos-latest
+            python-version: "3.9"
+          - platform: windows-latest
+            python-version: "3.9"
 
     steps:
       # Setup pyqt libraries

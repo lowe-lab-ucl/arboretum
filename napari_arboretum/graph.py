@@ -5,7 +5,6 @@ Note that this file should *not* contain code for laying out the graphs for
 visualisation. Code for this is kept in `tree.py`.
 """
 from dataclasses import dataclass, field
-from typing import Dict, List, Set, Tuple, Union
 
 import napari
 import numpy as np
@@ -18,7 +17,7 @@ class TreeNode:
     ID: int
     t: np.ndarray
     generation: int
-    children: List[int] = field(default_factory=list)
+    children: list[int] = field(default_factory=list)
 
     @property
     def is_root(self) -> bool:
@@ -28,16 +27,16 @@ class TreeNode:
     def is_leaf(self) -> bool:
         return not self.children
 
-    def add_child(self, id: int, *, t_end: int):
+    def add_child(self, track_id: int, *, t_end: int):
         """
         Add a child to this node, and return the child.
         """
-        child = TreeNode(id, (self.t[-1], t_end), self.generation + 1)
-        self.children.append(id)
+        child = TreeNode(track_id, (self.t[-1], t_end), self.generation + 1)
+        self.children.append(track_id)
         return child
 
 
-def build_reverse_graph(graph: dict) -> Tuple[Union[list, set], Dict[int, List[int]]]:
+def build_reverse_graph(graph: dict) -> tuple[list | set, dict[int, list[int]]]:
     """Take the data from a Tracks layer graph and reverse it.
 
     Parameters
@@ -54,7 +53,7 @@ def build_reverse_graph(graph: dict) -> Tuple[Union[list, set], Dict[int, List[i
         A reversed graph representing children of each parent node.
     """
     reverse_graph = {}
-    roots: Set[int] = set()
+    roots: set[int] = set()
 
     # iterate over the graph, reverse it and find the root nodes
     for node, parents in graph.items():
@@ -68,7 +67,7 @@ def build_reverse_graph(graph: dict) -> Tuple[Union[list, set], Dict[int, List[i
                 roots.add(parent)
 
     # sort the roots
-    sorted_roots = sorted(list(roots))
+    sorted_roots = sorted(roots)
 
     return sorted_roots, reverse_graph
 
@@ -96,8 +95,7 @@ def linearise_tree(graph: dict, root: int) -> list:
         node = queue.pop(0)
         linear.append(node)
         if node in graph:
-            for child in graph[node]:
-                queue.append(child)
+            queue.extend(iter(graph[node]))
     return linear
 
 
@@ -128,7 +126,7 @@ def get_root_id(layer: napari.layers.Tracks, search_node: int) -> int:
     return root_id
 
 
-def build_subgraph(layer: napari.layers.Tracks, search_node: int) -> List[TreeNode]:
+def build_subgraph(layer: napari.layers.Tracks, search_node: int) -> list[TreeNode]:
     """Build a subgraph containing the node.
 
     The search node may not be the root of a tree, therefore, this function
@@ -152,7 +150,6 @@ def build_subgraph(layer: napari.layers.Tracks, search_node: int) -> List[TreeNo
     root_id = get_root_id(layer, search_node)
 
     def _node_from_graph(_id):
-
         idx = np.where(layer.data[:, 0] == _id)[0]
         # t = (np.min(layer.data[idx, 1]), np.max(layer.data[idx, 1]))
         t = layer.data[idx, 1]

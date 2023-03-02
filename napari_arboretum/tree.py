@@ -1,12 +1,12 @@
 """
 Classes and functions for laying out graphs for visualisation.
 """
+from collections.abc import MutableSequence
 from dataclasses import dataclass
-from typing import List, MutableSequence, Optional, Tuple
 
 import numpy as np
 
-from .graph import TreeNode
+from napari_arboretum.graph import TreeNode
 
 # colormaps
 WHITE = np.array([1.0, 1.0, 1.0, 1.0])
@@ -26,14 +26,14 @@ class Annotation:
 
 @dataclass
 class Edge:
-    x: Tuple[float, float]
-    y: Tuple[float, float]
+    x: tuple[float, float]
+    y: tuple[float, float]
     color: np.ndarray = WHITE
-    id: Optional[int] = None
-    node: Optional[TreeNode] = None
+    track_id: int | None = None
+    node: TreeNode | None = None
 
 
-def layout_tree(nodes: List[TreeNode]) -> Tuple[List[Edge], List[Annotation]]:
+def layout_tree(nodes: list[TreeNode]) -> tuple[list[Edge], list[Annotation]]:
     """Build and layout the edges of a lineage tree, given the graph nodes.
 
     Parameters
@@ -61,13 +61,14 @@ def layout_tree(nodes: List[TreeNode]) -> Tuple[List[Edge], List[Annotation]]:
 
     # now step through
     while queue:
-
         # pop the root from the tree
         node = queue.pop(0)
         y = y_pos.pop(0)
 
         # draw the root of the tree
-        edges.append(Edge(y=(y, y), x=(node.t[0], node.t[-1]), id=node.ID, node=node))
+        edges.append(
+            Edge(y=(y, y), x=(node.t[0], node.t[-1]), track_id=node.ID, node=node)
+        )
 
         if node.is_root:
             annotations.append(Annotation(y=y, x=node.t[0], label=str(node.ID)))
@@ -81,7 +82,6 @@ def layout_tree(nodes: List[TreeNode]) -> Tuple[List[Edge], List[Annotation]]:
 
         for child in children:
             if child not in marked:
-
                 # mark the children
                 marked.append(child)
                 queue.append(child)

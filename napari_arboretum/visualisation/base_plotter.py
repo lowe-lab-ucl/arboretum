@@ -1,15 +1,12 @@
 import abc
-from typing import List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 from qtpy.QtWidgets import QWidget
 
-from ..graph import TreeNode, build_subgraph
-from ..tree import Annotation, Edge, layout_tree
-from ..util import TrackPropertyMixin
-
-# from ..profiler import profiler
+from napari_arboretum.graph import TreeNode, build_subgraph
+from napari_arboretum.tree import Annotation, Edge, layout_tree
+from napari_arboretum.util import TrackPropertyMixin
 
 GUI_MAXIMUM_WIDTH = 600
 
@@ -48,10 +45,7 @@ class TreePlotterBase(abc.ABC, TrackPropertyMixin):
         subgraph_nodes = build_subgraph(self.tracks, self.track_id)
         self.draw_from_nodes(subgraph_nodes, self.track_id)
 
-    # @profiler("draw_from_nodes")
-    def draw_from_nodes(
-        self, tree_nodes: List[TreeNode], track_id: Optional[int] = None
-    ):
+    def draw_from_nodes(self, tree_nodes: list[TreeNode], track_id: int | None = None):
         self.edges, self.annotations = layout_tree(tree_nodes)
 
         if self.has_tracks:
@@ -66,7 +60,7 @@ class TreePlotterBase(abc.ABC, TrackPropertyMixin):
 
         self.draw_tree_visual()
 
-    def update_edge_colors(self, update_live: bool = True) -> None:
+    def update_edge_colors(self, *, update_live: bool = True) -> None:
         """
         Update tree edge colours from the track properties.
 
@@ -77,9 +71,9 @@ class TreePlotterBase(abc.ABC, TrackPropertyMixin):
             to update the colors in a live plot.
         """
         for e in self.edges:
-            if e.id is not None:
+            if e.track_id is not None:
                 e.color = self.tracks.track_colors[
-                    self.tracks.properties["track_id"] == e.id
+                    self.tracks.properties["track_id"] == e.track_id
                 ]
 
         if update_live:
@@ -167,7 +161,7 @@ class PropertyPlotterBase(abc.ABC, TrackPropertyMixin):
         self.set_title(f"{self.tracks.color_by}, cell #{self.track_id}")
         self.redraw()
 
-    def get_track_properties(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_track_properties(self) -> tuple[np.ndarray, np.ndarray]:
         """
         For a given layer and track_id, get time values and property that
         the track is currently coloured by.

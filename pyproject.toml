@@ -1,7 +1,64 @@
 # pyproject.toml
+
+# pyproject.toml
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
 build-backend = "setuptools.build_meta"
+requires = [
+    "setuptools>=45",
+    "setuptools_scm>=6.2",
+    "wheel",
+]
+
+[tool.mypy]
+explicit_package_bases = true
+plugins = [
+    "numpy.typing.mypy_plugin",
+]
+
+[tool.ruff]
+fix = true
+force-exclude = true
+ignore = [
+    "B905", # python>=3.10
+    "EM101",
+]
+per-file-ignores = {"napari_arboretum/_tests/*" = [
+    "S101",
+]}
+select = [
+    "A",
+    "B",
+    "C",
+    "DTZ",
+    "E",
+    "EM",
+    "F",
+    "FBT",
+    "I",
+    "ICN",
+    "ISC",
+    "N",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "Q",
+    "RUF",
+    "S",
+    "SIM",
+    "T",
+    "TID",
+    "UP",
+    "W",
+    "YTT",
+]
+isort.known-first-party = ["arboretum"]
+mccabe.max-complexity = 18
 
 [tool.setuptools_scm]
 write_to = "napari_arboretum/_version.py"
+
+[tool.tomlsort]
+all = true
+spaces_indent_inline_array = 4
+trailing_comma_inline_array = true

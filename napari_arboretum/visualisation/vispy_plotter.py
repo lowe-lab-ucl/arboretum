@@ -4,14 +4,15 @@ import numpy as np
 from qtpy.QtWidgets import QWidget
 from vispy import scene
 
-from ..tree import Annotation, Edge
-from .base_plotter import TreePlotterQWidgetBase
+from napari_arboretum.tree import Annotation, Edge
+from napari_arboretum.visualisation.base_plotter import TreePlotterQWidgetBase
 
 __all__ = ["VisPyPlotter"]
 
 
 DEFAULT_TEXT_SIZE = 8
 DEFAULT_BRANCH_WIDTH = 3
+TWO_DIM = 2
 
 
 @dataclass
@@ -29,14 +30,12 @@ class TrackSubvisualProxy:
 
     @property
     def connex(self):
-        connex = [True] * (self.pos.shape[0] - 1) + [False]
-        return connex
+        return [True] * (self.pos.shape[0] - 1) + [False]
 
     @property
     def safe_color(self) -> np.ndarray:
-        if self.color.ndim != 2:
-            safe_color = np.repeat([self.color], self.pos.shape[0], axis=0)
-            return safe_color
+        if self.color.ndim != TWO_DIM:
+            return np.repeat([self.color], self.pos.shape[0], axis=0)
         return self.color
 
 
@@ -81,16 +80,24 @@ class VisPyPlotter(TreePlotterQWidgetBase):
         Return (xmin, ymin, xmax, ymax) bounds of the drawn tree. This does
         not include any annoatations.
         """
-        xs = np.concatenate([track.pos[:, 0] for id, track in self.tree.tracks.items()])
-        ys = np.concatenate([track.pos[:, 1] for id, track in self.tree.tracks.items()])
+        xs = np.concatenate(
+            [track.pos[:, 0] for track_id, track in self.tree.tracks.items()]
+        )
+        ys = np.concatenate(
+            [track.pos[:, 1] for track_id, track in self.tree.tracks.items()]
+        )
         return Bounds(
             xmin=np.min(xs), ymin=np.min(ys), xmax=np.max(xs), ymax=np.max(ys)
         )
 
     def autoscale_view(self) -> None:
         """Scale the canvas so all branches are in view."""
-        xs = np.concatenate([track.pos[:, 0] for id, track in self.tree.tracks.items()])
-        ys = np.concatenate([track.pos[:, 1] for id, track in self.tree.tracks.items()])
+        xs = np.concatenate(
+            [track.pos[:, 0] for track_id, track in self.tree.tracks.items()]
+        )
+        ys = np.concatenate(
+            [track.pos[:, 1] for track_id, track in self.tree.tracks.items()]
+        )
         padding = 0.1
         width, height = np.ptp(xs), np.ptp(ys)
         rect = (
@@ -103,10 +110,7 @@ class VisPyPlotter(TreePlotterQWidgetBase):
         # change the aspect ratio of the camera if we have just a single branch
         # this will centre the camera on the single branch, otherwise, set the
         # aspect ratio to match the data
-        if width == 0:
-            self.view.camera.aspect = 1.0
-        else:
-            self.view.camera.aspect = None
+        self.view.camera.aspect = 1.0 if width == 0 else None
         self.view.camera.rect = rect
 
     def update_colors(self) -> None:
@@ -114,14 +118,14 @@ class VisPyPlotter(TreePlotterQWidgetBase):
         Update plotted track colors from the colors in self.edges.
         """
         for e in self.edges:
-            if e.id is not None:
-                self.tree.set_branch_color(e.id, e.color)
+            if e.track_id is not None:
+                self.tree.set_branch_color(e.track_id, e.color)
 
     def add_branch(self, e: Edge) -> None:
         """
         Add a single branch to the tree.
         """
-        # self.tree.add_track(e.id, np.column_stack((e.y, e.x)), e.color)
+        # self.tree.add_track(e.track_id, np.column_stack((e.y, e.x)), e.color)
         self.tree.add_track(e)
         self.autoscale_view()
 
@@ -218,12 +222,11 @@ class TreeVisual(scene.visuals.Compound):
                 color=color,
             )
             # store a reference to this subvisual proxy
-            self.tracks[e.id] = subvisual_proxy
+            self.tracks[e.track_id] = subvisual_proxy
 
         self.edges.append(subvisual_proxy)
 
     def add_annotation(self, x: float, y: float, label: str, color):
-
         subvisual_proxy = AnnotationSubvisualProxy(
             text=label,
             pos=[y, x, 0],

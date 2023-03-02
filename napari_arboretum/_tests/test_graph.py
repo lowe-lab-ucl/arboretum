@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 from napari.layers import Tracks
 
 from napari_arboretum import graph
