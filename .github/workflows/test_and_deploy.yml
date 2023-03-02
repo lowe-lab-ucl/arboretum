@@ -12,10 +12,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  linting:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: UCL/composite-actions/pre-commit@v1
   test:
     name: ${{ matrix.platform }} py${{ matrix.python-version }}
     runs-on: ${{ matrix.platform }}
