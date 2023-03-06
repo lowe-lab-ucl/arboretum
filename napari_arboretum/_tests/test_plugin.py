@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
-from napari import layers
 
-from napari_arboretum import Arboretum, load_sample_data
+from napari_arboretum.plugin import Arboretum
+from napari_arboretum.sample.sample_data import load_sample_data
 
 
 @pytest.fixture
@@ -40,18 +40,18 @@ def test_colormap_change(viewer_plugin):
     is changed.
     """
     viewer, plugin = viewer_plugin
-    id = 140
-    plugin.track_id = id
+    track_id = 140
+    plugin.track_id = track_id
 
     tree = plugin.plotter.tree
-    old_color = tree.get_branch_color(branch_id=id)
+    old_color = tree.get_branch_color(branch_id=track_id)
 
     # Change the colormap
     assert viewer.layers[0].colormap != "viridis"
     viewer.layers[0].colormap = "viridis"
 
     # Check that color has changed
-    new_color = tree.get_branch_color(branch_id=id)
+    new_color = tree.get_branch_color(branch_id=track_id)
     # Slice to remove alpha, which is 1 both before and after
     assert np.all(new_color[:, :3] != old_color[:, :3])
 
@@ -62,17 +62,17 @@ def test_colorby_change(viewer_plugin):
     track is coloured by changes.
     """
     viewer, plugin = viewer_plugin
-    id = 140
-    plugin.track_id = id
+    track_id = 140
+    plugin.track_id = track_id
 
     tree = plugin.plotter.tree
-    old_color = tree.get_branch_color(branch_id=id)
+    old_color = tree.get_branch_color(branch_id=track_id)
 
     # Change the color by attribute
     assert viewer.layers[0].color_by != "generation"
     viewer.layers[0].color_by = "generation"
 
     # Check that color has changed
-    new_color = tree.get_branch_color(branch_id=id)
+    new_color = tree.get_branch_color(branch_id=track_id)
     # Slice to remove alpha, which is 1 both before and after
     assert np.all(new_color[:, :3] != old_color[:, :3])

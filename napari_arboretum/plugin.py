@@ -1,4 +1,4 @@
-from typing import List, Optional
+from __future__ import annotations
 
 import napari
 from napari.layers import Tracks
@@ -7,14 +7,13 @@ from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QGridLayout, QLabel, QWidget
 
 from napari_arboretum.graph import get_root_id
-
-from .util import TrackPropertyMixin
-from .visualisation import (
-    MPLPropertyPlotter,
+from napari_arboretum.util import TrackPropertyMixin
+from napari_arboretum.visualisation.base_plotter import (
     PropertyPlotterBase,
     TreePlotterQWidgetBase,
-    VisPyPlotter,
 )
+from napari_arboretum.visualisation.matplotlib_plotter import MPLPropertyPlotter
+from napari_arboretum.visualisation.vispy_plotter import VisPyPlotter
 
 GUI_MAXIMUM_WIDTH = 400
 
@@ -24,8 +23,9 @@ class Arboretum(QWidget, TrackPropertyMixin):
     Tree viewer widget.
     """
 
-    def __init__(self, viewer: napari.Viewer, parent=None):
+    def __init__(self, viewer: napari.Viewer = None, parent=None):
         super().__init__(parent=parent)
+        viewer = napari.current_viewer() if viewer is None else viewer
         self.viewer = viewer
         self.title = QLabel()
         self.plotter: TreePlotterQWidgetBase = VisPyPlotter()
@@ -56,7 +56,7 @@ class Arboretum(QWidget, TrackPropertyMixin):
         # Update the horizontal time line if the current z-step changes
         self.viewer.dims.events.current_step.connect(self.draw_current_time_line)
 
-        self.tracks_layers: List[Tracks] = []
+        self.tracks_layers: list[Tracks] = []
         self.update_tracks_layers()
 
     def on_tracks_change(self):
@@ -69,7 +69,7 @@ class Arboretum(QWidget, TrackPropertyMixin):
         root_id = get_root_id(self.tracks, self.track_id)
         self.title.setText(f"Lineage Tree #{root_id}")
 
-    def update_tracks_layers(self, event: Optional[Event] = None) -> None:
+    def update_tracks_layers(self, event: Event | None = None) -> None:
         """
         Save a copy of all the tracks layers that are present in the viewer.
         """
@@ -105,7 +105,7 @@ class Arboretum(QWidget, TrackPropertyMixin):
                 self.track_id = track_id
                 self.draw_current_time_line()
 
-    def draw_current_time_line(self, event: Optional[Event] = None) -> None:
+    def draw_current_time_line(self, event: Event | None = None) -> None:
         if not self.plotter.has_tracks:
             return
         z_value = self.viewer.dims.current_step[0]

@@ -1,11 +1,11 @@
-from typing import Optional
+from __future__ import annotations
 
 import numpy as np
 from matplotlib.lines import Line2D
 from napari_matplotlib.base import NapariMPLWidget
 from qtpy.QtWidgets import QWidget
 
-from .base_plotter import PropertyPlotterBase
+from napari_arboretum.visualisation.base_plotter import PropertyPlotterBase
 
 
 class MPLPropertyPlotter(PropertyPlotterBase):
@@ -13,7 +13,7 @@ class MPLPropertyPlotter(PropertyPlotterBase):
         self.mpl_widget = NapariMPLWidget(viewer)
         self.figure = self.mpl_widget.canvas.figure
         self.axes = self.mpl_widget.canvas.figure.add_subplot(111)
-        self.mpl_time_line: Optional[Line2D] = None
+        self.mpl_time_line: Line2D | None = None
 
     def get_qwidget(self) -> QWidget:
         return self.mpl_widget
