@@ -1,5 +1,6 @@
 import numpy as np
 from napari.layers import Tracks
+from numpy.testing import assert_allclose
 
 from napari_arboretum import graph
 
@@ -72,4 +73,4 @@ def test_add_child():
     assert len(node.children) == 1
 
     assert child.is_leaf
-    assert child.t == (2, 4)
+    assert_allclose(child.t, (2, 4))
