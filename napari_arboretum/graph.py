@@ -4,6 +4,8 @@ Classes and functions for working with graphs.
 Note that this file should *not* contain code for laying out the graphs for
 visualisation. Code for this is kept in `tree.py`.
 """
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 
 import napari

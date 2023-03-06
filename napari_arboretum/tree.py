@@ -1,6 +1,8 @@
 """
 Classes and functions for laying out graphs for visualisation.
 """
+from __future__ import annotations
+
 from collections.abc import MutableSequence
 from dataclasses import dataclass
 

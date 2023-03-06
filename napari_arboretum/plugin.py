@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import napari
 from napari.layers import Tracks
 from napari.utils.events import Event
