@@ -23,8 +23,9 @@ class Arboretum(QWidget, TrackPropertyMixin):
     Tree viewer widget.
     """
 
-    def __init__(self, viewer: napari.Viewer, parent=None):
+    def __init__(self, viewer: napari.Viewer = None, parent=None):
         super().__init__(parent=parent)
+        viewer = napari.current_viewer() if viewer is None else viewer
         self.viewer = viewer
         self.title = QLabel()
         self.plotter: TreePlotterQWidgetBase = VisPyPlotter()
