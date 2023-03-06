@@ -6,13 +6,15 @@ import logging
 from copy import copy
 
 import napari
+import numpy as np
 
 from napari_arboretum.graph import TreeNode
 
 
 def generate_binary_tree(max_depth: int):
     track_id = 0
-    nodes = [TreeNode(track_id, t=(0, 1), generation=1)]
+    t = np.array([0, 1])
+    nodes = [TreeNode(track_id, t=t, generation=1)]
     for depth in range(1, max_depth):
         for node in copy(nodes):
             if node.generation == depth:

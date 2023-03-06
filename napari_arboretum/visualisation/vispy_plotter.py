@@ -231,7 +231,7 @@ class TreeVisual(scene.visuals.Compound):
     def add_annotation(self, x: float, y: float, label: str, color):
         subvisual_proxy = AnnotationSubvisualProxy(
             text=label,
-            pos=[y, x, 0],
+            pos=np.array([y, x, 0]),
         )
 
         self.annotations.append(subvisual_proxy)

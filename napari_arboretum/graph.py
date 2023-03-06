@@ -33,7 +33,8 @@ class TreeNode:
         """
         Add a child to this node, and return the child.
         """
-        child = TreeNode(track_id, (self.t[-1], t_end), self.generation + 1)
+        t = np.asarray([self.t[-1], t_end])
+        child = TreeNode(track_id, t, self.generation + 1)
         self.children.append(track_id)
         return child
 
