@@ -5,6 +5,8 @@ The sample data fetching/caching is handled by the `pooch` library. A registry
 of files and their expected hashes is stored in :file:``registry.txt``.
 """
 
+from __future__ import annotations
+
 import json
 import pathlib
 
