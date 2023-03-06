@@ -3,10 +3,10 @@ Classes and functions for laying out graphs for visualisation.
 """
 from __future__ import annotations
 
-from collections.abc import MutableSequence
 from dataclasses import dataclass
 
 import numpy as np
+import numpy.typing as npt
 
 from napari_arboretum.graph import TreeNode
 
@@ -15,7 +15,7 @@ WHITE = np.array([1.0, 1.0, 1.0, 1.0])
 
 # napari specifies colours as a RGBA tuple in the range [0, 1], so mirror
 # that convention throughout arboretum.
-ColorType = MutableSequence[float]
+ColorType = npt.ArrayLike
 
 
 @dataclass
