@@ -38,11 +38,11 @@ description = "Track graph and lineage tree visualization with napari"
 dynamic = [
     "version",
 ]
-license = {file = "LICENCE.md"}
 name = "napari-arboretum"
 readme = "README.md"
 requires-python = ">=3.8"
-entry-points."napari.manifest" = {napari-arboretum = "napari_arboretum:napari.yaml"}
+entry-points."napari.manifest".napari-arboretum = "napari_arboretum:napari.yaml"
+license.file = "LICENCE.md"
 urls.homepage = "https://github.com/quantumjot/arboretum"
 
 [tool.coverage]
