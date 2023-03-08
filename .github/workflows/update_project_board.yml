@@ -9,7 +9,7 @@ jobs:
   update-project-board:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/add-to-project@v0.3.0
+      - uses: actions/add-to-project@v0.4.1
         with:
           project-url: https://github.com/orgs/epitools/projects/2
           github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
