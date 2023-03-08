@@ -6,10 +6,63 @@ requires = [
     "wheel",
 ]
 
+[project]
+authors = [
+    {email = "a.lowe@ucl.ac.uk", name = "Alan R. Lowe"},
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: napari",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = [
+    "matplotlib",
+    "napari-matplotlib>=0.2.1",
+    "napari>=0.4.0",
+    "numpy>=1.17.3",
+    "pandas",
+    "pooch>=1",
+    "qtpy",
+    "scikit-image",
+    "vispy",
+]
+description = "Track graph and lineage tree visualization with napari"
+dynamic = [
+    "version",
+]
+license = {file = "LICENCE.md"}
+name = "napari-arboretum"
+readme = "README.md"
+requires-python = ">=3.8"
+entry-points."napari.manifest" = {napari-arboretum = "napari_arboretum:napari.yaml"}
+urls.homepage = "https://github.com/quantumjot/arboretum"
+
+[tool.coverage]
+report = {skip_covered = true, sort = "cover"}
+run = {branch = true, parallel = true, source = ["napari_arboretum"]}
+paths.source = [
+    ".tox*/*/lib/python*/site-packages",
+    "napari_arboretum",
+]
+
 [tool.mypy]
 explicit_package_bases = true
 plugins = [
     "numpy.typing.mypy_plugin",
+]
+
+[tool.pytest.ini_options]
+addopts = "--color=yes -v"
+testpaths = [
+    "napari_arboretum",
 ]
 
 [tool.ruff]
@@ -59,3 +112,34 @@ write_to = "napari_arboretum/_version.py"
 all = true
 spaces_indent_inline_array = 4
 trailing_comma_inline_array = true
+
+[tool.tox]
+legacy_tox_ini = """
+    [gh-actions]
+    python =
+        3.8: py38
+        3.9: py39
+        3.10: py310
+
+    [testenv]
+    passenv =
+        CI
+        DISPLAY
+        GITHUB_ACTIONS
+        NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
+        PYVISTA_OFF_SCREEN
+        XAUTHORITY
+    deps =
+        magicgui
+        napari
+        PySide2
+        pytest
+        pytest-cov
+        pytest-qt
+        pytest-xvfb ; sys_platform == 'linux'
+    commands = pytest --cov --cov-report=xml
+
+    [tox]
+    envlist = py{38,39,310}
+    isolated_build = True
+"""
