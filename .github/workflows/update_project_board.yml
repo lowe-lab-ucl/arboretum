@@ -11,5 +11,5 @@ jobs:
     steps:
       - uses: actions/add-to-project@v0.4.1
         with:
-          project-url: https://github.com/orgs/epitools/projects/2
+          project-url: https://github.com/orgs/lowe-lab-ucl/projects/1
           github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
