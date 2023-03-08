@@ -1,8 +1,7 @@
-
 # Add labels the plugin from the EDAM Bioimaging ontology
 labels:
   ontology: EDAM-BIOIMAGING:alpha06
   terms:
-  - Cell tracking
-  - Cell lineage extraction
-  - Object tracking
+    - Cell tracking
+    - Cell lineage extraction
+    - Object tracking

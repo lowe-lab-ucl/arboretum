@@ -1,6 +1,6 @@
 from napari import layers
 
-from napari_arboretum import load_sample_data
+from napari_arboretum.sample.sample_data import load_sample_data
 
 
 def test_sample_data():

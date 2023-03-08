@@ -9,7 +9,7 @@ This example:
 """
 import napari
 
-from napari_arboretum import load_sample_data
+from napari_arboretum.sample.sample_data import load_sample_data
 
 track, segmentation = load_sample_data()
 
@@ -20,7 +20,7 @@ viewer.window.add_plugin_dock_widget(
     plugin_name="napari-arboretum", widget_name="Arboretum"
 )
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # The napari event loop needs to be run under here to allow the window
     # to be spawned from a Python script
     napari.run()

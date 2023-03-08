@@ -12,10 +12,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  linting:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: UCL/composite-actions/pre-commit@v1
   test:
     name: ${{ matrix.platform }} py${{ matrix.python-version }}
     runs-on: ${{ matrix.platform }}
@@ -26,10 +22,10 @@ jobs:
         platform: [ubuntu-latest]
         # Include one windows and macos run
         include:
-        - platform: macos-latest
-          python-version: "3.9"
-        - platform: windows-latest
-          python-version: "3.9"
+          - platform: macos-latest
+            python-version: "3.9"
+          - platform: windows-latest
+            python-version: "3.9"
 
     steps:
       # Setup pyqt libraries
@@ -40,7 +36,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       # Upload code coverage
       - name: Coverage
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
 
   deploy:
     # this will run when you have tagged a commit, starting with "v*"
@@ -50,9 +46,9 @@ jobs:
     runs-on: ubuntu-latest
     if: contains(github.ref, 'tags')
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: "3.x"
       - name: Install dependencies
