@@ -177,7 +177,8 @@ class PropertyPlotterBase(abc.ABC, TrackPropertyMixin):
         """
         all_props = pd.DataFrame(self.tracks.properties)
         all_props = all_props.loc[all_props["track_id"] == self.track_id]
-        return all_props["t"].values, all_props[self.tracks.color_by].values
+        t = self.tracks.data[self.tracks.data[:, 0] == self.track_id, 1]
+        return t, all_props[self.tracks.color_by].values
 
     @abc.abstractmethod
     def get_qwidget(self) -> QWidget:
