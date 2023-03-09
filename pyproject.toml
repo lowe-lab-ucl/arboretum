@@ -49,8 +49,8 @@ urls.homepage = "https://github.com/quantumjot/arboretum"
 report = {skip_covered = true, sort = "cover"}
 run = {branch = true, parallel = true, source = ["napari_arboretum"]}
 paths.source = [
-    ".tox*/*/lib/python*/site-packages",
     "napari_arboretum",
+    ".tox*/*/lib/python*/site-packages",
 ]
 
 [tool.mypy]
