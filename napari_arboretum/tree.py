@@ -3,7 +3,10 @@ Classes and functions for laying out graphs for visualisation.
 """
 from __future__ import annotations
 
+import itertools
+from collections import Counter
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -12,6 +15,9 @@ from napari_arboretum.graph import TreeNode
 
 # colormaps
 WHITE = np.array([1.0, 1.0, 1.0, 1.0])
+
+# minimum number of output edges
+MIN_OUT_EDGES = 2
 
 # napari specifies colours as a RGBA tuple in the range [0, 1], so mirror
 # that convention throughout arboretum.
@@ -33,6 +39,20 @@ class Edge:
     color: np.ndarray = WHITE
     track_id: int | None = None
     node: TreeNode | None = None
+
+
+def _find_merges(nodes: list[TreeNode]) -> dict[int, list[Any]]:
+    node_ids = itertools.chain(*[n.children for n in nodes])
+    merges = [n for n, count in Counter(node_ids).items() if count > 1]
+    parents = [n for n in nodes if len(n.children) == 1]
+
+    parent_merges: dict[int, list[TreeNode]] = {m: [] for m in merges}
+
+    for merge in merges:
+        parent_id = [p for p in parents if p.children[0] == merge]
+        parent_merges[merge] += parent_id
+
+    return parent_merges
 
 
 def layout_tree(nodes: list[TreeNode]) -> tuple[list[Edge], list[Annotation]]:
@@ -61,6 +81,9 @@ def layout_tree(nodes: list[TreeNode]) -> tuple[list[Edge], list[Annotation]]:
     edges = []
     annotations = []
 
+    # iterate over the nodes and find merges
+    merges = _find_merges(nodes)
+
     # now step through
     while queue:
         # pop the root from the tree
@@ -82,33 +105,46 @@ def layout_tree(nodes: list[TreeNode]) -> tuple[list[Edge], list[Annotation]]:
 
         children = [t for t in nodes if t.ID in node.children]
 
-        for child in children:
+        # calculate the depth modifier
+        depth_mod = 2.0 / (2.0 ** (node.generation))
+        spacing = np.linspace(-depth_mod, depth_mod, len(children))
+        y_mod = spacing if len(children) > 1 else np.array([0.0])
+
+        for idx, child in enumerate(children):
+            if child.ID in merges:
+                parents = merges[child.ID]
+                parent_edges = [e for e in edges if e.node in parents]
+                if len(parent_edges) < MIN_OUT_EDGES:
+                    continue
+                y_mod = np.asarray([np.mean([e.y[0] for e in parent_edges]) - y])
+
             if child not in marked:
                 # mark the children
                 marked.append(child)
                 queue.append(child)
 
-                # calculate the depth modifier
-                depth_mod = 2.0 / (2.0 ** (node.generation))
-
-                if child == children[0]:
-                    y_pos.append(y + depth_mod)
-                else:
-                    y_pos.append(y - depth_mod)
-
-                # plot a linking line to the children
-                edges.append(Edge(y=(y, y_pos[-1]), x=(node.t[-1], child.t[0])))
+                y_pos.append(y + y_mod[idx])
 
                 # if it's a leaf don't plot the annotation
-                if child.is_leaf:
-                    continue
-
-                annotations.append(
-                    Annotation(
-                        y=y_pos[-1],
-                        x=child.t[-1] - (child.t[-1] - child.t[0]) / 2.0,
-                        label=str(child.ID),
+                if not child.is_leaf:
+                    annotations.append(
+                        Annotation(
+                            y=y_pos[-1],
+                            x=child.t[-1] - (child.t[-1] - child.t[0]) / 2.0,
+                            label=str(child.ID),
+                        )
                     )
-                )
+
+    # plot all of the hyperedges representing links, splits and merges
+    for node in nodes:
+        edge = [e for e in edges if e.node == node][0]
+        if edge.node is None:
+            continue
+
+        for child_id in edge.node.children:
+            child_edge = [e for e in edges if e.track_id == child_id][0]
+            edges.append(
+                Edge(y=(edge.y[-1], child_edge.y[0]), x=(edge.x[-1], child_edge.x[0]))
+            )
 
     return edges, annotations
