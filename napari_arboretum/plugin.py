@@ -4,9 +4,10 @@ import napari
 from napari.layers import Tracks
 from napari.utils.events import Event
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QGridLayout, QLabel, QWidget
+from qtpy.QtWidgets import QFileDialog, QGridLayout, QLabel, QPushButton, QWidget
 
 from napari_arboretum.graph import get_root_id
+from napari_arboretum.io.svg import export_svg
 from napari_arboretum.util import TrackPropertyMixin
 from napari_arboretum.visualisation.base_plotter import (
     PropertyPlotterBase,
@@ -42,8 +43,12 @@ class Arboretum(QWidget, TrackPropertyMixin):
         # Add tree plotter
         row = 1
         layout.addWidget(self.plotter.get_qwidget(), row, col)
-        # Add property plotter
+        # Add export button
         row = 2
+        self.export_button = QPushButton("Export as SVG")
+        layout.addWidget(self.export_button, row, col)
+        # Add property plotter
+        row = 3
         layout.addWidget(self.property_plotter.get_qwidget(), row, col)
         # Make the tree plot a bigger than the property plot
         for row, stretch in zip([1, 2], [2, 1]):
@@ -55,6 +60,8 @@ class Arboretum(QWidget, TrackPropertyMixin):
         self.viewer.layers.events.changed.connect(self.update_tracks_layers)
         # Update the horizontal time line if the current z-step changes
         self.viewer.dims.events.current_step.connect(self.draw_current_time_line)
+        # Save the tree as an SVG
+        self.export_button.clicked.connect(self.export_tree)
 
         self.tracks_layers: list[Tracks] = []
         self.update_tracks_layers()
@@ -111,3 +118,18 @@ class Arboretum(QWidget, TrackPropertyMixin):
         z_value = self.viewer.dims.current_step[0]
         self.plotter.draw_current_time_line(z_value)
         self.property_plotter.draw_current_time_line(z_value)
+
+    def export_tree(self) -> None:
+        """Export the tree as an SVG."""
+        root_id = get_root_id(self.tracks, self.track_id)
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        filename, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export tree as SVG",
+            f"tree_{root_id}.svg",
+            "SVG Files(*.svg)",
+            options=options,
+        )
+        if filename:
+            export_svg(filename, self.plotter.edges, self.plotter.annotations)
