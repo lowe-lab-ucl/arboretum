@@ -45,7 +45,7 @@ class Arboretum(QWidget, TrackPropertyMixin):
         layout.addWidget(self.plotter.get_qwidget(), row, col)
         # Add export button
         row = 2
-        self.export_button = QPushButton("Export as SVG")
+        self.export_button = QPushButton("Export tree as SVG")
         layout.addWidget(self.export_button, row, col)
         # Add property plotter
         row = 3
@@ -123,7 +123,6 @@ class Arboretum(QWidget, TrackPropertyMixin):
         """Export the tree as an SVG."""
         root_id = get_root_id(self.tracks, self.track_id)
         options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
         filename, _ = QFileDialog.getSaveFileName(
             self,
             "Export tree as SVG",
