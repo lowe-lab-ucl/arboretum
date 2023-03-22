@@ -14,9 +14,11 @@ SVG_FOOTER = "</g>\n</svg>"
 
 
 def svg_line_from_edge(edge: Edge, view_box: tuple) -> str:
-    x1 = ((edge.y[0] - view_box[0]) / view_box[2]) * 100
+    # NOTE(arl): y[1] and y[0] are flipped to be the consistent with the orientation in
+    # the vispy plot
+    x1 = ((edge.y[1] - view_box[0]) / view_box[2]) * 100
     y1 = ((edge.x[1] - view_box[1]) / view_box[3]) * 100
-    x2 = ((edge.y[1] - view_box[0]) / view_box[2]) * 100
+    x2 = ((edge.y[0] - view_box[0]) / view_box[2]) * 100
     y2 = ((edge.x[0] - view_box[1]) / view_box[3]) * 100
     svg_line = (
         f'    <line x1="{x1}%" y1="{y1}%" x2="{x2}%" y2="{y2}%" '
