@@ -43,7 +43,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 entry-points."napari.manifest".napari-arboretum = "napari_arboretum:napari.yaml"
 license.file = "LICENCE.md"
-urls.homepage = "https://github.com/quantumjot/arboretum"
+urls.homepage = "https://github.com/lowe-lab-ucl/arboretum"
 
 [tool.coverage]
 report = {skip_covered = true, sort = "cover"}
@@ -102,7 +102,7 @@ select = [
     "W",
     "YTT",
 ]
-isort.known-first-party = ["arboretum"]
+isort.known-first-party = ["napari_arboretum"]
 mccabe.max-complexity = 18
 
 [tool.setuptools_scm]
