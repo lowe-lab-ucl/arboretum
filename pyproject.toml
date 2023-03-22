@@ -49,7 +49,7 @@ urls.homepage = "https://github.com/lowe-lab-ucl/arboretum"
 report = {skip_covered = true, sort = "cover"}
 run = {branch = true, parallel = true, source = ["napari_arboretum"]}
 paths.source = [
-    "napari_arboretum",
+    "src",
     ".tox*/*/lib/python*/site-packages",
 ]
 
@@ -62,7 +62,7 @@ plugins = [
 [tool.pytest.ini_options]
 addopts = "--color=yes -v"
 testpaths = [
-    "napari_arboretum",
+    "tests",
 ]
 
 [tool.ruff]
@@ -72,7 +72,7 @@ ignore = [
     "B905", # python>=3.10
     "EM101",
 ]
-per-file-ignores = {"napari_arboretum/_tests/*" = [
+per-file-ignores = {"test_*" = [
     "S101",
 ]}
 select = [
@@ -106,7 +106,7 @@ isort.known-first-party = ["napari_arboretum"]
 mccabe.max-complexity = 18
 
 [tool.setuptools_scm]
-write_to = "napari_arboretum/_version.py"
+write_to = "src/napari_arboretum/_version.py"
 
 [tool.tomlsort]
 sort_inline_arrays = false
