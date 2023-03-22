@@ -24,7 +24,7 @@ Features:
 
 ### Usage
 
-Once installed, Arboretum will be visible in the `Plugins > Add Dock Widget > arboretum` menu in napari. To visualize a lineage tree, (double) click on one of the tracks in a napari `Tracks` layer.
+Once installed, Arboretum will be visible in the `Plugins > Add Dock Widget > napari-arboretum` menu in napari. To visualize a lineage tree, (double) click on one of the tracks in a napari `Tracks` layer.
 
 ### Examples
 
