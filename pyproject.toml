@@ -102,7 +102,7 @@ select = [
     "W",
     "YTT",
 ]
-isort.known-first-party = ["arboretum"]
+isort.known-first-party = ["napari_arboretum"]
 mccabe.max-complexity = 18
 
 [tool.setuptools_scm]
