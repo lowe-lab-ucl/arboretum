@@ -1,7 +1,7 @@
 import pytest
 
 # this is your plugin name declared in your napari.plugins entry point
-MY_PLUGIN_NAME = "napari-arboretum"
+MY_PLUGIN_NAME = "arboretum"
 # the name of your widget(s)
 MY_WIDGET_NAMES = ["Arboretum"]
 

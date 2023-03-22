@@ -32,7 +32,7 @@ logging.info(f"{len(nodes)} total nodes")
 
 viewer = napari.Viewer()
 _, widget = viewer.window.add_plugin_dock_widget(
-    plugin_name="napari-arboretum", widget_name="Arboretum"
+    plugin_name="arboretum", widget_name="Arboretum"
 )
 widget.plotter.draw_from_nodes(nodes)
 
