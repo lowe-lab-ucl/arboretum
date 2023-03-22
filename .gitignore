@@ -2,8 +2,8 @@ __pycache__
 .ipynb_checkpoints
 dist
 build
-napari_arboretum.egg-info
-napari_arboretum/_version.py
+*.egg-info
+_version.py
 .eggs
 *.spec
 *.ipynb
