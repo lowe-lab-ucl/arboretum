@@ -1,10 +1,10 @@
-name: arboretum
+name: napari-arboretum
 schema_version: 0.1.0
 contributions:
   commands:
-    - id: arboretum.Arboretum
+    - id: napari-arboretum.Arboretum
       title: Create Arboretum
       python_name: napari_arboretum._hookimpls:Arboretum
   widgets:
-    - command: arboretum.Arboretum
+    - command: napari-arboretum.Arboretum
       display_name: Arboretum
