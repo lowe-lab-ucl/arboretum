@@ -16,7 +16,7 @@ from napari_arboretum.graph import TreeNode
 # colormaps
 WHITE = np.array([1.0, 1.0, 1.0, 1.0])
 
-# minimum number of output edges
+# minimum number of output edges to be considered a branching point
 MIN_OUT_EDGES = 2
 
 # napari specifies colours as a RGBA tuple in the range [0, 1], so mirror
@@ -36,7 +36,7 @@ class Annotation:
 class Edge:
     x: tuple[float, float]
     y: tuple[float, float]
-    color: np.ndarray = WHITE
+    color: ColorType = WHITE
     track_id: int | None = None
     node: TreeNode | None = None
 
@@ -78,8 +78,8 @@ def layout_tree(nodes: list[TreeNode]) -> tuple[list[Edge], list[Annotation]]:
     y_pos = [0.0]
 
     # store the line coordinates that need to be plotted
-    edges = []
-    annotations = []
+    edges: list[Edge] = []
+    annotations: list[Annotation] = []
 
     # iterate over the nodes and find merges
     merges = _find_merges(nodes)
@@ -136,15 +136,17 @@ def layout_tree(nodes: list[TreeNode]) -> tuple[list[Edge], list[Annotation]]:
                     )
 
     # plot all of the hyperedges representing links, splits and merges
-    for node in nodes:
-        edge = [e for e in edges if e.node == node][0]
-        if edge.node is None:
-            continue
+    hyperedges = filter(lambda e: e.node, edges)
 
-        for child_id in edge.node.children:
-            child_edge = [e for e in edges if e.track_id == child_id][0]
+    for hyperedge in hyperedges:
+        children = hyperedge.node.children if hyperedge.node is not None else []
+        childedges = filter(lambda e: e.track_id in children, edges)
+        for childedge in childedges:
             edges.append(
-                Edge(y=(edge.y[-1], child_edge.y[0]), x=(edge.x[-1], child_edge.x[0]))
+                Edge(
+                    y=(hyperedge.y[-1], childedge.y[0]),
+                    x=(hyperedge.x[-1], childedge.x[0]),
+                )
             )
 
     return edges, annotations
