@@ -16,7 +16,7 @@ from napari_arboretum.visualisation.base_plotter import (
 from napari_arboretum.visualisation.matplotlib_plotter import MPLPropertyPlotter
 from napari_arboretum.visualisation.vispy_plotter import VisPyPlotter
 
-GUI_MAXIMUM_WIDTH = 400
+GUI_MAXIMUM_WIDTH = 500
 
 
 class Arboretum(QWidget, TrackPropertyMixin):
@@ -31,6 +31,7 @@ class Arboretum(QWidget, TrackPropertyMixin):
         self.title = QLabel()
         self.plotter: TreePlotterQWidgetBase = VisPyPlotter()
         self.property_plotter: PropertyPlotterBase = MPLPropertyPlotter(viewer)
+        self.setMaximumWidth(GUI_MAXIMUM_WIDTH)
 
         # Set plugin layout
         layout = QGridLayout()
@@ -51,7 +52,7 @@ class Arboretum(QWidget, TrackPropertyMixin):
         row = 3
         layout.addWidget(self.property_plotter.get_qwidget(), row, col)
         # Make the tree plot a bigger than the property plot
-        for row, stretch in zip([1, 2], [2, 1]):
+        for row, stretch in zip([1, 2, 3], [4, 1, 2]):
             layout.setRowStretch(row, stretch)
         self.setLayout(layout)
 
