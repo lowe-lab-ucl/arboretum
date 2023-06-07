@@ -153,7 +153,7 @@ def build_subgraph(layer: napari.layers.Tracks, search_node: int) -> list[TreeNo
     root_id = get_root_id(layer, search_node)
 
     def _node_from_graph(_id):
-        idx = np.where(layer.data[:, 0] == _id)[0]
+        idx = layer.data[:, 0] == _id
         # t = (np.min(layer.data[idx, 1]), np.max(layer.data[idx, 1]))
         t = layer.data[idx, 1]
         node = TreeNode(ID=_id, t=t, generation=1)
