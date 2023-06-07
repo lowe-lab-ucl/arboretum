@@ -8,7 +8,11 @@
 
 # Arboretum
 
-![](https://raw.githubusercontent.com/lowe-lab-ucl/arboretum/main/examples/arboretum.gif)
+
+
+https://github.com/lowe-lab-ucl/arboretum/assets/8217795/d98c22c4-73bb-493a-9f8f-c224d615209d
+
+
 _Automated cell tracking and lineage tree reconstruction_.
 
 ### Overview
