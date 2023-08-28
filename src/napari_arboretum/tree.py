@@ -29,14 +29,14 @@ class Annotation:
     x: float
     y: float
     label: str
-    color: ColorType = field(default_factory=lambda : WHITE)
+    color: ColorType = field(default_factory=lambda: WHITE)
 
 
 @dataclass
 class Edge:
     x: tuple[float, float]
     y: tuple[float, float]
-    color: ColorType = field(default_factory=lambda : WHITE)
+    color: ColorType = field(default_factory=lambda: WHITE)
     track_id: int | None = None
     node: TreeNode | None = None
 
