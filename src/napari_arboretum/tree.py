@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import itertools
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
@@ -29,14 +29,14 @@ class Annotation:
     x: float
     y: float
     label: str
-    color: ColorType = WHITE
+    color: ColorType = field(default_factory=lambda: WHITE)
 
 
 @dataclass
 class Edge:
     x: tuple[float, float]
     y: tuple[float, float]
-    color: ColorType = WHITE
+    color: ColorType = field(default_factory=lambda: WHITE)
     track_id: int | None = None
     node: TreeNode | None = None
 
