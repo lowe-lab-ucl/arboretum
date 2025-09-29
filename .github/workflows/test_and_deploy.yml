@@ -18,48 +18,66 @@ jobs:
     strategy:
       matrix:
         # Run all supported Python versions on linux
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
         platform: [ubuntu-latest]
-        # Include one windows and macos run
+        # Include one macos run (Windows skipped due to OpenGL context issues)
         include:
           - platform: macos-latest
-            python-version: "3.9"
-          - platform: windows-latest
-            python-version: "3.9"
+            python-version: "3.11"
 
     steps:
+      # Checkout repository
+      - uses: actions/checkout@v4
       # Setup pyqt libraries
       - uses: tlambert03/setup-qt-libs@v1
-      # Run tests
-      - uses: UCL/composite-actions/python/tox@v1
+      # Setup Python
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      # Upload code coverage
-      - name: Coverage
-        uses: codecov/codecov-action@v3
-
-  deploy:
-    # this will run when you have tagged a commit, starting with "v*"
-    # and requires that you have put your twine API key in your
-    # github secrets (see readme for details)
-    needs: [test]
-    runs-on: ubuntu-latest
-    if: contains(github.ref, 'tags')
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
+      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install build twine
-      - name: Build and publish
+          python -m pip install -e .
+          python -m pip install pytest pytest-cov pytest-qt PySide6
+      - name: Install xvfb (Linux only)
+        if: runner.os == 'Linux'
+        run: python -m pip install pytest-xvfb
+      # Run tests
+      - name: Run tests
         env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
+          DISPLAY: ":99.0"
+          # Disable napari GUI in headless environment
+          NAPARI_APPLICATION_IPY_INTERACTIVE: false
+          # Force matplotlib to use non-interactive backend
+          MPLBACKEND: Agg
+        run: pytest --cov --cov-report=xml
+      # Upload code coverage
+      - name: Coverage
+        uses: codecov/codecov-action@v4
+
+  deploy:
+    # this will run when you have tagged a commit, starting with "v*"
+    # uses PyPI's trusted publishing via OIDC (no API key required)
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: contains(github.ref, 'tags')
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build
+      - name: Build package
         run: |
           git tag
           python -m build
-          twine upload dist/*
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

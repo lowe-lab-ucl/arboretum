@@ -4,6 +4,7 @@ Classes and functions for working with graphs.
 Note that this file should *not* contain code for laying out the graphs for
 visualisation. Code for this is kept in `tree.py`.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -66,7 +67,7 @@ def build_reverse_graph(graph: dict) -> tuple[list | set, dict[int, list[int]]]:
             else:
                 reverse_graph[parent].append(node)
 
-            if parent not in graph.keys():
+            if parent not in graph:
                 roots.add(parent)
 
     # sort the roots

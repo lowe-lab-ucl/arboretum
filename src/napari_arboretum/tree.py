@@ -1,6 +1,7 @@
 """
 Classes and functions for laying out graphs for visualisation.
 """
+
 from __future__ import annotations
 
 import itertools
@@ -29,14 +30,14 @@ class Annotation:
     x: float
     y: float
     label: str
-    color: ColorType = field(default_factory=lambda: WHITE)
+    color: ColorType = field(default_factory=lambda: np.array([1.0, 1.0, 1.0, 1.0]))
 
 
 @dataclass
 class Edge:
     x: tuple[float, float]
     y: tuple[float, float]
-    color: ColorType = field(default_factory=lambda: WHITE)
+    color: ColorType = field(default_factory=lambda: np.array([1.0, 1.0, 1.0, 1.0]))
     track_id: int | None = None
     node: TreeNode | None = None
 

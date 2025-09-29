@@ -28,7 +28,11 @@ class Bounds:
 @dataclass
 class TrackSubvisualProxy:
     pos: np.ndarray
-    color: np.ndarray = np.array([1.0, 1.0, 1.0, 1.0])
+    color: np.ndarray = None
+
+    def __post_init__(self):
+        if self.color is None:
+            self.color = np.array([1.0, 1.0, 1.0, 1.0])
 
     @property
     def connex(self):
