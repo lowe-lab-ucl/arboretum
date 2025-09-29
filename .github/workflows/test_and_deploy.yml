@@ -56,6 +56,14 @@ jobs:
           QT_OPENGL: software
           # Disable napari GUI in headless environment
           NAPARI_APPLICATION_IPY_INTERACTIVE: false
+          # Additional headless environment variables
+          QT_LOGGING_RULES: "*.debug=false;qt.qpa.*=false"
+          MPLBACKEND: Agg
+          # VisPy configuration for headless environments
+          VISPY_GL_LIB: osmesa
+          VISPY_GL_API: osmesa
+          # Force VisPy to not use OpenGL context
+          PYVISTA_OFF_SCREEN: true
         run: pytest --cov --cov-report=xml
       # Upload code coverage
       - name: Coverage
