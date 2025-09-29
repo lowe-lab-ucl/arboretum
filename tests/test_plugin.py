@@ -29,7 +29,7 @@ def test_plugin(viewer_plugin):
     A simple smoke test for drawing the graph. Note that this checks the code
     works, not that the correct graph is drawn!
     """
-    viewer, plugin = viewer_plugin
+    _viewer, plugin = viewer_plugin
     # Setting this property automatically triggers graph drawing
     plugin.track_id = 140
 

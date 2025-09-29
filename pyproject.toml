@@ -17,16 +17,17 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python",
     "Topic :: Scientific/Engineering :: Visualization",
 ]
 dependencies = [
     "matplotlib",
     "napari-matplotlib>=0.2.1",
-    "napari>=0.4.0",
+    "napari>=0.6.0",
     "numpy>=1.17.3",
     "pandas",
     "pooch>=1",
@@ -40,7 +41,7 @@ dynamic = [
 ]
 name = "napari-arboretum"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 entry-points."napari.manifest".napari-arboretum = "napari_arboretum:napari.yaml"
 license.file = "LICENCE.md"
 urls.homepage = "https://github.com/lowe-lab-ucl/arboretum"
@@ -68,6 +69,8 @@ testpaths = [
 [tool.ruff]
 fix = true
 force-exclude = true
+
+[tool.ruff.lint]
 ignore = [
     "B905", # python>=3.10
     "EM101",
@@ -102,8 +105,12 @@ select = [
     "W",
     "YTT",
 ]
-isort.known-first-party = ["napari_arboretum"]
-mccabe.max-complexity = 18
+
+[tool.ruff.lint.isort]
+known-first-party = ["napari_arboretum"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 18
 
 [tool.setuptools_scm]
 write_to = "src/napari_arboretum/_version.py"
@@ -119,9 +126,10 @@ trailing_comma_inline_array = true
 legacy_tox_ini = """
     [gh-actions]
     python =
-        3.8: py38
-        3.9: py39
         3.10: py310
+        3.11: py311
+        3.12: py312
+        3.13: py313
 
     [testenv]
     passenv =
@@ -142,6 +150,6 @@ legacy_tox_ini = """
     commands = pytest --cov --cov-report=xml
 
     [tox]
-    envlist = py{38,39,310}
+    envlist = py{310,311,312,313}
     isolated_build = True
 """
