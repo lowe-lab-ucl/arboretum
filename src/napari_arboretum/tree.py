@@ -1,6 +1,7 @@
 """
 Classes and functions for laying out graphs for visualisation.
 """
+
 from __future__ import annotations
 
 import itertools

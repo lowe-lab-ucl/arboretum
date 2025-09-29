@@ -7,6 +7,7 @@ This example:
 - loads the arboretum plugin
 - opens the napari viewer
 """
+
 import napari
 
 from napari_arboretum.sample.sample_data import load_sample_data
